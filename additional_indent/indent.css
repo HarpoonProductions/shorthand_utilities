@@ -1,0 +1,23 @@
+.indent-blockquote {
+    float: right;
+    width: 60%;
+    margin-left: 26px;
+}
+
+.indent-blockquote blockquote {
+    text-align: justify;
+}
+
+@media only screen and (min-width: 610px) {
+    .indent-blockquote blockquote {
+        width: 107%;
+        text-align: justify;
+    }
+}
+
+@media only screen and (min-width: 900px) {
+    .indent-blockquote blockquote {
+        width: 135%;
+        text-align: justify;
+    }
+}
