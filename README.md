@@ -19,12 +19,12 @@ Alternatively, the code can be pulled directly from this repository by:
 
 - Adding a `<link>` tag to the Custom Header field to import CSS. E.g. 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/indent.css" />
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.css" />
 ```
 
 - Adding `<script>` tags to the Add JS panel to import JS. E.g.
 ```
-
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.js"></script>
 ```
 
 
