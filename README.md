@@ -1,4 +1,4 @@
-# Custom Shorthand Functionality
+# **Custom Shorthand Functionality**
 
 A Collection of JS, CSS & HTML Snippets to be imported or copied into SH stories that will enable additional features or formatting.
 
