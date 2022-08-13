@@ -37,10 +37,57 @@ This method also provides a single source of truth for these snippets, which wil
 The following snippets are available in this repository. For instructions on each one, hit `ctrl + f` or `command + f` and search for the name of that snippet, further down this README page:
 
 - Custom Indent
-- Show/Hide Sections Button
+- Toggle Sections Button
+- Add Fifth Gallery Column
 
 ## Custom Indent
 
-## Show/Hide Sections Button
+The custom indent will allow you to have a column of text wrap around a `blockquote`, which will be indented to the side (rather than centralised).
+
+### How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.css" />
+
+And this `<script>` tag into the Custom JS field:
+
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.js"></script>
+
+## Toggle Sections Button
+
+This snippet will allow you to generate two buttons which toggle the content of two subsequent HTML blocks.
+
+### How to use
+
+If this functionality is to be used as it is, you'll need to recreate the same structure as in this image:
+
+<img src="./assets/toggle_button.png" />
+
+This will generate two buttons which can be clicked to show and hide the content of the two subsequent HTML blocks.
 
 Example: https://preview.shorthand.com/dVU9WYCd65t3S1ZA#section-1txdLBuGLP
+
+### How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.css" />
+
+And this `<script>` tag into the Custom JS field:
+
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.js"></script>
+
+## Custom Indent
+
+The custom indent will allow you to have a column of text wrap around a `blockquote`, which will be indented to the side (rather than centralised).
+
+# How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.css" />
+
+And this `<script>` tag into the Custom JS field:
+
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/additional_indent/indent.js"></script>
