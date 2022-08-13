@@ -4,16 +4,18 @@ A Collection of JS, CSS & HTML Snippets to be imported or copied into SH stories
 
 ## Overview
 
-The snippets in this repository are organised into directories for each function. I.e. Each directory will contain the necessary code to enable a specific feature.
+The snippets in this repository are organised into directories for each function.
 
-In some cases, this will be only CSS or only JavaScript. In others, activating the feature will require multiple files.
+**I.e. Each directory will contain the necessary code to enable a specific additional feature.**
 
-Unless stated otherwise, all of these code snippets can either be used (on any SH story) by pasting the:
+In some cases, this will be only CSS or only JavaScript. In others, activating the feature will require multiple files to be imported.
+
+Unless stated otherwise, all of these code snippets can either be used (on any SH story) by copying and pasting the raw:
 
 - JS snippets in between the `<script>` tags in the Add JS panel
 - CSS snippets anywhere in the Add CSS panel
 
-Or, alternatively, the code can be pulled directly from this repository by:
+Or, alternatively, by importing the code from this repository by:
 
 - Adding a `<link>` tag to the Custom Header field to import CSS. E.g.
 
@@ -34,9 +36,13 @@ Or, alternatively, the code can be pulled directly from this repository by:
 ></script>
 ```
 
-This method will be marginally less performant than pasting the snippets in directly (as the stories will need to make an API call to grab the code on load). However, the snippets are very small so this should still be relatively fast, and it will also allow the same code to be used across multiple stories without having to copy and paste between each one.
+Please note that method may be marginally less performant than pasting the snippets in directly (as the stories will need to make an additional API call to grab this code on load).
 
-This means that there will be a single source of truth for these snippets, which will allow them to be altered from a single location in order to update the functionality for all consuming stories.
+However, these snippets are extremely lightweight so this difference may be imperceptible small.
+
+This second method will also allow the same code snippets to be used across multiple stories without having to copy and paste the raw text into each one.
+
+This also means that there will be a single source of truth for these snippets, which will allow them to be altered from a single location in order to update the functionality for all stories that might be using them.
 
 <hr>
 
@@ -56,11 +62,13 @@ The following snippets are available in this repository:
 
 # Video On Scroll
 
-This code will allow you to add a video to your story that can be will play on scroll (i.e. You can increment or reverse the video clip by scrolling down or up the page). Additionally, Custom Text Boxes can be added to these videos and you will be able to set at which second they appear on screen:
+This code will allow you to add a video to your story that can be played on scroll (i.e. You can increment or reverse the video clip by scrolling down or up the page).
 
-- [Demo1](https://preview.shorthand.com/uOQOcChcZ7RxOdZ5)
-- [Demo2](https://preview.shorthand.com/WE6pkOImvdGdz5KA)
-- [Demo3](https://preview.shorthand.com/0jsa8CWExoTljFYl)
+Additionally, Custom Text Boxes can be added to these video clips and you will be able to set at which second those boxes appear on screen:
+
+- [Demo 1](https://preview.shorthand.com/uOQOcChcZ7RxOdZ5)
+- [Demo 2](https://preview.shorthand.com/WE6pkOImvdGdz5KA)
+- [Demo 3](https://preview.shorthand.com/0jsa8CWExoTljFYl)
 
 ## How to use
 
@@ -181,7 +189,7 @@ To use this functionality, you will need to paste this `<link>` tag into the Cus
 />
 ```
 
-then add one of the following classes into the Custom Class field of the section which contains your blockquote or rich text embed:
+You'll then need to add one of the following classes into the Custom Class field of the section which contains your blockquote or rich text embed:
 
 indent-rich-text-right
 indent-rich-text-left
