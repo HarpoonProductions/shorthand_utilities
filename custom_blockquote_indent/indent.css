@@ -1,0 +1,316 @@
+body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+body:not(.body-editor)
+  .sh-indent-rich-text-right
+  .InlineMedia--embed
+  > figcaption {
+  bottom: 13px;
+  z-index: 10;
+}
+
+body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+body:not(.body-editor)
+  .sh-indent-rich-text-left
+  .InlineMedia--embed
+  > figcaption {
+  bottom: 13px;
+  z-index: 10;
+}
+
+@media only screen and (min-width: 360px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    float: right;
+    width: 57vw;
+    margin-left: 2%;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    float: left;
+    width: 57vw;
+    margin-right: 2%;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  body:not(.body-editor) .sh-indent-blockquote-right blockquote {
+    float: right;
+    width: 53%;
+    padding-right: 26px;
+    position: relative;
+    left: 12px;
+  }
+
+  body:not(.body-editor) .sh-indent-blockquote-left blockquote {
+    float: left;
+    width: 53%;
+    padding-left: 26px;
+    position: relative;
+    right: 12px;
+  }
+}
+
+@media only screen and (min-width: 400px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    width: 56vw;
+    margin-left: 3%;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    width: 56vw;
+    margin-right: 3%;
+  }
+}
+
+@media only screen and (min-width: 620px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    margin-left: -9%;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    position: relative;
+    left: 10%;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    margin-right: -5%;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    position: relative;
+    right: 10%;
+  }
+}
+
+@media only screen and (min-width: 659px) {
+  body:not(.body-editor) .sh-indent-blockquote-right blockquote {
+    float: right;
+    width: 66%;
+    padding-right: 0px;
+    position: relative;
+    left: 63px;
+    margin-left: 10px;
+  }
+
+  body:not(.body-editor) .sh-indent-blockquote-left blockquote {
+    float: left;
+    width: 66%;
+    position: relative;
+    right: 8px;
+    margin-right: 10px;
+    padding-left: 12px;
+    margin-left: 0px;
+  }
+}
+
+@media only screen and (min-width: 700px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    margin-left: -13%;
+    width: 60vw;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    left: 16%;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    margin-right: -9%;
+    width: 60vw;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    right: 16%;
+  }
+}
+
+@media only screen and (min-width: 750px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    margin-left: -9%;
+    width: 55vw;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    margin-right: -4%;
+    width: 55vw;
+  }
+}
+
+@media only screen and (min-width: 750px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    bottom: 22px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    bottom: 22px;
+  }
+}
+
+@media only screen and (min-width: 820px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    margin-left: -10%;
+    width: 55vw;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    left: 18%;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    margin-right: -6%;
+    width: 55vw;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    right: 18%;
+  }
+}
+
+@media only screen and (min-width: 900px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    width: 40vw;
+    margin-left: -20px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    left: 52px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    width: 40vw;
+    margin-right: -12px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    right: 52px;
+  }
+}
+
+@media only screen and (min-width: 1100px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    width: 36vw;
+    margin-left: -66px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    left: 83px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    bottom: 19px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    width: 36vw;
+    margin-right: -50px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    right: 83px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    bottom: 19px;
+  }
+}
+
+@media only screen and (min-width: 1240px) {
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed {
+    width: 480px;
+    margin-left: -100px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-right .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-right
+    .InlineMedia--embed
+    > figcaption {
+    left: 117px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed {
+    width: 480px;
+    margin-right: -90px;
+  }
+
+  body:not(.body-editor) .sh-indent-rich-text-left .InlineMedia--embed > div,
+  body:not(.body-editor)
+    .sh-indent-rich-text-left
+    .InlineMedia--embed
+    > figcaption {
+    right: 117px;
+  }
+}
+.indent-blockquote {
+  float: right;
+  width: 60%;
+  margin-left: 26px;
+}
+
+@media only screen and (min-width: 610px) {
+  .indent-blockquote blockquote {
+    width: 107%;
+    text-align: left;
+  }
+}
+@media only screen and (min-width: 900px) {
+  .indent-blockquote blockquote {
+    width: 135%;
+    text-align: left;
+  }
+}
