@@ -37,160 +37,13 @@ This means that there will be a single source of truth for these snippets, which
 
 The following snippets are available in this repository. For instructions on each one, hit `ctrl + f` or `command + f` and search for the name of that snippet, further down this README page:
 
+- Video On Scroll
+- Pan Landscape Images on Mobile
+- Custom Blockquote or Rich Text Indent
+- Alternating Image/Text Blocks
 - Toggle Sections Button
 - Fifth Gallery Column
 - Auto Blockquote Indent
-- Custom Blockquote or Rich Text Indent
-- Alternating Image/Text Blocks
-- Video On Scroll
-- Pan Landscape Images on Mobile
-
-<hr>
-
-## Toggle Sections Button
-
-This snippet will allow you to generate two buttons which toggle the visibility of the two subsequent sections.
-
-### How to use
-
-If this functionality is to be used as it is, you'll need to recreate the same structure as in this image:
-
-<img src="./assets/toggle_button.png" />
-
-I.e. Create an HTML Section with two buttons, with the classes of reveal-button16 & reveal-button17 respectively, then create two sections after this HTML Section that you wish to have shown or hidden on click.
-
-[Demo](https://preview.shorthand.com/dVU9WYCd65t3S1ZA#section-1txdLBuGLP)
-
-### How to use
-
-To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
-
-```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
-```
-
-And this `<script>` tag into the Custom JS field:
-
-```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.js"></script>
-```
-
-If you would like to extend this functionality, then you will need to modify the existing code and paste that modified code into the Add JS panel instead.
-
-If you are to do so, you will need to edit this line in the code:
-
-`var buttons = document.querySelectorAll(".reveal-button16, .reveal-button17");`
-
-Doing so will allow you to add multiple button classes, separated by a comma, and those buttons will toggle the visibility of sequential sections.
-
-For example, in that demo, there are 2 buttons in the HTML section, which means that the first button in that list will toggle the section after it, and the second button will toggle the section after that.
-
-If you were to add a third button, and give it the class `reveal-button18`, then it would toggle the visibility of the section after those two.
-
-You'd just need to update that line to look like this:
-
-`var buttons = document.querySelectorAll(".reveal-button16, .reveal-button17, .reveal-button18");`
-
-<hr>
-
-## Fifth Gallery Column
-
-The Fifth Gallery Column will allow you to add an additional column to the Gallery Section type
-
-# How to use
-
-To use this functionality, you will need to paste this `<script>` tag into the Custom JS field:
-
-```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/add_fifth_gallery_column/gallery.js"></script>
-```
-
-<hr>
-
-## Auto Blockquote Indent
-
-The custom indent will allow you to have a column of text wrap around a `blockquote`, which will be indented to the side (rather than centralised).
-
-### How to use
-
-To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
-
-```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
-```
-
-And this `<script>` tag into the Custom JS field:
-
-```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.js"></script>
-```
-
-<hr>
-
-## Custom Blockquote or Rich Text Indent
-
-This snippet can be used to indent rich text embeds or blockquotes to either the left or right of any given section.
-
-### How to use
-
-To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
-
-```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/custom_blockquote_indent/indent.css" />
-```
-
-then add one of the following classes into the Custom Class field of the section which contains your blockquote or rich text embed:
-
-indent-rich-text-right
-indent-rich-text-left
-indent-blockquote-right
-indent-blockquote-left
-
-E.g.
-
-<img src="./assets/custom-blockquote-classname.png" />
-
-After doing so, the Rich Text or Blockquote should responsively reposition itself at each Shorthand text breakpoint.
-
-Please also bear in mind that this text wrap effect will be more pronounced if there is more text in the subsequent paragraph to wrap around the indented graphic or quote.
-
-As such, to ensure that there is enough text for the effect, it might be worth placing multiple paragraphs (beneath the indented graphic) inside a single Shorthand paragraph block.
-
-E.g.:
-
-<img src="./assets/custom-blockquote-example.png" />
-
-If you hold down shift before hitting enter, to create a new paragraph, then one will be created in the same paragraph block.
-
-Finally, please note that these indents will only be visible in preview/published stories (the changes will not be visible in the editor). This functionality has been set intentionally, as having the effect apply in the editor seemed to inadvertently break some of the Shorthand editing functionality.
-
-<hr>
-
-## Alternating Image/Text Blocks
-
-This snippet will allow you to add multiple diagonally overlapped text/image rows into a single Text Section.
-
-[Demo](https://preview.shorthand.com/1inJn0oUVq4ynQpN)
-
-### How to use
-
-To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
-
-```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.css" />
-```
-
-And this `<script>` tag into the Custom JS field:
-
-```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.js"></script>
-```
-
-You'll then need to create a new Text Section, for each collection of image & text pairs, and add `timeline` into their Custom Class fields.
-
-Then, within each section, you can add multiple pairs of consecutive Inline HTML and Inline Image blocks. Each pair of blocks will be combined by the JS script, which will apply its own background and formatting, relative to the previous block.
-
-NOTE: You should delete any remaining, empty paragraph blocks in these Text Sections before previewing the story.
 
 <hr>
 
@@ -286,3 +139,150 @@ The effect is then activated by adding this class to the Custom Class field:
 In addition, you will also be able to change the direction of this image panning by adding this custom class instead:
 
 `pan-mobile-right`
+
+<hr>
+
+## Custom Blockquote or Rich Text Indent
+
+This snippet can be used to indent rich text embeds or blockquotes to either the left or right of any given section.
+
+### How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/custom_blockquote_indent/indent.css" />
+```
+
+then add one of the following classes into the Custom Class field of the section which contains your blockquote or rich text embed:
+
+indent-rich-text-right
+indent-rich-text-left
+indent-blockquote-right
+indent-blockquote-left
+
+E.g.
+
+<img src="./assets/custom-blockquote-classname.png" />
+
+After doing so, the Rich Text or Blockquote should responsively reposition itself at each Shorthand text breakpoint.
+
+Please also bear in mind that this text wrap effect will be more pronounced if there is more text in the subsequent paragraph to wrap around the indented graphic or quote.
+
+As such, to ensure that there is enough text for the effect, it might be worth placing multiple paragraphs (beneath the indented graphic) inside a single Shorthand paragraph block.
+
+E.g.:
+
+<img src="./assets/custom-blockquote-example.png" />
+
+If you hold down shift before hitting enter, to create a new paragraph, then one will be created in the same paragraph block.
+
+Finally, please note that these indents will only be visible in preview/published stories (the changes will not be visible in the editor). This functionality has been set intentionally, as having the effect apply in the editor seemed to inadvertently break some of the Shorthand editing functionality.
+
+<hr>
+
+## Alternating Image/Text Blocks
+
+This snippet will allow you to add multiple diagonally overlapped text/image rows into a single Text Section.
+
+[Demo](https://preview.shorthand.com/1inJn0oUVq4ynQpN)
+
+### How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.css" />
+```
+
+And this `<script>` tag into the Custom JS field:
+
+```
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.js"></script>
+```
+
+You'll then need to create a new Text Section, for each collection of image & text pairs, and add `timeline` into their Custom Class fields.
+
+Then, within each section, you can add multiple pairs of consecutive Inline HTML and Inline Image blocks. Each pair of blocks will be combined by the JS script, which will apply its own background and formatting, relative to the previous block.
+
+NOTE: You should delete any remaining, empty paragraph blocks in these Text Sections before previewing the story.
+
+<hr>
+
+## Toggle Sections Button
+
+This snippet will allow you to generate two buttons which toggle the visibility of the two subsequent sections.
+
+### How to use
+
+If this functionality is to be used as it is, you'll need to recreate the same structure as in this image:
+
+<img src="./assets/toggle_button.png" />
+
+I.e. Create an HTML Section with two buttons, with the classes of reveal-button16 & reveal-button17 respectively, then create two sections after this HTML Section that you wish to have shown or hidden on click.
+
+[Demo](https://preview.shorthand.com/dVU9WYCd65t3S1ZA#section-1txdLBuGLP)
+
+### How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
+```
+
+And this `<script>` tag into the Custom JS field:
+
+```
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.js"></script>
+```
+
+If you would like to extend this functionality, then you will need to modify the existing code and paste that modified code into the Add JS panel instead.
+
+If you are to do so, you will need to edit this line in the code:
+
+`var buttons = document.querySelectorAll(".reveal-button16, .reveal-button17");`
+
+Doing so will allow you to add multiple button classes, separated by a comma, and those buttons will toggle the visibility of sequential sections.
+
+For example, in that demo, there are 2 buttons in the HTML section, which means that the first button in that list will toggle the section after it, and the second button will toggle the section after that.
+
+If you were to add a third button, and give it the class `reveal-button18`, then it would toggle the visibility of the section after those two.
+
+You'd just need to update that line to look like this:
+
+`var buttons = document.querySelectorAll(".reveal-button16, .reveal-button17, .reveal-button18");`
+
+<hr>
+
+## Fifth Gallery Column
+
+The Fifth Gallery Column will allow you to add an additional column to the Gallery Section type
+
+# How to use
+
+To use this functionality, you will need to paste this `<script>` tag into the Custom JS field:
+
+```
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/add_fifth_gallery_column/gallery.js"></script>
+```
+
+<hr>
+
+## Auto Blockquote Indent
+
+The custom indent will allow you to have a column of text wrap around a `blockquote`, which will be indented to the side (rather than centralised).
+
+### How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
+```
+
+And this `<script>` tag into the Custom JS field:
+
+```
+<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.js"></script>
+```
