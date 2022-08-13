@@ -1,23 +1,45 @@
 .indent-blockquote {
-    float: right;
-    width: 60%;
-    margin-left: 26px;
+  float: right;
+  width: 60%;
+  margin-left: 26px;
 }
 
 .indent-blockquote blockquote {
-    text-align: justify;
+  text-align: justify;
 }
 
 @media only screen and (min-width: 610px) {
-    .indent-blockquote blockquote {
-        width: 107%;
-        text-align: justify;
-    }
+  .indent-blockquote blockquote {
+    width: 107%;
+    text-align: justify;
+  }
 }
 
 @media only screen and (min-width: 900px) {
-    .indent-blockquote blockquote {
-        width: 135%;
-        text-align: justify;
-    }
+  .indent-blockquote blockquote {
+    width: 135%;
+    text-align: justify;
+  }
+}
+
+.indent-blockquote blockquote {
+  background: -webkit-linear-gradient(
+    left,
+    rgb(120, 74, 252),
+    rgb(252, 204, 90)
+  );
+  background: -moz-linear-gradient(left, rgb(120, 74, 252), rgb(252, 204, 90));
+  background: -ms-linear-gradient(left, rgb(120, 74, 252), rgb(252, 204, 90));
+  background: -o-linear-gradient(left, rgb(120, 74, 252), rgb(252, 204, 90));
+
+  background: linear-gradient(to right, rgb(120, 74, 252), rgb(252, 204, 90));
+
+  text-shadow: 0px 0px #00000000;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  -moz-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  text-align: left;
 }
