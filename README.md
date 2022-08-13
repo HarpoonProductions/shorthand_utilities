@@ -18,13 +18,20 @@ Or, alternatively, the code can be pulled directly from this repository by:
 - Adding a `<link>` tag to the Custom Header field to import CSS. E.g.
 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css"
+/>
 ```
 
 - Adding `<script>` tags to the Add JS panel to import JS. E.g.
 
 ```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.js"
+></script>
 ```
 
 This method will be marginally less performant than pasting the snippets in directly (as the stories will need to make an API call to grab the code on load). However, the snippets are very small so this should still be relatively fast, and it will also allow the same code to be used across multiple stories without having to copy and paste between each one.
@@ -35,38 +42,45 @@ This means that there will be a single source of truth for these snippets, which
 
 # Included Snippets
 
-The following snippets are available in this repository. For instructions on each one, hit `ctrl + f` or `command + f` and search for the name of that snippet, further down this README page:
+The following snippets are available in this repository:
 
-- Video On Scroll
-- Pan Landscape Images on Mobile
-- Custom Blockquote or Rich Text Indent
-- Alternating Image/Text Blocks
-- Toggle Sections Button
-- Fifth Gallery Column
-- Auto Blockquote Indent
+- [Video On Scroll](https://github.com/HarpoonProductions/shorthand_utilities#video-on-scroll)
+- [Pan Landscape Images on Mobile](https://github.com/HarpoonProductions/shorthand_utilities#pan-landscape-images-on-mobile)
+- [Custom Blockquote or Rich Text Indent](https://github.com/HarpoonProductions/shorthand_utilities#custom-blockquote-or-rich-text-indent)
+- [Alternating Image/Text Blocks](https://github.com/HarpoonProductions/shorthand_utilities#alternating-imagetext-blocks)
+- [Toggle Sections Button](https://github.com/HarpoonProductions/shorthand_utilities#toggle-sections-button)
+- [Fifth Gallery Column](https://github.com/HarpoonProductions/shorthand_utilities#fifth-gallery-column)
+- [Auto Blockquote Indent](https://github.com/HarpoonProductions/shorthand_utilities#auto-blockquote-indent)
 
 <hr>
 
-## Video On Scroll
+# Video On Scroll
 
 This code will allow you to add a video to your story that can be will play on scroll (i.e. You can increment or reverse the video clip by scrolling down or up the page). Additionally, Custom Text Boxes can be added to these videos and you will be able to set at which second they appear on screen:
 
-[Demo1](https://preview.shorthand.com/uOQOcChcZ7RxOdZ5)
-[Demo2](https://preview.shorthand.com/WE6pkOImvdGdz5KA)
-[Demo3](https://preview.shorthand.com/0jsa8CWExoTljFYl)
+- [Demo1](https://preview.shorthand.com/uOQOcChcZ7RxOdZ5)
+- [Demo2](https://preview.shorthand.com/WE6pkOImvdGdz5KA)
+- [Demo3](https://preview.shorthand.com/0jsa8CWExoTljFYl)
 
-### How to use
+## How to use
 
 To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/video_on_scroll/scroll.css" />
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/video_on_scroll/scroll.css"
+/>
 ```
 
 And this `<script>` tag into the Custom JS field:
 
 ```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/video_on_scroll/scroll.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/video_on_scroll/scroll.js"
+></script>
 ```
 
 You'll then need to add 'video-section' to the custom class field of the Custom HTML Section into which you're pasting the video snippet.
@@ -75,6 +89,7 @@ Then, any text blocks in the video HTML can be time stamped to any second of you
 
 E.g. (for the Demo 1 video):
 
+```
 <div class="navigation-video-container">
    <video id="video" autoplay playinline muted src="https://harpn.s3.eu-west-2.amazonaws.com/video/car_encoded_960.mp4">
    </video>
@@ -87,45 +102,53 @@ E.g. (for the Demo 1 video):
       Free
    </div>
 </div>
+```
 
 The 'time-1' class ensures the first block is visible at 1 second, and the 'time-4' class will mean that the second block is visible at 4 seconds.
 
 As an example, this feature was used in the Demo 3 video, so that the appropriate text would appear whenever that piece of lab equipment was visible on screen.
 
-Note:
+**Note:**
 
-These videos needed to be encoded to work with a new memory saving function of this new JavaScript snippet (which is used to ensure smooth video scrolling and full mobile compatibility).
+_These videos needed to be encoded to work with a new memory saving function of this new JavaScript snippet (which is used to ensure smooth video scrolling and full mobile compatibility)._
 
-This is simple enough to do with a program called FFmpeg.
+_This is simple enough to do with a program called FFmpeg._
 
-If you install [this program](https://www.ffmpeg.org/download.html) on your computer, then you can run the command below, from any terminal, to convert an mp4 into a properly encoded video file:
+_If you install [this program](https://www.ffmpeg.org/download.html) on your computer, then you can run the command below, from any terminal, to convert an mp4 into a properly encoded video file:_
 
-ffmpeg -i C:\Users\Alex\Downloads\lab_equipment.mp4 -vf scale=960:-1 -movflags faststart -vcodec libx264 -crf 20 -g 1 -pix_fmt yuv420p C:\Users\Alex\Downloads\lab_equipment_encoded_960.mp4
+`ffmpeg -i C:\Users\Alex\Downloads\lab_equipment.mp4 -vf scale=960:-1 -movflags faststart -vcodec libx264 -crf 20 -g 1 -pix_fmt yuv420p C:\Users\Alex\Downloads\lab_equipment_encoded_960.mp4`
 
-You'll just need to replace the source and destination video files in that line with the ones on your laptop.
+_You'll need to replace the source and destination video files in that line with the ones on your machine._
 
 <hr>
 
-## Pan Landscape Images on Mobile
+# Pan Landscape Images (on Mobile)
 
 This code will allow you to convert any standard Text Over Media section into a panning image (on mobile).
 
 As the panning effect is only present on mobile (or smaller screen widths), you will need to reduce the width of the viewing window to see the effect if you are checking this story on your desktop:
 
-[Demo](https://preview.shorthand.com/kWtsJpAVXwfSFaMZ)
+- [Demo](https://preview.shorthand.com/kWtsJpAVXwfSFaMZ)
 
-### How to use
+## How to use
 
 To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/mobile_pan/pan.css" />
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/mobile_pan/pan.css"
+/>
 ```
 
 And this `<script>` tag into the Custom JS field:
 
 ```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/mobile_pan/pan.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/mobile_pan/pan.js"
+></script>
 ```
 
 This solution utilises a clone of the default Shorthand image upload.
@@ -142,16 +165,20 @@ In addition, you will also be able to change the direction of this image panning
 
 <hr>
 
-## Custom Blockquote or Rich Text Indent
+# Custom Blockquote or Rich Text Indent
 
 This snippet can be used to indent rich text embeds or blockquotes to either the left or right of any given section.
 
-### How to use
+## How to use
 
 To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/custom_blockquote_indent/indent.css" />
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/custom_blockquote_indent/indent.css"
+/>
 ```
 
 then add one of the following classes into the Custom Class field of the section which contains your blockquote or rich text embed:
@@ -185,20 +212,27 @@ Finally, please note that these indents will only be visible in preview/publishe
 
 This snippet will allow you to add multiple diagonally overlapped text/image rows into a single Text Section.
 
-[Demo](https://preview.shorthand.com/1inJn0oUVq4ynQpN)
+- [Demo](https://preview.shorthand.com/1inJn0oUVq4ynQpN)
 
 ### How to use
 
 To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.css" />
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.css"
+/>
 ```
 
 And this `<script>` tag into the Custom JS field:
 
 ```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/alternating_image_text/alternate.js"
+></script>
 ```
 
 You'll then need to create a new Text Section, for each collection of image & text pairs, and add `timeline` into their Custom Class fields.
@@ -209,11 +243,30 @@ NOTE: You should delete any remaining, empty paragraph blocks in these Text Sect
 
 <hr>
 
-## Toggle Sections Button
+# Toggle Sections Button
 
 This snippet will allow you to generate two buttons which toggle the visibility of the two subsequent sections.
 
-### How to use
+## How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css"
+/>
+```
+
+And this `<script>` tag into the Custom JS field:
+
+```
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.js"
+></script>
+```
 
 If this functionality is to be used as it is, you'll need to recreate the same structure as in this image:
 
@@ -221,23 +274,9 @@ If this functionality is to be used as it is, you'll need to recreate the same s
 
 I.e. Create an HTML Section with two buttons, with the classes of reveal-button16 & reveal-button17 respectively, then create two sections after this HTML Section that you wish to have shown or hidden on click.
 
-[Demo](https://preview.shorthand.com/dVU9WYCd65t3S1ZA#section-1txdLBuGLP)
+- [Demo](https://preview.shorthand.com/dVU9WYCd65t3S1ZA#section-1txdLBuGLP)
 
-### How to use
-
-To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
-
-```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
-```
-
-And this `<script>` tag into the Custom JS field:
-
-```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.js"></script>
-```
-
-If you would like to extend this functionality, then you will need to modify the existing code and paste that modified code into the Add JS panel instead.
+However, if you would like to extend this functionality, then you will need to modify the existing code and paste that modified code into the Add JS panel instead.
 
 If you are to do so, you will need to edit this line in the code:
 
@@ -255,34 +294,44 @@ You'd just need to update that line to look like this:
 
 <hr>
 
-## Fifth Gallery Column
+# Fifth Gallery Column
 
 The Fifth Gallery Column will allow you to add an additional column to the Gallery Section type
 
-# How to use
+## How to use
 
 To use this functionality, you will need to paste this `<script>` tag into the Custom JS field:
 
 ```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/add_fifth_gallery_column/gallery.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/add_fifth_gallery_column/gallery.js"
+></script>
 ```
 
 <hr>
 
-## Auto Blockquote Indent
+# Auto Blockquote Indent
 
 The custom indent will allow you to have a column of text wrap around a `blockquote`, which will be indented to the side (rather than centralised).
 
-### How to use
+## How to use
 
 To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
 
 ```
-<link rel="stylesheet" type="text/css" href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css" />
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css"
+/>
 ```
 
 And this `<script>` tag into the Custom JS field:
 
 ```
-<script type="text/javascript" src="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.js"
+></script>
 ```
