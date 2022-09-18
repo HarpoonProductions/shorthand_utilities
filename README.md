@@ -50,6 +50,7 @@ This also means that there will be a single source of truth for these snippets, 
 
 The following snippets are available in this repository:
 
+- [Horizontal Scroll](https://github.com/HarpoonProductions/shorthand_utilities#horizontal-scroll)
 - [Video On Scroll](https://github.com/HarpoonProductions/shorthand_utilities#video-on-scroll)
 - [Pan Landscape Images on Mobile](https://github.com/HarpoonProductions/shorthand_utilities#pan-landscape-images-on-mobile)
 - [Custom Blockquote or Rich Text Indent](https://github.com/HarpoonProductions/shorthand_utilities#custom-blockquote-or-rich-text-indent)
@@ -57,6 +58,37 @@ The following snippets are available in this repository:
 - [Toggle Sections Button](https://github.com/HarpoonProductions/shorthand_utilities#toggle-sections-button)
 - [Fifth Gallery Column](https://github.com/HarpoonProductions/shorthand_utilities#fifth-gallery-column)
 - [Auto Blockquote Indent](https://github.com/HarpoonProductions/shorthand_utilities#auto-blockquote-indent)
+
+<hr>
+
+# Horizontal Scroll
+
+This code will allow you to set 2 or more sections in your story to scroll horizontally, rather than vertically (the user will scroll from top to bottom as normal but the sections will move from left to right).
+
+- [Demo](https://preview.shorthand.com/fvQv4TgmFP9dJ4lV)
+
+## How to use
+
+To use this functionality, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/horizontal_scroll/horizontal_scroll.css"
+/>
+```
+
+And this `<script>` tag into the Custom JS field:
+
+```
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/horizontal_scroll/horizontal_scroll.js"
+></script>
+```
+
+You'll then just need to add `horizontal-start` and `horizontal-end` to the Custom Class field of the first and last sections that you'd like to scroll horizontally.
 
 <hr>
 
