@@ -67,7 +67,7 @@ function scrollFunction() {
     waiting = true;
     setTimeout(function () {
       waiting = false;
-    }, 20);
+    }, 10);
   }
 }
 
@@ -118,7 +118,7 @@ var observer = new IntersectionObserver(
       childCount++;
     } while (!s.classList.contains("sh-horizontal-end"));
 
-    container.style.height = childCount * 220 + "vh";
+    container.style.height = childCount * 257 + "vh";
     observer.observe(container);
   });
 })(document);
