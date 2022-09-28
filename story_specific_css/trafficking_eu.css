@@ -4,8 +4,8 @@
 }
 
 .sh-transcript .Theme-Layer-BodyText-Breakout {
-  background: #503052 !important;
-  border: none;
+  background: #000 !important;
+  border: solid black 1px;
 }
 
 /** hamburger **/
