@@ -1,0 +1,243 @@
+.sh-audiograms .InlineMedia {
+  width: 75% !important;
+  margin: 0 auto !important;
+}
+
+.sh-transcript .Theme-Layer-BodyText-Breakout {
+  background: #503052 !important;
+  border: none;
+}
+
+/** hamburger **/
+.Theme-Hamburger span {
+  background: #003399 !important;
+  height: 3px;
+}
+
+/** mouse selection **/
+.Theme-Story ::selection {
+  background-color: #660033 !important;
+  color: #fff;
+}
+
+/** TITLE SECTION **/
+.Theme-TitleSection .Theme-Layer-TextBlock-Inner .Theme-StoryTitle {
+  background: rgb(
+    91,
+    54,
+    94
+  ); /* Fallback for older browsers without RGBA-support */
+  background: rgba(91, 54, 94, 0.7);
+  width: fit-content;
+  margin: 0 auto;
+  padding: 36px;
+}
+
+/** heading underline **/
+h2 {
+  background-image: linear-gradient(#e0364e, #e0364e);
+  background-position: bottom left; /*Adjust the background-position to move the line*/
+  background-size: 15% 4px; /* Adjust the background size to control length and height*/
+  background-repeat: no-repeat;
+  padding-bottom: 6px; /* this can also control the position */
+}
+
+h3 u {
+  text-decoration: none;
+  background-image: linear-gradient(0, #ffb8b1 50%, transparent 50%);
+}
+
+.Theme-Layer-BodyText-Breakout {
+  background: #003399 !important;
+}
+
+/** Animations **/
+
+.sh-chain .Theme-Layer-BodyText {
+  padding-bottom: 0 !important;
+}
+
+.sh-chain .my-wrapper {
+  padding-top: 0 !important;
+}
+
+/** Embed cards **/
+.flourish-embed {
+  background-color: #503052;
+}
+
+/**Quotes **/
+.Theme-Layer-BodyText-Blockquote {
+  border-left-color: #e0364e !important;
+}
+.Theme-Layer-BodyText-Blockquote::before {
+  color: #e0364e !important;
+}
+.Theme-ForegroundColorCustom-Ppj6ud .Theme-Layer-BodyText-QuoteCite {
+  color: #fff !important;
+}
+
+.Theme-Layer-BodyText-Indent {
+  border-left: 4px solid #e0364e !important;
+}
+
+/** Lists **/
+li::marker {
+  color: #e0364e !important;
+}
+
+.sh-chain .Theme-Layer-BodyText-List-Unordered {
+  margin-left: 40px !important;
+}
+
+/** Transcript and options **/
+
+.hidden-section {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .sh-transcript .Theme-Column {
+    margin: 0 auto;
+    flex: 0 0 75%;
+    max-width: 75%;
+  }
+}
+
+.reveal-button {
+  background-color: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.reveal-button button {
+  font-family: "myriad-pro", sans-serif;
+  background-color: #503052;
+  padding: 0.875rem 2rem;
+  font-size: 100%;
+  border: 3px solid #f39890;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #f4e6d8;
+  text-align: center;
+}
+
+.reveal-button button a:visited {
+  color: #94b3c8;
+}
+
+.reveal-button button:hover {
+  font-family: "myriad-pro", sans-serif;
+  background-color: #f4e6d8;
+  padding: 0.875rem 2rem;
+  font-size: 1em;
+  color: #502052;
+}
+
+.sh-read-more .Theme-Layer-Gallery-Heading {
+  width: 100%;
+  background-image: linear-gradient(
+    0,
+    transparent 25%,
+    0,
+    #1e2e59 50%,
+    0,
+    transparent 25%
+  );
+}
+
+.sh-read-more .Theme-Layer-Gallery-Heading strong {
+  background: #1e2e59;
+  width: fit-content;
+  padding: 20px;
+  color: white;
+}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: none;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: #f4e6d8;
+  border: none;
+  float: left;
+  padding: 0.875rem 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1em;
+  font-family: "myriad-pro", sans-serif;
+  color: #503052;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #503052;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #503052;
+  font-family: "myriad-pro", sans-serif;
+  color: #f4e6d8;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 0.875rem 3rem;
+  line-height: 100%;
+  font-size: 100%;
+  border: none;
+  font-family: "myriad-pro", sans-serif;
+  color: #f39890;
+  background-color: #503052;
+}
+
+/*.sh-audio-quote-right .reveal-button {
+     text-align:right;
+}*/
+
+.sh-transcript {
+  line-height: 95%;
+  font-size: 95%;
+  color: #003399;
+}
+
+/* large video player */
+
+.sh-video-player .Theme-Column {
+  margin: 0 auto;
+  flex: 0 0 35%;
+  max-width: 35%;
+}
+
+/** text box **/
+.Theme-Layer-BodyText-Breakout {
+  background: #638dff !important;
+  border: #638dff !important;
+}
+
+/* collections */
+.Theme-Layer-Gallery-Item {
+  background-color: rgba(243, 243, 236, 1);
+}
+
+/** desktop fix **/
+
+@media (min-width: 900px) {
+  .sh-heart .my-wrapper #heart {
+    width: 55%;
+    max-width: 55%;
+  }
+
+  .sh-woman .my-wrapper #woman {
+    margin: 0 auto;
+    width: 55%;
+    max-width: 55%;
+  }
+}
