@@ -50,6 +50,7 @@ This also means that there will be a single source of truth for these snippets, 
 
 The following snippets are available in this repository:
 
+- [Print Safe CSS](https://github.com/HarpoonProductions/shorthand_utilities#print-safe-css)
 - [Horizontal Scroll](https://github.com/HarpoonProductions/shorthand_utilities#horizontal-scroll)
 - [Video On Scroll](https://github.com/HarpoonProductions/shorthand_utilities#video-on-scroll)
 - [Pan Landscape Images on Mobile](https://github.com/HarpoonProductions/shorthand_utilities#pan-landscape-images-on-mobile)
@@ -58,6 +59,68 @@ The following snippets are available in this repository:
 - [Toggle Sections Button](https://github.com/HarpoonProductions/shorthand_utilities#toggle-sections-button)
 - [Fifth Gallery Column](https://github.com/HarpoonProductions/shorthand_utilities#fifth-gallery-column)
 - [Auto Blockquote Indent](https://github.com/HarpoonProductions/shorthand_utilities#auto-blockquote-indent)
+
+<hr>
+
+# Print Safe CSS
+
+This CSS can be added to a story to ensure that everything is readable when the user prints the page.
+
+The first version will strip all of the images out of the story and then reformat all text so that it looks closer to a Word document.
+
+Multi-column text sections will render in the correct order and sections with JavaScript functionality (such as Reveal or Scrollmation) have been reworked to just display as paragraphs of text.
+
+Page margins have also been added to the document so that they will work in any standard printer.
+
+- [Demo](https://preview.shorthand.com/Sqpa1TFtBACZz9fX)
+
+The second version will be much heavier on a customer's printer cartridges but if they want effectively a printed out version of the Shorthand story, then this should achieve that.
+
+The sections with full colour backgrounds, such as Title, Text over Media and Background Scrollmation, will retain a colour background but be sensibly resized to fit a chunk of the viable print area.
+
+The images in the Grid Section are included in this version as well.
+
+- [Demo](https://preview.shorthand.com/ne2chr4Ffg8F2T8D)
+
+The final version is an attempt to moderate between these two versions.
+
+The format is similar to the Text Only version but the images for each section have been extracted and placed below each block of text.
+
+In this way, any accompanying graphic will still be included where necessary but printing out the story multiple times for multiple readers should not cost an entire cartridge of coloured ink.
+
+- [Demo](https://preview.shorthand.com/VUbW4iShGxrB1Nsv)
+
+## How to use
+
+To use version 1, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/print_safe_css/text_only.css"
+/>
+```
+
+To use version 2, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/print_safe_css/full_colour.css"
+/>
+```
+
+To use version 3, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/print_safe_css/text_with_images.css"
+/>
+```
 
 <hr>
 
