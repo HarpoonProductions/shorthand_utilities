@@ -1,0 +1,293 @@
+@page {
+  margin: 1in;
+}
+
+@page :first {
+  margin-top: 1.2in;
+}
+
+@media print {
+  body:not(.body-editor) {
+    margin: 0;
+  }
+
+  body:not(.body-editor) .Theme-Section {
+    background: #fff !important;
+    margin: 0 0 0.5rem !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection {
+    margin: 0 0 0.7rem !important;
+  }
+
+  body:not(.body-editor) .Theme-TextOverMediaSection {
+    margin: 0.6rem 0 !important;
+  }
+
+  body:not(.body-editor) p,
+  body:not(.body-editor) h5,
+  body:not(.body-editor) h4,
+  body:not(.body-editor) h3,
+  body:not(.body-editor) h2,
+  body:not(.body-editor) h1 {
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  body:not(.body-editor) h1 {
+    font-size: 20px !important;
+    margin: 0.7rem 0 !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  body:not(.body-editor) h2 {
+    font-size: 19px !important;
+    margin: 0.6rem 0 !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  body:not(.body-editor) h3 {
+    font-size: 18px !important;
+    margin: 0.5rem 0 !important;
+    padding-left: 24px !important;
+    padding-right: 30px !important;
+  }
+
+  body:not(.body-editor) h4 {
+    font-size: 17px !important;
+    margin: 0.5rem 0 !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  body:not(.body-editor) h5 {
+    font-size: 16px !important;
+    margin: 0.3rem 0 !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  body:not(.body-editor) p {
+    font-size: 12px !important;
+    margin: 0.2rem 0 !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  body:not(.body-editor) .Theme-Layer-BodyText,
+  body:not(.body-editor) .MediaRenderer__textBlocksInner > div,
+  body:not(.body-editor) .GridSection-container,
+  body:not(.body-editor) .DisplayContainerHeight--flex .Layer--one,
+  body:not(.body-editor) .Theme-Byline,
+  body:not(.body-editor) .CardCanvas--tworowContainer .CardCanvas__textColumn {
+    padding: 0 !important;
+  }
+
+  body:not(.body-editor) .Theme-Byline {
+    font-style: italic;
+  }
+
+  body:not(.body-editor) .Layout,
+  body:not(.body-editor) .Layout--equalHeights .Layout__row,
+  body:not(.body-editor) .CardCanvas__textColumn,
+  body:not(.body-editor) .Layout__col,
+  body:not(.body-editor) .Theme-Column,
+  body:not(.body-editor) .Theme-TextSection.Theme-Columns--2 .Layout__row,
+  body:not(.body-editor) .Layout__col {
+    display: block !important;
+    height: auto !important;
+  }
+
+  body:not(.body-editor) .Theme-Section,
+  body:not(.body-editor) .DisplayContainerHeight--minHeight,
+  body:not(.body-editor) .MediaRenderer__textBlocksInner,
+  .MediaRenderer__textBlocksInner > div {
+    min-height: unset !important;
+  }
+
+  body:not(.body-editor)
+    .Theme-BackgroundScrollmationSection
+    .Theme-Layer-BodyText,
+  body:not(.body-editor) .GridSection__rowContainer,
+  body:not(.body-editor) .GridSection-title {
+    margin: 0 !important;
+  }
+
+  body:not(.body-editor) .Theme-Layer-BodyText {
+    opacity: 1 !important;
+    width: 100% !important;
+  }
+
+  body:not(.body-editor) .Theme-Layer-TextBlock-Inner,
+  body:not(.body-editor) .Layout {
+    max-width: unset !important;
+    width: 100% !important;
+  }
+
+  body:not(.body-editor) .Layout__col {
+    max-width: unset !important;
+    flex: none !important;
+  }
+
+  body:not(.body-editor) .CardCanvas__canvasColumn,
+  body:not(.body-editor) .Theme-Layer-CardCanvas,
+  body:not(.body-editor) .CardCanvas__canvasColumn,
+  body:not(.body-editor) canvas,
+  body:not(.body-editor) .PreviewFooter,
+  body:not(.body-editor) .Theme-Overlay,
+  body:not(.body-editor) .Theme-Lazyload-Box,
+  body:not(.body-editor)
+    .Theme-Header
+    .Theme-Logos
+    .Theme-Logo
+    .Theme-SmallLogo,
+  body:not(.body-editor) .BackgroundScrollmationColumn {
+    display: none !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection,
+  body:not(.body-editor) .Theme-TextOverMediaSection {
+    flex-direction: column-reverse !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection .Layer--two,
+  body:not(.body-editor)
+    .Theme-TitleSection
+    .Layer--two
+    > div
+    .Theme-Item-Picture
+    img,
+  body:not(.body-editor) .Theme-TextOverMediaSection .Layer--two,
+  body:not(.body-editor)
+    .Theme-TextOverMediaSection
+    .Layer--two
+    > div
+    .Theme-Item-Picture
+    img {
+    position: static !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection .Layer--two > div,
+  body:not(.body-editor) .Theme-TextOverMediaSection .Layer--two > div,
+  body:not(.body-editor) .Theme-HeaderContainer,
+  body:not(.body-editor) .Theme-Header,
+  body:not(.body-editor) .Theme-Logos,
+  body:not(.body-editor) .Theme-Logo {
+    position: static !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection .Layer--two > div,
+  body:not(.body-editor)
+    .Theme-TitleSection
+    .Layer--two
+    > div
+    .Theme-Item-Picture
+    img,
+  body:not(.body-editor) .Theme-TextOverMediaSection .Layer--two > div,
+  body:not(.body-editor)
+    .Theme-TextOverMediaSection
+    .Layer--two
+    > div
+    .Theme-Item-Picture
+    img {
+    height: 38vh !important;
+  }
+
+  body:not(.body-editor)
+    .Theme-TitleSection
+    .Layer--two
+    > div
+    .Theme-Item-Picture
+    img,
+  body:not(.body-editor)
+    .Theme-TextOverMediaSection
+    .Layer--two
+    > div
+    .Theme-Item-Picture
+    img {
+    object-fit: none !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection .Theme-StoryTitle {
+    font-size: 28px !important;
+    font-weight: 400 !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection .Theme-LeadIn {
+    font-size: 18px !important;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px !important;
+    margin-bottom: 7px !important;
+  }
+
+  body:not(.body-editor) .Theme-TitleSection .Theme-StoryTitle,
+  body:not(.body-editor) .Theme-TitleSection .Theme-LeadIn {
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+
+  body:not(.body-editor) .Theme-Header .Theme-Logos {
+    display: block !important;
+    height: 0 !important;
+    width: 0 !important;
+  }
+
+  body:not(.body-editor) .Theme-Header .Theme-Logos .Theme-Logo .Theme-BigLogo {
+    display: block !important;
+    position: absolute !important;
+    height: 40px !important;
+    width: 40px !important;
+    top: 10px;
+    left: 12px;
+    z-index: 10000;
+  }
+
+  body:not(.body-editor) .HideOffscreen__media {
+    display: block !important;
+  }
+
+  body:not(.body-editor) .Theme-TextOverMediaSection {
+    margin-top: 50px !important;
+  }
+
+  body:not(.body-editor) .Theme-TextOverMediaSection .Theme-Title .Theme-Title {
+    font-style: italic !important;
+    margin-bottom: 0 !important;
+  }
+
+  body:not(.body-editor) .Theme-TextOverMediaSection,
+  body:not(.body-editor) .Theme-GridSection,
+  body:not(.body-editor) .Theme-RevealSection {
+    margin-top: 50px !important;
+  }
+
+  body:not(.body-editor) .Theme-RevealSection {
+    margin-bottom: 50px !important;
+  }
+
+  body:not(.body-editor) .GridSection__row {
+    flex-direction: row !important;
+  }
+
+  body:not(.body-editor) .GridItem {
+    padding-top: 0 !important;
+  }
+
+  body:not(.body-editor) .GridItem--inner {
+    border: none !important;
+  }
+
+  body:not(.Theme-RevealSection) .Theme-Layer-BackgroundCanvas canvas {
+    display: block !important;
+    position: static !important;
+    max-height: 30vh !important;
+  }
+
+  body:not(.Theme-RevealSection) .Theme-Layer-BackgroundCanvas canvas img {
+    height: 30vh !important;
+  }
+}

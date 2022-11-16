@@ -88,7 +88,7 @@ The format is similar to the Text Only version but the images for each section h
 
 In this way, any accompanying graphic will still be included where necessary but printing out the story multiple times for multiple readers should not cost an entire cartridge of coloured ink.
 
-- [Demo](https://preview.shorthand.com/VUbW4iShGxrB1Nsv)
+- [Demo](https://preview.shorthand.com/7vUPGsHw16KLhLkc)
 
 ## How to use
 

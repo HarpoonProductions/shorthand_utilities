@@ -1,73 +1,55 @@
-function addFifthGalleryColumn() {
-  var mediaGalleries = document.querySelectorAll(".Theme-MediaGallerySection");
-
-  mediaGalleries.forEach(function (gallery) {
-    var lengthFourRows = gallery.querySelectorAll(".MediaGallery__row--4");
-
-    lengthFourRows.forEach(function (row) {
-      var nextRow = row.nextElementSibling;
-
-      if (nextRow.classList.contains("MediaGallery__row--1")) {
-        var newCell = nextRow.querySelector(".MediaGallery__cell");
-        row.appendChild(newCell);
-        newCell.classList.remove("MediaGallery__cell--size2");
-        newCell.classList.add("MediaGallery__cell--size1");
-        delete nextRow;
-      }
-    });
-  });
-}
-
-function handleButtonClick(e, subsequentSections, i) {
+function handleButtonClick(e, subsequentSections) {
   console.log("handleButtonClick");
   e.preventDefault();
-  var subsequentSection = subsequentSections[i];
-  var sectionIsHidden = subsequentSection.classList.contains("hidden-section");
-  if (sectionIsHidden) {
-    subsequentSections.forEach(function (section) {
-      section.classList.add("hidden-section");
-    });
-    subsequentSection.classList.remove("hidden-section");
-  } else {
-    subsequentSection.classList.add("hidden-section");
-  }
-}
 
-function initialiseButtonBehaviour(button, subsequentSections, i) {
-  console.log("initialiseButtonBehaviour");
-  button.addEventListener("click", function (e) {
-    handleButtonClick(e, subsequentSections, i);
+  subsequentSections.forEach(function (subsequentSection) {
+    var sectionIsHidden =
+      subsequentSection.classList.contains("hidden-section");
+    if (sectionIsHidden) {
+      subsequentSection.classList.remove("hidden-section");
+    } else {
+      subsequentSection.classList.add("hidden-section");
+    }
   });
 }
 
-function activateButton(button, subsequentSections, i) {
-  console.log("activateButtons");
-  if (subsequentSections[i]) {
-    subsequentSections[i].classList.add("hidden-section");
-    initialiseButtonBehaviour(button, subsequentSections, i);
-  }
+function initialiseButtonBehaviour(subsequentSections, button) {
+  console.log("initialiseButtonBehaviour");
+  button.addEventListener("click", function (e) {
+    handleButtonClick(e, subsequentSections);
+  });
 }
 
-function getSubsequentSection(themeSections, currentSection, index) {
-  console.log("getSubsequentSection");
+function getSubsequentSections(
+  themeSections,
+  currentSection,
+  additionalSectionCount
+) {
+  console.log("getSubsequentSections");
+  var additionalCount = additionalSectionCount;
   var currentId = currentSection.getAttribute("id");
-  var subsequentSection;
+  var subsequentSections = [];
 
   for (let i = 0; i < themeSections.length; i++) {
     var sectionId = themeSections[i].getAttribute("id");
-    var newIndex = i + index + 1;
-    if (currentId === sectionId && themeSections[newIndex]) {
-      subsequentSection = themeSections[newIndex];
-      break;
+    if (currentId === sectionId && themeSections[i + 1]) {
+      subsequentSections.push(themeSections[i + 1]);
+
+      if (!additionalCount) {
+        break;
+      } else {
+        currentId = themeSections[i + 1].getAttribute("id");
+        additionalCount--;
+      }
     }
   }
 
-  return subsequentSection;
+  return subsequentSections;
 }
 
-function getCurrentSection(section) {
+function getCurrentSection(passwordSection) {
   console.log("getCurrentSection");
-  var parent = section.parentNode;
+  var parent = passwordSection.parentNode;
 
   while (!parent.classList.contains("Theme-Section")) {
     parent = parent.parentNode;
@@ -76,19 +58,40 @@ function getCurrentSection(section) {
   return parent;
 }
 
+function activateButton(themeSections, button) {
+  console.log("activateButtons");
+  var currentSection = getCurrentSection(button);
+
+  var additionalSectionCount;
+
+  for (var i = 0; i < button.classList.length; ++i) {
+    var classname = button.classList[i];
+    if (/^next-/.test(classname)) {
+      additionalSectionCount = parseInt(classname.replace("next-", ""), 10);
+    }
+  }
+
+  var subsequentSections = getSubsequentSections(
+    themeSections,
+    currentSection,
+    additionalSectionCount
+  );
+
+  if (subsequentSections && subsequentSections.length) {
+    subsequentSections.forEach(function (subsequentSection) {
+      subsequentSection.classList.add("hidden-section");
+    });
+    initialiseButtonBehaviour(subsequentSections, button);
+  }
+}
+
 function activateButtons() {
   console.log("activateButtons");
-  var buttons = document.querySelectorAll(".reveal-button16, .reveal-button17");
+  var buttons = document.querySelectorAll(".reveal-button");
   var themeSections = document.querySelectorAll(".Theme-Section");
-  var subsequentSections = [];
-  buttons.forEach(function (button, i) {
-    var currentSection = getCurrentSection(button);
-    subsequentSections.push(
-      getSubsequentSection(themeSections, currentSection, i)
-    );
-  });
-  buttons.forEach(function (button, i) {
-    activateButton(button, subsequentSections, i);
+
+  buttons.forEach(function (button) {
+    activateButton(themeSections, button);
   });
 }
 
