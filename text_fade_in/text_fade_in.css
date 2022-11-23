@@ -1,0 +1,16 @@
+body:not(.body-editor) .Theme-Layer-BodyText--inner p,
+body:not(.body-editor) .Theme-Layer-BodyText--inner h5,
+body:not(.body-editor) .Theme-Layer-BodyText--inner h4,
+body:not(.body-editor) .Theme-Layer-BodyText--inner h3,
+body:not(.body-editor) .Theme-Layer-BodyText--inner h2,
+body:not(.body-editor) .Theme-Layer-BodyText--inner h1 {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.9s, transform 0.9s;
+  transition-timing-function: ease-out;
+}
+
+body:not(.body-editor) .Theme-Layer-BodyText--inner .appear {
+  transform: translateY(0);
+  opacity: 1;
+}
