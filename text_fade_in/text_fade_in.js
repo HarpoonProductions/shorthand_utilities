@@ -19,8 +19,9 @@ var observer = new IntersectionObserver(
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         let elem = entry.target;
+        console.log(entry.intersectionRatio);
         if (
-          entry.intersectionRatio > 0.3 &&
+          entry.intersectionRatio > 0.15 &&
           !elem.classList.contains("appear")
         ) {
           elem.classList.add("appear");
@@ -28,7 +29,11 @@ var observer = new IntersectionObserver(
       }
     });
   },
-  { root: null, rootMargin: "100px", threshold: buildThresholdList() }
+  {
+    root: null,
+    rootMargin: "290px 0px 0px 0px",
+    threshold: buildThresholdList(),
+  }
 );
 
 (function (d) {

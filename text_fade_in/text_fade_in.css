@@ -5,12 +5,103 @@ body:not(.body-editor) .Theme-Layer-BodyText--inner h3,
 body:not(.body-editor) .Theme-Layer-BodyText--inner h2,
 body:not(.body-editor) .Theme-Layer-BodyText--inner h1 {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.9s, transform 0.9s;
+  transform: translate3d(0, 300px, 0);
+  transition: opacity 0.36s, transform 0.36s;
   transition-timing-function: ease-out;
+  filter: blur(5px);
 }
 
-body:not(.body-editor) .Theme-Layer-BodyText--inner .appear {
-  transform: translateY(0);
+body:not(.body-editor)
+  .Theme-BackgroundScrollmationSection
+  .Theme-Layer-BodyText--inner
+  p,
+body:not(.body-editor)
+  .Theme-BackgroundScrollmationSection
+  h5,
+body:not(.body-editor)
+  .Theme-BackgroundScrollmationSection
+  .Theme-Layer-BodyText--inner
+  h4,
+body:not(.body-editor)
+  .Theme-BackgroundScrollmationSection
+  .Theme-Layer-BodyText--inner
+  h3,
+body:not(.body-editor)
+  .Theme-BackgroundScrollmationSection
+  .Theme-Layer-BodyText--inner
+  h2,
+body:not(.body-editor)
+  .Theme-BackgroundScrollmationSection
+  .Theme-Layer-BodyText--inner
+  h1 {
+  /* opacity: 1 !important; */
+  transform: translate3d(0, 0, 0) !important;
+  /* transition: none !important;
+  filter: blur(0) !important; */
+}
+
+body:not(.body-editor) .CardCanvas__textColumn {
+  overflow-x: hidden;
+}
+
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Left
+  .Theme-Layer-BodyText--inner
+  p,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Left
+  .Theme-Layer-BodyText--inner
+  h5,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Left
+  .Theme-Layer-BodyText--inner
+  h4,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Left
+  .Theme-Layer-BodyText--inner
+  h3,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Left
+  .Theme-Layer-BodyText--inner
+  h2,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Left
+  .Theme-Layer-BodyText--inner
+  h1 {
+  transform: translate3d(-90%, 0, 0);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Right
+  .Theme-Layer-BodyText--inner
+  p,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Right
+  .Theme-Layer-BodyText--inner
+  h5,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Right
+  .Theme-Layer-BodyText--inner
+  h4,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Right
+  .Theme-Layer-BodyText--inner
+  h3,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Right
+  .Theme-Layer-BodyText--inner
+  h2,
+body:not(.body-editor)
+  .Theme-BodyTextColumn-Right
+  .Theme-Layer-BodyText--inner
+  h1 {
+  transform: translate3d(90%, 0, 0);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+body:not(.body-editor) .Theme-Section .Theme-Layer-BodyText--inner .appear {
   opacity: 1;
+  transform: none !important;
+  filter: blur(0);
 }
