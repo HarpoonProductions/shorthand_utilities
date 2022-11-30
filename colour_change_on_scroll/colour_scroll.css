@@ -1,0 +1,93 @@
+body:not(.body-editor) .Theme-TextSection {
+  transition: background-color 1s ease-in;
+}
+
+body:not(.body-editor) .Theme-TextSection h1,
+body:not(.body-editor) .Theme-TextSection h2,
+body:not(.body-editor) .Theme-TextSection h3,
+body:not(.body-editor) .Theme-TextSection h4,
+body:not(.body-editor) .Theme-TextSection h5,
+body:not(.body-editor) .Theme-TextSection h6,
+body:not(.body-editor) .Theme-TextSection p {
+  transition: color 1s ease-in;
+}
+
+/* colour_1 Background */
+body:not(.body-editor).colour_1 .Theme-TextSection {
+  background-color: #e3dfff !important;
+}
+
+/* colour_1 Text Colour */
+body:not(.body-editor).colour_1 .Theme-TextSection h1,
+body:not(.body-editor).colour_1 .Theme-TextSection h2,
+body:not(.body-editor).colour_1 .Theme-TextSection h3,
+body:not(.body-editor).colour_1 .Theme-TextSection h4,
+body:not(.body-editor).colour_1 .Theme-TextSection h5,
+body:not(.body-editor).colour_1 .Theme-TextSection h6,
+body:not(.body-editor).colour_1 .Theme-TextSection p {
+  color: #000000 !important;
+}
+
+/* colour_2 Background */
+body:not(.body-editor).colour_2 .Theme-TextSection {
+  background-color: #d3c0cd !important;
+}
+
+/* colour_2 Text Colour */
+body:not(.body-editor).colour_2 .Theme-TextSection h1,
+body:not(.body-editor).colour_2 .Theme-TextSection h2,
+body:not(.body-editor).colour_2 .Theme-TextSection h3,
+body:not(.body-editor).colour_2 .Theme-TextSection h4,
+body:not(.body-editor).colour_2 .Theme-TextSection h5,
+body:not(.body-editor).colour_2 .Theme-TextSection h6,
+body:not(.body-editor).colour_2 .Theme-TextSection p {
+  color: #000000 !important;
+}
+
+/* colour_3 Background */
+body:not(.body-editor).colour_3 .Theme-TextSection {
+  background-color: #b19994 !important;
+}
+
+/* colour_3 Text Colour */
+body:not(.body-editor).colour_3 .Theme-TextSection h1,
+body:not(.body-editor).colour_3 .Theme-TextSection h2,
+body:not(.body-editor).colour_3 .Theme-TextSection h3,
+body:not(.body-editor).colour_3 .Theme-TextSection h4,
+body:not(.body-editor).colour_3 .Theme-TextSection h5,
+body:not(.body-editor).colour_3 .Theme-TextSection h6,
+body:not(.body-editor).colour_3 .Theme-TextSection p {
+  color: #000000 !important;
+}
+
+/* colour_4 Background */
+body:not(.body-editor).colour_4 .Theme-TextSection {
+  background-color: #937666 !important;
+}
+
+/* colour_4 Text Colour */
+body:not(.body-editor).colour_4 .Theme-TextSection h1,
+body:not(.body-editor).colour_4 .Theme-TextSection h2,
+body:not(.body-editor).colour_4 .Theme-TextSection h3,
+body:not(.body-editor).colour_4 .Theme-TextSection h4,
+body:not(.body-editor).colour_4 .Theme-TextSection h5,
+body:not(.body-editor).colour_4 .Theme-TextSection h6,
+body:not(.body-editor).colour_4 .Theme-TextSection p {
+  color: #ffffff !important;
+}
+
+/* colour_5 Background */
+body:not(.body-editor).colour_5 .Theme-TextSection {
+  background-color: #3d3a4b !important;
+}
+
+/* colour_5 Text Colour */
+body:not(.body-editor).colour_5 .Theme-TextSection h1,
+body:not(.body-editor).colour_5 .Theme-TextSection h2,
+body:not(.body-editor).colour_5 .Theme-TextSection h3,
+body:not(.body-editor).colour_5 .Theme-TextSection h4,
+body:not(.body-editor).colour_5 .Theme-TextSection h5,
+body:not(.body-editor).colour_5 .Theme-TextSection h6,
+body:not(.body-editor).colour_5 .Theme-TextSection p {
+  color: #ffffff !important;
+}
