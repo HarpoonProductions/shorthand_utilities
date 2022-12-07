@@ -76,7 +76,7 @@ var observer = new IntersectionObserver(
     entries.forEach(function (entry) {
       var target = entry.target;
 
-      if (entry.isIntersecting && window.innerWidth > 599) {
+      if (entry.isIntersecting) {
         currentTarget = target;
         innerScroll = target[qs](".horizontal-scroll__inner");
         divider = innerScroll.childElementCount * 100;
