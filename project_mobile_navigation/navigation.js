@@ -1,12 +1,9 @@
 (function (d) {
   var qs = "querySelector";
-  var ce = "createElement";
-  var closeMenu = d[ce]("div");
-  closeMenu.classList.add("closeMobileMenu");
   var navBar = d[qs](".Project-Navigation");
-  navBar.after(closeMenu);
   var navToggles = d[qs + "All"](".Theme-NavigationBarItem.hasMenu");
-  navToggles.forEach(function (navItem) {
+  navToggles.forEach(function (navItem, i) {
+    navItem.classList.add("submenu_" + i);
     navItem.addEventListener("click", function () {
       var width =
         window.innerWidth ||
@@ -14,22 +11,19 @@
         document.body.clientWidth;
 
       if (width <= 600) {
-        if (!this.classList.contains("isOpenMobile")) {
-          this.classList.add("isOpenMobile");
-          this.scrollIntoView();
+        navToggles.forEach(function (navItem) {
+          if (!navItem.classList.contains("submenu_" + i))
+            navItem.classList.remove("isOpenMobile");
+        });
+        if (this.classList.contains("isOpenMobile")) {
+          this.classList.remove("isOpenMobile");
+          navBar.classList.remove("mobileSubmenu");
         } else {
           this.classList.add("isOpenMobile");
-        }
-        if (!navBar.classList.contains("mobileSubmenu")) {
-          navBar.classList.remove("mobileSubmenu");
+          navBar.classList.add("mobileSubmenu");
+          this.scrollIntoView();
         }
       }
-    });
-  });
-  closeMenu.addEventListener("click", function () {
-    navBar.classList.remove("mobileSubmenu");
-    navToggles.forEach(function (navItem) {
-      navItem.classList.remove("isOpenMobile");
     });
   });
 })(document);
