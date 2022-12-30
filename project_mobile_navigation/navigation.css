@@ -1,0 +1,82 @@
+@media only screen and (max-width: 600px) {
+  .Project-Navigation {
+    right: 0 !important;
+    opacity: 1 !important;
+    max-width: 100vw !important;
+    overflow-y: scroll;
+    height: 66px;
+    bottom: 0 !important;
+    top: unset !important;
+    border-top: solid 1px #ccaa63;
+  }
+
+  .Project-Navigation.mobileSubmenu {
+    height: 160px;
+  }
+
+  .Navigation__hamburger {
+    display: none;
+  }
+
+  .Theme-NavigationBar {
+    padding-bottom: 5px !important;
+  }
+
+  .Theme-NavigationBarItem .Theme-NavigationLink {
+    border-left: none !important;
+  }
+
+  .Project-HeaderContainer:not(.ProjectNavigation--C) .menuCaret {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 6px 0;
+    border-color: inherit;
+    border-right-color: transparent;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  .Navigation__button {
+    position: absolute;
+    right: 10px;
+    top: 13px;
+    display: block !important;
+  }
+
+  .Project-Navigation.mobileSubmenu + .closeMobileMenu {
+    display: block;
+  }
+
+  .Project-HeaderContainer:not(.ProjectNavigation--C)
+    .Theme-ProjectNavigation-subMenu
+    .Theme-ProjectNavigation-subItem {
+    display: none;
+  }
+
+  .Project-HeaderContainer:not(.ProjectNavigation--C)
+    .Theme-NavigationBarItem.isOpenMobile
+    > .Theme-ProjectNavigation-subMenu {
+    height: auto;
+    overflow: hidden;
+    overflow-y: auto;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .Project-HeaderContainer:not(.ProjectNavigation--C)
+    .Theme-NavigationBarItem.isOpenMobile
+    .menuCaret {
+    opacity: 1;
+  }
+
+  .Project-HeaderContainer:not(.ProjectNavigation--C)
+    .Theme-NavigationBarItem.isOpenMobile
+    > .Theme-ProjectNavigation-subMenu
+    .Theme-ProjectNavigation-subItem {
+    display: flex;
+  }
+}
