@@ -8,14 +8,21 @@
   var navToggles = d[qs + "All"](".Theme-NavigationBarItem.hasMenu");
   navToggles.forEach(function (navItem) {
     navItem.addEventListener("click", function () {
-      if (!this.classList.contains("isOpenMobile")) {
-        this.classList.add("isOpenMobile");
-        this.scrollIntoView();
-      } else {
-        this.classList.add("isOpenMobile");
-      }
-      if (!navBar.classList.contains("mobileSubmenu")) {
-        navBar.classList.remove("mobileSubmenu");
+      var width =
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth;
+
+      if (width <= 600) {
+        if (!this.classList.contains("isOpenMobile")) {
+          this.classList.add("isOpenMobile");
+          this.scrollIntoView();
+        } else {
+          this.classList.add("isOpenMobile");
+        }
+        if (!navBar.classList.contains("mobileSubmenu")) {
+          navBar.classList.remove("mobileSubmenu");
+        }
       }
     });
   });
