@@ -45,6 +45,10 @@
 }
 
 @media only screen and (max-width: 619px) {
+  .Theme-TextOverMediaSection.sh-pan-mobile .Fixed--scrollChild {
+    overflow: hidden !important;
+  }
+
   .sh-pan-mobile .Theme-Item-Picture,
   .sh-pan-mobile-right .Theme-Item-Picture {
     display: none;
