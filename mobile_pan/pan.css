@@ -45,7 +45,8 @@
 }
 
 @media only screen and (max-width: 619px) {
-  .Theme-TextOverMediaSection.sh-pan-mobile .Fixed--scrollChild {
+  .Theme-TextOverMediaSection.sh-pan-mobile .FullSize--scrollChild,
+  .Theme-TextOverMediaSection.sh-pan-mobile-right .FullSize--scrollChild {
     overflow: hidden !important;
   }
 
