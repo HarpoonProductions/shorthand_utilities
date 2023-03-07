@@ -57,10 +57,12 @@
 
   .image-settings {
     object-fit: contain;
-    height: 100vh;
+    height: 100%;
     width: auto;
     display: block !important;
     position: static;
+    max-width: unset !important;
+    max-width: none !important;
   }
 
   .settings-container {

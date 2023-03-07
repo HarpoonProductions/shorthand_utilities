@@ -56,6 +56,8 @@
 
       duplicatePicture.classList.add("animate-image");
       duplicatePicture2.classList.add("animate-image");
+      duplicatePicture.style.maxWidth = "none";
+      duplicatePicture2.style.maxWidth = "none";
 
       duplicatePicture.classList.add(animateClass1);
       duplicatePicture2.classList.add(animateClass2);
@@ -64,4 +66,12 @@
       pictureContainer.appendChild(duplicatePicture2);
     }
   });
+
+  setTimeout(() => {
+    var animated = d[qs](".animate-image");
+    var styles = getComputedStyle(animated);
+    alert(
+      `width: ${styles.width} maxWidth: ${styles.maxWidth} height: ${styles.height}`
+    );
+  }, 4000);
 })(document);
