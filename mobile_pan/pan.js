@@ -67,11 +67,11 @@
     }
   });
 
-  setTimeout(() => {
-    var animated = d[qs](".animate-image");
-    var styles = getComputedStyle(animated);
-    alert(
-      `width: ${styles.width} maxWidth: ${styles.maxWidth} height: ${styles.height}`
-    );
-  }, 4000);
+  // setTimeout(() => {
+  //   var animated = d[qs](".animate-image");
+  //   var styles = getComputedStyle(animated);
+  //   alert(
+  //     `width: ${styles.width} maxWidth: ${styles.maxWidth} height: ${styles.height}`
+  //   );
+  // }, 4000);
 })(document);
