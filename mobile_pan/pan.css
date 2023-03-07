@@ -69,7 +69,7 @@
 
   .animate-image {
     object-fit: contain;
-    height: 100vh;
+    height: 100%;
     width: auto;
     animation-name: panImage;
     animation-duration: 20s;
