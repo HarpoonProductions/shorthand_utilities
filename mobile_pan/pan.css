@@ -79,7 +79,7 @@
     position: absolute;
     left: 0;
     top: 0;
-    max-width: unset !important;
+    max-width: none !important;
   }
 
   .animate-image-1 {
