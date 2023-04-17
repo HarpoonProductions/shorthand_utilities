@@ -1,0 +1,225 @@
+.Theme-Layer-BodyText-Heading-Small:after {
+    display: none !important;
+  }
+  
+  @media (min-width: 900px) {
+  .sh-firstpar h2 {
+    transform: translateY(-90%);
+      background: #f4f3f8;
+    width: fit-content;
+    padding: 40px 20px 20px 40px !important;
+    z-index: 100 !important;
+    font-size: 200% !important;
+  }
+  }
+  
+  @media (max-width: 899px) {
+  .sh-firstpar h2 {
+  display: none;
+    }
+  }
+  
+  @media (max-width: 899px) {
+  .sh-firstpar .Theme-Layer-BodyText {
+    padding-top: 0 !important;
+  }
+    .Theme-TitleSection {
+      min-height: 60vh !important;
+    height: 60vh !important;
+  }
+    h1 {
+      font-size: 3em !important;
+  }
+  }
+  
+  .sh-ask h2 {
+    transform: translateY(-70%);
+      background: #dc182d;
+      padding: 20px !important;
+      width: fit-content;
+        margin: 0 auto;
+  }
+  
+    .sh-ask p {
+      padding: 20px;
+  }
+  
+    .sh-ask h3 {
+  background: #282828;
+      width: 100%;
+          padding: 20px !important;
+  }
+  
+  .GridItem .Theme-Layer-BodyText--inner:not(:empty) {
+    padding: 0 !important;
+  }
+  
+  .GridItem .Theme-Layer-BodyText--inner .Theme-Layer-BodyText-Heading-xs {
+    margin-top: 0 !important;
+  }
+  
+  .sh-ask::before {
+      content: "";
+  border-top: solid 10px #dc182d;
+    top: 0;
+    right: 0;
+    height: 10px;
+    width: 50%;
+    position: absolute;
+    z-index: 100;
+      }
+  
+  
+  
+  #section-FWsGnlPGJ6 {
+      z-index: 10000;
+  }
+  
+  
+  @media (min-width: 900px) {
+  .Theme-TitleSection::after {
+    content: "ASK HONDA";
+    background: #dc182d;
+    top: 20%;
+    right: -3%;
+    width: fit-content;
+    height: fit-content;
+    padding: 20px 10px 5px 10px;
+    position: fixed;
+    z-index: 20000;
+    color: white;
+  font-family:"ProximaNovaExCn";
+    font-size: 2em;
+    transform: rotate(90deg);
+    font-weight: bold;
+      }
+    .Theme-TitleSection::before {
+    content: "";
+  border-right: solid 10px #dc182d;
+    top: 20%;
+    right: 0;
+    height: 80%;
+    position: fixed;
+    z-index: 1000;
+      }
+  }
+  
+  @media (max-width: 899px) {
+  .Theme-TitleSection::after {
+    content: "ASK HONDA";
+    background: #dc182d;
+    top: 50%;
+    right: -5% !important;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 5px 3px 5px;
+    position: fixed;
+    z-index: 20000;
+    color: white;
+  font-family:"ProximaNovaExCn";
+    font-size: 1em;
+    transform: rotate(90deg);
+    font-weight: bold;
+      }
+    .Theme-TitleSection::before {
+    content: "";
+  border-right: solid 5px #dc182d;
+    top: 50%;
+    right: 0;
+    height: 80%;
+    position: fixed;
+    z-index: 1000;
+      }
+  }
+  
+  
+  .sh-firstpar .Theme-Layer-BodyText {
+  background: transparent !important;
+  }
+    
+  .sh-firstpar p strong {
+    font-weight: normal;
+    font-size: 2em;
+    line-height: 1.2em;
+  
+    &::before, &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      background: #dc182d;
+    }
+    
+    &::before {
+      top: -0.3em; // let it overlap a bit to prevent thin line which could appear during scaling in some browsers etc.
+      bottom: -0.3em;
+      left: 1em;
+      right: 1em;
+    }
+    
+    &::after{
+      left: -0.3em;
+      right: -0.3em;
+      top: 1em;
+      bottom: 1em;
+    }
+    
+    // you need this to move the text in front of the ::after overlay
+    h2 {
+      position: relative;
+      z-index: 1;
+    }
+  }
+  
+  .Theme-TitleSection .Theme-Layer-TextBlock-Inner {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  @media (max-width: 899px) {
+      .Theme-TitleSection .Theme-Layer-TextBlock {
+    padding-bottom: 0 !important;
+  }
+    .Theme-TitleSection .Theme-Layer-TextBlock-Container {
+    align-items: flex-end !important;
+  }
+  .Theme-TitleSection h2 {
+    background: #f4f3f8;
+    width: 80%;
+    padding: 20px 10px 5px 20px !important;
+    margin-left: 0 !important;
+    z-index: 100 !important;
+    font-size: 150% !important;
+  }
+  }
+  
+  h1 {
+    overflow: hidden; /* Ensures the content is not revealed until the animation */
+    border-right: .15em solid #dc182d; /* The typwriter cursor */
+    white-space: nowrap;
+    margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+    letter-spacing: .01em; /* Adjust as needed */
+    animation: 
+      typing 3.5s steps(40, end),
+      blink-caret .75s step-end infinite;
+  font-family:"ProximaNovaExCn";
+    text-transform: uppercase !important;
+  }
+  
+  @media (max-width: 899px) {
+  h1 {
+    white-space: normal !important;
+    }
+  }
+  
+  
+  /* The typing effect */
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+  
+  /* The typewriter cursor effect */
+  @keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: #dc182d; }
+  }
