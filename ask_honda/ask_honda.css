@@ -192,6 +192,8 @@
   }
   }
   
+
+@media (min-width: 900px) {
   h1 {
     overflow: hidden; /* Ensures the content is not revealed until the animation */
     border-right: .15em solid #dc182d; /* The typwriter cursor */
@@ -204,6 +206,7 @@
   font-family:"ProximaNovaExCn";
     text-transform: uppercase !important;
   }
+}
   
   @media (max-width: 899px) {
   h1 {
