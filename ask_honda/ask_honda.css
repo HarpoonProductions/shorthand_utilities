@@ -142,12 +142,7 @@
     font-size: 2em;
     line-height: 1.2em;
   
-    &::before, &::after {
-      content: '';
-      display: block;
-      position: absolute;
-      background: #dc182d;
-    }
+  
     
     &::before {
       top: -0.3em; // let it overlap a bit to prevent thin line which could appear during scaling in some browsers etc.
