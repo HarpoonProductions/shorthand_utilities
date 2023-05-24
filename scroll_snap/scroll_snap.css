@@ -1,0 +1,11 @@
+#article {
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-margin: 20px 0 0;
+}
+
+#article > [id^="section"] {
+  scroll-snap-align: start none;
+}

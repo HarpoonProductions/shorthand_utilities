@@ -50,6 +50,7 @@ This also means that there will be a single source of truth for these snippets, 
 
 The following snippets are available in this repository:
 
+- [Scroll Snap](https://github.com/HarpoonProductions/shorthand_utilities#scroll-snap)
 - [Print Safe CSS](https://github.com/HarpoonProductions/shorthand_utilities#print-safe-css)
 - [Horizontal Scroll](https://github.com/HarpoonProductions/shorthand_utilities#horizontal-scroll)
 - [Video On Scroll](https://github.com/HarpoonProductions/shorthand_utilities#video-on-scroll)
@@ -59,6 +60,26 @@ The following snippets are available in this repository:
 - [Toggle Sections Button](https://github.com/HarpoonProductions/shorthand_utilities#toggle-sections-button)
 - [Fifth Gallery Column](https://github.com/HarpoonProductions/shorthand_utilities#fifth-gallery-column)
 - [Auto Blockquote Indent](https://github.com/HarpoonProductions/shorthand_utilities#auto-blockquote-indent)
+
+<hr>
+
+# Scroll Snap
+
+This CSS can be added to a story to have each full screen section snap to the height of the screen
+
+- [Demo](https://preview.shorthand.com/GlGXrvDop3f8CvqQ)
+
+## How to use
+
+To use this CSS, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/scroll_snap/scroll_snap.css"
+/>
+```
 
 <hr>
 
