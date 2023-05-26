@@ -118,10 +118,14 @@ var observer = new IntersectionObserver(
       childCount++;
     } while (!s.classList.contains("sh-horizontal-end"));
 
-    // if (childCount === 2) {
-    //   innerContainer[0].classList.add("horizontal_align_right");
-    //   innerContainer[1].classList.add("horizontal_align_left");
-    // }
+    if (childCount === 2) {
+      innerContainer
+        .querySelector(".sh-horizontal-start")
+        .classList.add("horizontal_align_right");
+      innerContainer
+        .querySelector(".sh-horizontal-end")
+        .classList.add("horizontal_align_left");
+    }
 
     container.style.height = childCount * 257 + "vh";
     observer.observe(container);
