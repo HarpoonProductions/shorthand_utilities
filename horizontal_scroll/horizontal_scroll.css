@@ -39,3 +39,11 @@
   -ms-flex-pack: center;
   justify-content: center;
 }
+
+.horizontal_align_right .Theme-BackgroundImage picture img {
+  object-position: right !important;
+}
+
+.horizontal_align_left .Theme-BackgroundImage picture img {
+  object-position: left !important;
+}
