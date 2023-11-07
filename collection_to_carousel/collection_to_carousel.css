@@ -1,0 +1,15 @@
+.Theme-CollectionSectionSection > .Theme-Layer-Gallery {
+  width: 100% !important;
+}
+
+.Theme-CollectionSectionSection .Theme-Layer-Gallery-List {
+  flex-wrap: nowrap !important;
+  margin: 0; /* Resets the auto value */
+  padding: 0; /* This is already the default value for most browsers */
+  list-style: disc outside none; /* Default list-style property value */
+  display: flex; /* Default display property value for list elements */
+  flex-wrap: nowrap; /* Default flex-wrap property value */
+  justify-content: flex-start; /* Default justify-content property value */
+  justify-items: auto; /* Default justify-items property value */
+  align-items: stretch;
+}

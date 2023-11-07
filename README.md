@@ -50,6 +50,8 @@ This also means that there will be a single source of truth for these snippets, 
 
 The following snippets are available in this repository:
 
+- [Collection To Carousel](https://github.com/HarpoonProductions/shorthand_utilities#collection-to-carousel)
+- [Click to Scroll from Title](https://github.com/HarpoonProductions/shorthand_utilities#title-scroll-on-click)
 - [Scroll Snap](https://github.com/HarpoonProductions/shorthand_utilities#scroll-snap)
 - [Print Safe CSS](https://github.com/HarpoonProductions/shorthand_utilities#print-safe-css)
 - [Horizontal Scroll](https://github.com/HarpoonProductions/shorthand_utilities#horizontal-scroll)
@@ -60,6 +62,71 @@ The following snippets are available in this repository:
 - [Toggle Sections Button](https://github.com/HarpoonProductions/shorthand_utilities#toggle-sections-button)
 - [Fifth Gallery Column](https://github.com/HarpoonProductions/shorthand_utilities#fifth-gallery-column)
 - [Auto Blockquote Indent](https://github.com/HarpoonProductions/shorthand_utilities#auto-blockquote-indent)
+
+<hr>
+
+# Collection to Carousel
+
+These scripts will convert a collection section into a swipeable carousel.
+
+This requires 2 link tags in the page head and 2 script tags at the page body
+
+- [Demo](https://preview.shorthand.com/SRtMV4cfbu3AFYrQ)
+
+## How to use
+
+To the page head, add these:
+
+```
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/collection_to_carousel/collection_to_carousel.css"
+/>
+```
+
+To the page body, add these:
+
+```
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/collection_to_carousel/collection_to_carousel.js"
+></script>
+```
+
+<hr>
+
+# Title Scroll on Click
+
+This JS script will enable a user to click on the Title Section to scroll to the next section
+
+- [Demo](https://preview.shorthand.com/9zxfmuHEQn5FsZPk)
+
+## How to use
+
+To use this CSS, you will need to paste this `<link>` tag into the Custom Head field:
+
+```
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/click_scroll_from_title/click_scroll_from_title.css"
+/>
+```
+
+To the page body, add this:
+
+```
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/click_scroll_from_title/click_scroll_from_title.js"
+></script>
+```
 
 <hr>
 
