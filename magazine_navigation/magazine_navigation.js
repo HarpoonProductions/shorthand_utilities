@@ -64,11 +64,12 @@
     return imgDiv;
   }
 
-  function createButtonWithImage(text, url, isPrevious) {
+  function createButtonWithImage(text, url, isPrevious, hide) {
     const buttonContainer = document.createElement("div");
     const button = document.createElement("div");
     const arrow = document.createElement("div");
     buttonContainer.classList.add("button_container");
+    if (hide) buttonContainer.classList.add("hide");
     button.classList.add("button");
     arrow.classList.add("arrow");
     arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
@@ -102,7 +103,12 @@
     const prevUrl = currentIndex > 0 ? links[currentIndex - 1].href : null;
     const prevText = currentIndex > 0 ? links[currentIndex - 1].label : null;
 
-    const prevButton = createButtonWithImage(prevText, prevUrl, true);
+    const prevButton = createButtonWithImage(
+      prevText,
+      prevUrl,
+      true,
+      currentIndex === 0
+    );
     navContainer.appendChild(prevButton);
 
     const nextUrl =
@@ -110,7 +116,13 @@
     const nextText =
       currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
 
-    const nextButton = createButtonWithImage(nextText, nextUrl);
+    console.log(currentIndex, links.length, links.length - 1);
+    const nextButton = createButtonWithImage(
+      nextText,
+      nextUrl,
+      false,
+      currentIndex === links.length - 1
+    );
     navContainer.appendChild(nextButton);
 
     document.body.appendChild(navContainer);
