@@ -1,0 +1,77 @@
+.nav_container {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  box-sizing: border-box;
+  z-index: 1000;
+  color: white;
+  height: 97px;
+}
+
+.button_container {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+  opacity: 0.8;
+  transition: opacity 1s;
+  overflow: hidden;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  width: 140px;
+}
+
+.button_container:hover {
+  opacity: 1;
+}
+
+.button {
+  cursor: pointer;
+  pointer-events: none;
+  font-family: "Lato", sans-serif;
+  z-index: 10;
+  padding-top: 20px;
+}
+
+.arrow {
+  font-size: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.image_div {
+  position: absolute;
+  bottom: 0;
+  max-height: 100px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 1s;
+  max-height: 100%;
+  pointer-events: none;
+}
+
+.button_container:nth-of-type(1) .image_div {
+  left: 0;
+}
+
+.button_container:nth-of-type(2) .image_div {
+  right: 0;
+}
+
+.image_div img {
+  height: 110px;
+  border-radius: 4px;
+  filter: brightness(0.7);
+}
+
+.PreviewFooter,
+.Theme-OverlayedCaption {
+  display: none;
+}
