@@ -30,6 +30,12 @@
   width: 140px;
 }
 
+@media only screen and (max-width: 500px) {
+  .button_container {
+    opacity: 0.95 !important;
+  }
+}
+
 .button_container:hover {
   opacity: 1;
 }
