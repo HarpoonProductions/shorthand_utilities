@@ -31,8 +31,14 @@
 }
 
 @media only screen and (max-width: 500px) {
-  .button_container {
-    opacity: 0.95 !important;
+  .button_container:not(.hide) {
+    opacity: 0.9 !important;
+  }
+
+  .image_div img {
+    height: 110px;
+    border-radius: 4px;
+    filter: brightness(0.8);
   }
 }
 
