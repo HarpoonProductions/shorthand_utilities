@@ -170,6 +170,29 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   display: none;
 }
 
+.custom-min-nav-container-inner {
+  overflow-y: scroll;
+  height: 380px;
+  margin: 10px;
+}
+
+/* Scrollbar styling for linkContainer */
+.custom-min-nav-container-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-min-nav-container-inner::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.custom-min-nav-container-inner::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.custom-min-nav-container-inner::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 /* Reset default anchor styling while keeping the cursor pointer */
 .linkAnchor {
   text-decoration: none;
@@ -179,32 +202,31 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   margin-bottom: 20px; /* Spacing between each linkAnchor */
 }
 
+/* Styling for linkAnchor with current-link class */
+.linkAnchor.current-link {
+  background-color: #d0d0d0; /* Different background color */
+  color: #555; /* Darker text color for contrast */
+  font-weight: bold; /* Make the text bolder */
+  border-left: 4px solid #666; /* Add a left border for emphasis */
+}
+
+/* Adjusting the linkText and pageNumber inside the current linkAnchor */
+.linkAnchor.current-link .linkText,
+.linkAnchor.current-link .pageNumber {
+  color: #555; /* Change text color to match the linkAnchor */
+}
+
+/* Optional: Adjust hover effect for current-link */
+.linkAnchor.current-link:hover {
+  background-color: #c8c8c8; /* Slightly different hover background */
+}
+
 /* Container styling */
 .linkContainer {
   background-color: #f0f0f0; /* Default background color */
   border-radius: 10px; /* Rounded corners */
   padding: 10px; /* Internal spacing */
   transition: background-color 0.3s ease-in-out; /* Smooth background color transition on hover */
-  overflow-y: scroll;
-  height: 380px;
-  margin: 10px;
-}
-
-/* Scrollbar styling for linkContainer */
-.linkContainer::-webkit-scrollbar {
-  width: 5px;
-}
-
-.linkContainer::-webkit-scrollbar-track {
-  background: #f0f0f0;
-}
-
-.linkContainer::-webkit-scrollbar-thumb {
-  background: #888;
-}
-
-.linkContainer::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }
 
 /* Styling for linkText */
@@ -212,12 +234,14 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   font-size: 1.2em; /* Larger font size */
   color: black; /* Main text color */
   margin-bottom: 5px; /* Space between linkText and pageNumber */
+  font-family: "Lato", sans-serif;
 }
 
 /* Styling for pageNumber */
 .pageNumber {
   font-size: 0.8em;
   color: grey; /* Subtle color for pageNumber */
+  font-family: "Lato", sans-serif;
 }
 
 /* Hover effect on linkContainer */

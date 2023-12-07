@@ -128,6 +128,8 @@
       if (miniNavCurrentLink) {
         miniNavCurrentLink.scrollIntoView({ block: "start" });
       }
+
+      document.body.classList.remove("scroll-up");
     });
 
     const nextUrl =
