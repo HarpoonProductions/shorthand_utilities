@@ -169,3 +169,76 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .Theme-OverlayedCaption {
   display: none;
 }
+
+/* Reset default anchor styling while keeping the cursor pointer */
+.linkAnchor {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  margin-bottom: 20px; /* Spacing between each linkAnchor */
+}
+
+/* Container styling */
+.linkContainer {
+  background-color: #f0f0f0; /* Default background color */
+  border-radius: 10px; /* Rounded corners */
+  padding: 10px; /* Internal spacing */
+  transition: background-color 0.3s ease-in-out; /* Smooth background color transition on hover */
+  overflow-y: scroll;
+  height: 380px;
+  margin: 10px;
+}
+
+/* Scrollbar styling for linkContainer */
+.linkContainer::-webkit-scrollbar {
+  width: 5px;
+}
+
+.linkContainer::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.linkContainer::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.linkContainer::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Styling for linkText */
+.linkText {
+  font-size: 1.2em; /* Larger font size */
+  color: black; /* Main text color */
+  margin-bottom: 5px; /* Space between linkText and pageNumber */
+}
+
+/* Styling for pageNumber */
+.pageNumber {
+  font-size: 0.8em;
+  color: grey; /* Subtle color for pageNumber */
+}
+
+/* Hover effect on linkContainer */
+.linkContainer:hover {
+  background-color: #e8e8e8; /* Light color on hover */
+}
+
+/* Additional visual enhancements */
+@media (max-width: 600px) {
+  .linkContainer {
+    padding: 8px;
+    border-radius: 8px; /* Slightly smaller border-radius for mobile */
+  }
+
+  .linkText,
+  .pageNumber {
+    text-align: center; /* Centered text on mobile */
+  }
+}
+
+/* Optional: adding a subtle shadow to linkContainer for depth */
+.linkContainer {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

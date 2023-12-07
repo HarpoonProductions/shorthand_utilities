@@ -122,6 +122,12 @@
     navContainer.appendChild(middleLogoContainer);
     middleLogoContainer.addEventListener("click", () => {
       document.body.classList.toggle("show-custom-mini-nav");
+      const miniNavCurrentLink = document.querySelector(
+        ".show-custom-mini-nav .current-link"
+      );
+      if (miniNavCurrentLink) {
+        miniNavCurrentLink.scrollIntoView({ block: "start" });
+      }
     });
 
     const nextUrl =
@@ -143,10 +149,37 @@
     // Add custom nav box
     const customMiniNavContainer = document.createElement("div");
     customMiniNavContainer.classList.add("custom-min-nav-container");
+    const customNavInner = document.createElement("div");
+    customNavInner.classList.add("custom-min-nav-container-inner");
+    links.forEach((link, i) => {
+      const linkAnchor = document.createElement("a");
+      const linkContainer = document.createElement("div");
+      const linkText = document.createElement("p");
+      const pageNumber = document.createElement("p");
+
+      linkAnchor.classList.add("linkAnchor");
+      linkContainer.classList.add("linkContainer");
+      linkText.classList.add("linkText");
+      pageNumber.classList.add("pageNumber");
+
+      linkAnchor.setAttribute("href", link.href);
+      linkText.innerHTML = link.label;
+      pageNumber.innerHTML = "Page " + (i + 1);
+
+      if (link.current) {
+        linkAnchor.classList.add("current-link");
+      }
+
+      linkContainer.appendChild(linkText);
+      linkContainer.appendChild(pageNumber);
+      linkAnchor.appendChild(linkContainer);
+      customNavInner.appendChild(linkAnchor);
+    });
     customMiniNavContainer.addEventListener("click", () => {
       document.body.classList.toggle("show-custom-mini-nav");
       document.body.classList.remove("scroll-up");
     });
+    customMiniNavContainer.appendChild(customNavInner);
     document.body.appendChild(customMiniNavContainer);
 
     document.body.addEventListener("click", function (event) {
