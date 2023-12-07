@@ -1,4 +1,6 @@
 (function () {
+  var logoUrl =
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/national_trust_green.png";
   function extractLinks() {
     const links = [];
     const currentUrl = window.location.href;
@@ -111,6 +113,17 @@
     );
     navContainer.appendChild(prevButton);
 
+    const middleLogoContainer = document.createElement("div");
+    const middleLogo = document.createElement("img");
+    middleLogo.setAttribute("src", logoUrl);
+    middleLogo.classList.add("edition-logo");
+    middleLogoContainer.classList.add("button_container");
+    middleLogoContainer.appendChild(middleLogo);
+    navContainer.appendChild(middleLogoContainer);
+    middleLogoContainer.addEventListener("click", () => {
+      document.body.classList.toggle("show-custom-mini-nav");
+    });
+
     const nextUrl =
       currentIndex < links.length - 1 ? links[currentIndex + 1].href : null;
     const nextText =
@@ -126,8 +139,67 @@
     navContainer.appendChild(nextButton);
 
     document.body.appendChild(navContainer);
+
+    // Add custom nav box
+    const customMiniNavContainer = document.createElement("div");
+    customMiniNavContainer.classList.add("custom-min-nav-container");
+    customMiniNavContainer.addEventListener("click", () => {
+      document.body.classList.toggle("show-custom-mini-nav");
+      document.body.classList.remove("scroll-up");
+    });
+    document.body.appendChild(customMiniNavContainer);
+
+    document.body.addEventListener("click", function (event) {
+      // Function to check if the clicked element or any of its parents have a specific class
+      function hasClassInParents(element, className) {
+        while (element) {
+          if (element.classList && element.classList.contains(className)) {
+            return true;
+          }
+          element = element.parentElement;
+        }
+        return false;
+      }
+
+      // Check if the clicked element or its parents have the specified classes
+      const isCustomNavContainer = hasClassInParents(
+        event.target,
+        "custom-min-nav-container"
+      );
+      const isButtonContainer = hasClassInParents(
+        event.target,
+        "button_container"
+      );
+
+      // If the clicked element is not part of custom nav container or button container, remove the class
+      if (!isCustomNavContainer && !isButtonContainer) {
+        document.body.classList.remove("show-custom-mini-nav");
+      }
+    });
   }
 
   const links = extractLinks();
   renderCustomNavigation(links);
 })();
+
+let lastScrollTop = 0;
+window.addEventListener(
+  "scroll",
+  () => {
+    const currentScrollTop =
+      window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScrollTop > lastScrollTop) {
+      // Scrolling down
+      document.body.classList.add("custom-nav-hidden");
+      document.body.classList.remove("show-custom-mini-nav");
+    } else {
+      // Scrolling up
+      document.body.classList.remove("custom-nav-hidden");
+      document.body.classList.add("scroll-up");
+    }
+
+    lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+  },
+  false
+);

@@ -1,19 +1,76 @@
+.Project-HeaderContainer {
+  display: none;
+}
+
+.Theme-TitleSection {
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+}
+
 .hide {
   opacity: 0 !important;
   cursor: unset !important;
 }
 
-.nav_container {
+.custom-nav-hidden .nav_container {
+  transform: translateY(150%);
+}
+
+.show-custom-mini-nav .custom-min-nav-container {
+  transform: translate(-50%, 0%);
+}
+
+.show-custom-mini-nav .nav_container {
+  transform: translateY(150%) !important;
+}
+
+.show-custom-mini-nav .nav_container {
+  transition-delay: 0s;
+}
+
+body:not(.custom-nav-hidden).show-custom-mini-nav .custom-min-nav-container {
+  transition-delay: 0.5s;
+}
+
+body:not(.show-custom-mini-nav, .custom-nav-hidden) .nav_container {
+  transition-delay: 0.8s;
+}
+
+body:not(.show-custom-mini-nav) .custom-min-nav-container {
+  transition-delay: 0s;
+}
+
+.scroll-up .nav_container {
+  transition-delay: 0s !important;
+}
+
+.custom-min-nav-container {
+  transform: translate(-50%, 100%);
+  background: #ffffffde;
+  height: 400px;
+  width: 300px;
+  border-radius: 3px;
   position: fixed;
   bottom: 0;
+  left: 50%;
+  transition: transform 0.8s ease-in-out;
+  z-index: 100;
+  transition-delay: 0.5s;
+}
+
+.nav_container {
+  position: fixed;
+  bottom: 7px;
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: flex-end;
   padding: 10px;
   box-sizing: border-box;
   z-index: 1000;
   color: white;
   height: 97px;
+  transition: transform 0.5s ease-in-out;
 }
 
 .button_container {
@@ -74,11 +131,31 @@
   pointer-events: none;
 }
 
+.button_container:nth-of-type(1) {
+  margin-right: 20px;
+}
+
+.edition-logo {
+  height: 100%;
+  padding: 10px;
+}
+
+.button_container:nth-of-type(2) {
+  background: #ffffffde;
+  cursor: pointer;
+  width: 94px;
+  height: 112px;
+}
+
+.button_container:nth-of-type(3) {
+  margin-left: 20px;
+}
+
 .button_container:nth-of-type(1) .image_div {
   left: 0;
 }
 
-.button_container:nth-of-type(2) .image_div {
+.button_container:nth-of-type(3) .image_div {
   right: 0;
 }
 
