@@ -174,6 +174,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   overflow-y: scroll;
   height: 380px;
   margin: 10px;
+  margin-right: 5px;
 }
 
 /* Scrollbar styling for linkContainer */
@@ -182,11 +183,12 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .custom-min-nav-container-inner::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  background: transparent;
 }
 
 .custom-min-nav-container-inner::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #888888de;
+  border-radius: 2.5px;
 }
 
 .custom-min-nav-container-inner::-webkit-scrollbar-thumb:hover {
@@ -199,7 +201,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   color: inherit;
   cursor: pointer;
   display: block;
-  margin-bottom: 20px; /* Spacing between each linkAnchor */
+  margin: 0 2px 20px;
+  border-radius: 8px;
 }
 
 /* Styling for linkAnchor with current-link class */
@@ -219,6 +222,10 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 /* Optional: Adjust hover effect for current-link */
 .linkAnchor.current-link:hover {
   background-color: #c8c8c8; /* Slightly different hover background */
+}
+
+.linkAnchor.current-link .linkContainer {
+  border-radius: 0 10px 10px 0;
 }
 
 /* Container styling */
@@ -251,9 +258,17 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 /* Additional visual enhancements */
 @media (max-width: 600px) {
+  .linkAnchor {
+    border-radius: 8px; /* Slightly smaller border-radius for mobile */
+  }
+
   .linkContainer {
     padding: 8px;
     border-radius: 8px; /* Slightly smaller border-radius for mobile */
+  }
+
+  .linkAnchor.current-link .linkContainer {
+    border-radius: 0 8px 8px 0;
   }
 
   .linkText,
