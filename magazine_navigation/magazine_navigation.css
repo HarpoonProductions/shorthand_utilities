@@ -172,9 +172,10 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container-inner {
   overflow-y: scroll;
-  height: 380px;
+  height: 342px;
   margin: 10px;
   margin-right: 5px;
+  margin-top: 6px;
 }
 
 /* Scrollbar styling for linkContainer */
@@ -193,6 +194,14 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container-inner::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.inner-logo-container {
+  margin: 12px 12px 0;
+}
+
+.edition-logo-inner {
+  height: 20px;
 }
 
 /* Reset default anchor styling while keeping the cursor pointer */
@@ -256,6 +265,11 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   background-color: #e8e8e8; /* Light color on hover */
 }
 
+.linkText,
+.pageNumber {
+  text-align: center;
+}
+
 /* Additional visual enhancements */
 @media (max-width: 600px) {
   .linkAnchor {
@@ -269,11 +283,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
   .linkAnchor.current-link .linkContainer {
     border-radius: 0 8px 8px 0;
-  }
-
-  .linkText,
-  .pageNumber {
-    text-align: center; /* Centered text on mobile */
   }
 }
 

@@ -1,6 +1,9 @@
 (function () {
   var logoUrl =
     "https://edition-logos.s3.eu-west-2.amazonaws.com/national_trust_green.png";
+  var logoUrlInner =
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/national_trust_horizontal.png";
+
   function extractLinks() {
     const links = [];
     const currentUrl = window.location.href;
@@ -151,6 +154,16 @@
     // Add custom nav box
     const customMiniNavContainer = document.createElement("div");
     customMiniNavContainer.classList.add("custom-min-nav-container");
+
+    // top logo
+    const innerLogoContainer = document.createElement("div");
+    const innerLogo = document.createElement("img");
+    innerLogo.setAttribute("src", logoUrlInner);
+    innerLogo.classList.add("edition-logo-inner");
+    innerLogoContainer.classList.add("inner-logo-container");
+    innerLogoContainer.appendChild(innerLogo);
+    customMiniNavContainer.appendChild(innerLogoContainer);
+
     const customNavInner = document.createElement("div");
     customNavInner.classList.add("custom-min-nav-container-inner");
     links.forEach((link, i) => {
@@ -181,6 +194,7 @@
       document.body.classList.toggle("show-custom-mini-nav");
       document.body.classList.remove("scroll-up");
     });
+
     customMiniNavContainer.appendChild(customNavInner);
     document.body.appendChild(customMiniNavContainer);
 
