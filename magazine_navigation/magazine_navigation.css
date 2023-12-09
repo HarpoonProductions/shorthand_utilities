@@ -214,6 +214,10 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   border-radius: 8px;
 }
 
+.linkAnchor:last-of-type {
+  margin: 0 2px;
+}
+
 /* Styling for linkAnchor with current-link class */
 .linkAnchor.current-link {
   background-color: #d0d0d0; /* Different background color */
