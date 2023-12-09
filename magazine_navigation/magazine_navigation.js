@@ -3,7 +3,6 @@
     "https://edition-logos.s3.eu-west-2.amazonaws.com/harpoon_logo_transparent.png";
   var logoUrlInner =
     "https://edition-logos.s3.eu-west-2.amazonaws.com/harpoon_title_transparent.png";
-  var titleLink = "";
 
   function extractLinks() {
     const links = [];
@@ -13,7 +12,20 @@
       if (node.tagName === "A") {
         const href = node.getAttribute("href");
         const label = node.textContent.trim();
-        const isCurrent = href === currentUrl;
+        let isCurrent;
+
+        if (/preview\.shorthand\.com/.test(currentUrl)) {
+          isCurrent = href === currentUrl;
+        } else if (
+          window.location.href.split("/").length === 5 &&
+          href === "../index.html"
+        ) {
+          isCurrent = true;
+        } else {
+          const page = window.location.href.split("/")[4];
+          const hrefTest = "../" + page + "/index.html";
+          isCurrent = href === hrefTest;
+        }
 
         links.push({ href, label, current: isCurrent });
       }
@@ -157,13 +169,16 @@
     customMiniNavContainer.classList.add("custom-min-nav-container");
 
     // top logo
+    const innerLogoAnchor = document.createElement("a");
+    innerLogoAnchor.setAttribute("href", links[0].href);
     const innerLogoContainer = document.createElement("div");
     const innerLogo = document.createElement("img");
     innerLogo.setAttribute("src", logoUrlInner);
     innerLogo.classList.add("edition-logo-inner");
     innerLogoContainer.classList.add("inner-logo-container");
     innerLogoContainer.appendChild(innerLogo);
-    customMiniNavContainer.appendChild(innerLogoContainer);
+    innerLogoAnchor.appendChild(innerLogoContainer);
+    customMiniNavContainer.appendChild(innerLogoAnchor);
 
     const customNavInner = document.createElement("div");
     customNavInner.classList.add("custom-min-nav-container-inner");
@@ -228,8 +243,22 @@
     });
   }
 
-  const links = extractLinks();
-  renderCustomNavigation(links);
+  function startPollingExtractLinks() {
+    let poller = setInterval(() => {
+      const links = extractLinks();
+
+      if (links.length > 0) {
+        clearInterval(poller);
+        renderCustomNavigation(links);
+      }
+    }, 500); // Poll every 1000 milliseconds (1 second)
+
+    setTimeout(() => {
+      clearInterval(poller); // Stop polling after 30 seconds
+    }, 30000); // 30 seconds timeout
+  }
+
+  startPollingExtractLinks();
 })();
 
 let lastScrollTop = 0;
