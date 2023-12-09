@@ -137,14 +137,14 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .edition-logo {
   height: 100%;
-  padding: 10px;
+  padding: 14px;
 }
 
 .button_container:nth-of-type(2) {
   background: #ffffffde;
   cursor: pointer;
   width: 94px;
-  height: 112px;
+  height: 106px;
 }
 
 .button_container:nth-of-type(3) {
@@ -153,14 +153,17 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container:nth-of-type(1) .image_div {
   left: 0;
+  width: 100%;
 }
 
 .button_container:nth-of-type(3) .image_div {
   right: 0;
+  width: 100%;
 }
 
 .image_div img {
-  height: 110px;
+  min-height: 110px;
+  width: 100%;
   border-radius: 4px;
   filter: brightness(0.7);
 }

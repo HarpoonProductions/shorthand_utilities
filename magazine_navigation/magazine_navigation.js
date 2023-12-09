@@ -1,8 +1,9 @@
 (function () {
   var logoUrl =
-    "https://edition-logos.s3.eu-west-2.amazonaws.com/national_trust_green.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/harpoon_logo_transparent.png";
   var logoUrlInner =
-    "https://edition-logos.s3.eu-west-2.amazonaws.com/national_trust_horizontal.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/harpoon_title_transparent.png";
+  var titleLink = "";
 
   function extractLinks() {
     const links = [];
