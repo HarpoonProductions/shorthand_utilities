@@ -18,7 +18,7 @@
           isCurrent = href === currentUrl;
         } else if (
           window.location.href.split("/").length === 5 &&
-          href === "../index.html"
+          href === "index.html"
         ) {
           isCurrent = true;
         } else {
