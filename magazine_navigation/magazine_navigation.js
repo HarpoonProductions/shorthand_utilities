@@ -1,8 +1,8 @@
 (function () {
   var logoUrl =
-    "https://edition-logos.s3.eu-west-2.amazonaws.com/harpoon_logo_transparent.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/90+percent+tablet-harpoon+(1).png";
   var logoUrlInner =
-    "https://edition-logos.s3.eu-west-2.amazonaws.com/harpoon_title_transparent.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/Harpoon+(1).png";
 
   function extractLinks() {
     const links = [];
@@ -91,7 +91,12 @@
     button.classList.add("button");
     arrow.classList.add("arrow");
     arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
-    button.textContent = text;
+    button.textContent = text.replace(
+      /\b(\w)(\w*)/g,
+      function (_, firstLetter, restOfString) {
+        return firstLetter.toUpperCase() + restOfString.toLowerCase();
+      }
+    );
 
     buttonContainer.appendChild(button);
     buttonContainer.appendChild(arrow);
