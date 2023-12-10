@@ -38,7 +38,14 @@
     );
     dfs(rootUl);
 
-    return links;
+    return links.map((link, i) => {
+      if (i !== 0) return link;
+      return {
+        href: link.href,
+        label: "Cover",
+        isCurrent: link.isCurrent,
+      };
+    });
   }
 
   function fetchSrcset(url) {
