@@ -91,12 +91,11 @@
     button.classList.add("button");
     arrow.classList.add("arrow");
     arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
-    button.textContent = text.replace(
-      /\b(\w)(\w*)/g,
-      function (_, firstLetter, restOfString) {
+    button.textContent =
+      text &&
+      text.replace(/\b(\w)(\w*)/g, function (_, firstLetter, restOfString) {
         return firstLetter.toUpperCase() + restOfString.toLowerCase();
-      }
-    );
+      });
 
     buttonContainer.appendChild(button);
     buttonContainer.appendChild(arrow);
@@ -199,7 +198,14 @@
       pageNumber.classList.add("pageNumber");
 
       linkAnchor.setAttribute("href", link.href);
-      linkText.innerHTML = link.label;
+      linkText.innerHTML =
+        link.label &&
+        link.label.replace(
+          /\b(\w)(\w*)/g,
+          function (_, firstLetter, restOfString) {
+            return firstLetter.toUpperCase() + restOfString.toLowerCase();
+          }
+        );
       pageNumber.innerHTML = "Page " + (i + 1);
 
       if (link.current) {
