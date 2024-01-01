@@ -1,0 +1,23 @@
+.glider-track {
+  margin-left: 100% !important;
+}
+
+.glider-track .Theme-Layer-Gallery-Item {
+  margin: 0 5px !important;
+}
+
+@media only screen and (min-width: 640px) {
+  .glider-track {
+    margin-left: 50% !important;
+  }
+
+  .glider-track .Theme-Layer-Gallery-Item {
+    margin: 0 20px !important;
+  }
+}
+
+@media only screen and (min-width: 1300px) {
+  .glider-track .Theme-Layer-Gallery-Item {
+    min-width: 20% !important;
+  }
+}

@@ -50,6 +50,7 @@ This also means that there will be a single source of truth for these snippets, 
 
 The following snippets are available in this repository:
 
+- [Collection To Carousel New](https://github.com/HarpoonProductions/shorthand_utilities#collection-to-carousel-new)
 - [Collection To Carousel](https://github.com/HarpoonProductions/shorthand_utilities#collection-to-carousel)
 - [Click to Scroll from Title](https://github.com/HarpoonProductions/shorthand_utilities#title-scroll-on-click)
 - [Scroll Snap](https://github.com/HarpoonProductions/shorthand_utilities#scroll-snap)
@@ -62,6 +63,37 @@ The following snippets are available in this repository:
 - [Toggle Sections Button](https://github.com/HarpoonProductions/shorthand_utilities#toggle-sections-button)
 - [Fifth Gallery Column](https://github.com/HarpoonProductions/shorthand_utilities#fifth-gallery-column)
 - [Auto Blockquote Indent](https://github.com/HarpoonProductions/shorthand_utilities#auto-blockquote-indent)
+
+<hr>
+
+# Collection to Carousel New
+
+These scripts will convert a collection section into a swipeable carousel.
+
+This requires 2 link tags in the page head and 2 script tags at the page body
+
+## How to use
+
+To the page head, add these:
+
+```
+<link href="https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.css" rel="stylesheet">
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/collection_to_carousel_new/collection_to_carousel_new.css"
+/>
+```
+
+To the page body, add these:
+
+```
+<script src="https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.js"></script>
+<script
+    type="text/javascript"
+    src="https://harpoonproductions.github.io/shorthand_utilities/collection_to_carousel_new/collection_to_carousel_new.js"
+></script>
+```
 
 <hr>
 
