@@ -1,22 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const maxAttempts = 25;
+  const maxAttempts = 50;
   let attempts = 0;
 
   const pollForElement = () => {
-    const list = document.querySelector(
-      ".sh-issues .Layout.Theme-Layer-Gallery-List"
+    const list = document.querySelectorAll(
+      ".sh-issues .Layout.Theme-Layer-Gallery-List, .Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
     );
-    console.log(list);
-    if (list || attempts >= maxAttempts) {
+    if ((list && list.length === 2) || attempts >= maxAttempts) {
       clearInterval(pollingInterval);
-      if (list) initializeCarousel(list);
+      if (list && list.length === 2) {
+        list.forEach(function (list) {
+          initializeCarousel(list);
+        });
+      }
     }
 
     attempts++;
   };
 
   const initializeCarousel = (list) => {
-    // Create the 'glider-contain' wrapper
     const gliderContain = document.createElement("div");
     gliderContain.classList.add("glider-contain");
 
@@ -49,9 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize Glider.js on the list
     const carousel = new Glider(list, {
-      slidesToShow: 1,
+      slidesToShow: "auto",
       type: "carousel",
-      slidesToScroll: 1,
+      slidesToScroll: "auto",
+      itemWidth: 250,
       draggable: true,
       arrows: {
         prev: prevArrow,
@@ -59,37 +62,44 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       dots: dots,
       scrollLock: true,
-      rewind: true,
-      responsive: [
-        {
-          breakpoint: 320,
-          settings: {
-            slidesToShow: 2,
-            slidesToScroll: 1,
-            itemWidth: 125,
-            duration: 0.25,
-          },
-        },
-        {
-          breakpoint: 480,
-          settings: {
-            slidesToShow: 3,
-            slidesToScroll: 1,
-            itemWidth: 125,
-            duration: 0.25,
-          },
-        },
-        {
-          breakpoint: 640,
-          settings: {
-            slidesToShow: 4,
-            slidesToScroll: 1,
-            itemWidth: 125,
-            duration: 0.25,
-          },
-        },
-      ],
+      scrollLockDelay: 100,
+      startAt: 0,
+      gap: 92,
     });
+
+    function checkDotsVisibility() {
+      const dotsContainer = document.querySelector(".glider-dots");
+      if (dotsContainer) {
+        dotsContainer.style.display =
+          dotsContainer.children.length <= 1 ? "none" : "";
+      }
+    }
+
+    // Debouncer function
+    function debounce(func, wait, immediate) {
+      let timeout;
+      return function () {
+        const context = this,
+          args = arguments;
+        const later = function () {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+      };
+    }
+
+    // Wrapped checkDotsVisibility in a debouncer
+    const debouncedCheckDotsVisibility = debounce(checkDotsVisibility, 250);
+
+    // Event listener for window resize
+    window.addEventListener("resize", debouncedCheckDotsVisibility);
+
+    // Initial check
+    checkDotsVisibility();
   };
 
   const pollingInterval = setInterval(pollForElement, 200);
