@@ -1,0 +1,994 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/js/splide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.js"></script>
+
+<script>
+
+(function () {
+  var logoUrl =
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/90+percent+tablet-harpoon+(1).png";
+  var logoUrlInner =
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/Harpoon+(1).png";
+
+  function extractLinks() {
+    const links = [];
+    const currentUrl = window.location.href;
+
+    function dfs(node) {
+      if (node.tagName === "A") {
+        const href = node.getAttribute("href");
+        const label = node.textContent.trim();
+        let isCurrent;
+
+        if (/preview\.shorthand\.com/.test(currentUrl)) {
+          isCurrent = href === currentUrl;
+        } else if (
+          window.location.href.split("/").length === 5 &&
+          href === "index.html"
+        ) {
+          isCurrent = true;
+        } else {
+          const page = window.location.href.split("/")[4];
+          const hrefTest = "../" + page + "/index.html";
+          isCurrent = href === hrefTest;
+        }
+
+        links.push({
+          href,
+          label,
+          current: isCurrent,
+        });
+      }
+
+      Array.from(node.children).forEach((child) => dfs(child));
+    }
+
+    const rootUl = document.querySelector(
+      ".Layout.Navigation__itemList.Theme-Navigation-ItemList"
+    );
+    dfs(rootUl);
+
+    return links.map((link, i) => {
+      if (i !== 0) return link;
+      return {
+        href: link.href,
+        label: "Cover",
+        isCurrent: link.isCurrent,
+      };
+    });
+  }
+
+  function fetchSrcset(url) {
+    return fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.text();
+      })
+      .then((html) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const imageElement = doc.querySelector(
+          ".Theme-TitleSection .Theme-BackgroundImage .Theme-Item-InstantImage source"
+        );
+        const srcset = imageElement
+          ? imageElement.getAttribute("srcset")
+          : null;
+        console.log(srcset);
+        return srcset;
+      })
+      .catch((error) => {
+        console.error("Error fetching srcset:", error);
+        return null;
+      });
+  }
+
+  function createImageElement(srcset) {
+    const imgDiv = document.createElement("div");
+    imgDiv.classList.add("image_div");
+
+    const img = new Image();
+    img.srcset = srcset;
+
+    img.onload = () => {
+      imgDiv.style.opacity = "1";
+    };
+
+    imgDiv.appendChild(img);
+    return imgDiv;
+  }
+
+  function createButtonWithImage(text, url, isPrevious, hide) {
+    const buttonContainer = document.createElement("div");
+    const button = document.createElement("div");
+    const arrow = document.createElement("div");
+    buttonContainer.classList.add("button_container");
+    if (hide) buttonContainer.classList.add("hide");
+    button.classList.add("button");
+    arrow.classList.add("arrow");
+    arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
+    button.textContent =
+      text &&
+      text.replace(/\b(\w)(\w*)/g, function (_, firstLetter, restOfString) {
+        return firstLetter.toUpperCase() + restOfString.toLowerCase();
+      });
+
+    buttonContainer.appendChild(button);
+    buttonContainer.appendChild(arrow);
+
+    buttonContainer.addEventListener("click", () => {
+      console.log("if (url) window.location.href = url;");
+      if (url) window.location.href = url;
+    });
+
+    if (url) {
+      fetchSrcset(url).then((srcset) => {
+        if (srcset) {
+          const imgDiv = createImageElement(srcset);
+          buttonContainer.appendChild(imgDiv);
+        }
+      });
+    }
+
+    return buttonContainer;
+  }
+
+  function renderCustomNavigation(links) {
+    const currentIndex = links.findIndex((link) => link.current);
+
+    const navContainer = document.createElement("div");
+    navContainer.classList.add("nav_container");
+
+    const prevUrl = currentIndex > 0 ? links[currentIndex - 1].href : null;
+    const prevText = currentIndex > 0 ? links[currentIndex - 1].label : null;
+
+    const prevButton = createButtonWithImage(
+      prevText,
+      prevUrl,
+      true,
+      currentIndex === 0
+    );
+    navContainer.appendChild(prevButton);
+
+    const middleLogoContainer = document.createElement("div");
+    const middleLogo = document.createElement("img");
+    middleLogo.setAttribute("src", logoUrl);
+    middleLogo.classList.add("edition-logo");
+    middleLogoContainer.classList.add("button_container");
+    middleLogoContainer.appendChild(middleLogo);
+    navContainer.appendChild(middleLogoContainer);
+    middleLogoContainer.addEventListener("click", () => {
+      document.body.classList.add("show-custom-mini-nav");
+      const miniNavCurrentLink = document.querySelector(
+        ".show-custom-mini-nav .current-link"
+      );
+      if (miniNavCurrentLink) {
+        miniNavCurrentLink.scrollIntoView({
+          block: "start",
+        });
+      }
+
+      document.body.classList.remove("scroll-up");
+    });
+
+    const nextUrl =
+      currentIndex < links.length - 1 ? links[currentIndex + 1].href : null;
+    const nextText =
+      currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
+
+    console.log(currentIndex, links.length, links.length - 1);
+    const nextButton = createButtonWithImage(
+      nextText,
+      nextUrl,
+      false,
+      currentIndex === links.length - 1
+    );
+    navContainer.appendChild(nextButton);
+
+    document.body.appendChild(navContainer);
+
+    // Add custom nav box
+    const customMiniNavContainer = document.createElement("div");
+    customMiniNavContainer.classList.add("custom-min-nav-container");
+
+    // top logo
+    const innerLogoAnchor = document.createElement("a");
+    innerLogoAnchor.setAttribute("href", links[0].href);
+    const innerLogoContainer = document.createElement("div");
+    const innerLogo = document.createElement("img");
+    innerLogo.setAttribute("src", logoUrlInner);
+    innerLogo.classList.add("edition-logo-inner");
+    innerLogoContainer.classList.add("inner-logo-container");
+    innerLogoContainer.appendChild(innerLogo);
+    innerLogoAnchor.appendChild(innerLogoContainer);
+    customMiniNavContainer.appendChild(innerLogoAnchor);
+
+    customMiniNavContainer.addEventListener("click", () => {
+      document.body.classList.remove("scroll-up");
+    });
+
+    document.body.appendChild(customMiniNavContainer);
+
+    document.body.addEventListener("click", function (event) {
+      function hasClassInParents(element, className) {
+        while (element) {
+          if (element.classList && element.classList.contains(className)) {
+            return true;
+          }
+          element = element.parentElement;
+        }
+        return false;
+      }
+
+      // Check if the clicked element or its parents have the specified classes
+      const isCustomNavContainer = hasClassInParents(
+        event.target,
+        "custom-min-nav-container"
+      );
+      const isButtonContainer = hasClassInParents(
+        event.target,
+        "button_container"
+      );
+
+      // If the clicked element is not part of custom nav container or button container, remove the class
+      if (!isCustomNavContainer && !isButtonContainer && !event.target.closest(".Theme-RelatedStories")) {
+        document.body.classList.remove("show-custom-mini-nav");
+      }
+    });
+  }
+
+  function startPollingExtractLinks() {
+    let poller = setInterval(() => {
+      const links = extractLinks();
+
+      if (links.length > 0) {
+        clearInterval(poller);
+        renderCustomNavigation(links);
+      }
+    }, 500); // Poll every 1000 milliseconds (1 second)
+
+    setTimeout(() => {
+      clearInterval(poller); // Stop polling after 30 seconds
+    }, 30000); // 30 seconds timeout
+  }
+
+  startPollingExtractLinks();
+})();
+
+let lastScrollTop = 0;
+window.addEventListener(
+  "scroll",
+  () => {
+    const currentScrollTop =
+      window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScrollTop > lastScrollTop) {
+      // Scrolling down
+      document.body.classList.add("custom-nav-hidden");
+      document.body.classList.remove("show-custom-mini-nav");
+    } else {
+      // Scrolling up
+      document.body.classList.remove("custom-nav-hidden");
+      document.body.classList.add("scroll-up");
+    }
+
+    lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+  },
+  false
+);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const maxAttempts = 50;
+  let attempts = 0;
+
+  const pollForElement = () => {
+    const list = document.querySelectorAll(
+      ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
+    );
+    if ((list && list.length === 1) || attempts >= maxAttempts) {
+      clearInterval(pollingInterval);
+      if (list && list.length === 1) {
+        list.forEach(function (list) {
+          initializeCarousel(list);
+        });
+      }
+    }
+
+    attempts++;
+  };
+
+  const initializeCarousel = (list) => {
+    const clonedSlides = list.cloneNode(true);
+const parent = list.parentNode;
+    initializeCarousel2(parent, clonedSlides)
+
+    const slides = list.querySelectorAll('li')
+    slides.forEach(function (slide) {
+     slide.classList.add('splide__slide')
+    })
+
+    const splideContainer = document.createElement("div");
+    splideContainer.classList.add("splide");
+
+    const track = document.createElement("div");
+    track.classList.add("splide__track");
+
+    list.classList.add("splide__list");
+
+    parent.insertBefore(splideContainer, list);
+    splideContainer.appendChild(track);
+    track.appendChild(list);
+
+    const carousel = new Splide(splideContainer, {
+        type   : 'loop',
+        perPage: 1, 
+        perMove: 1,
+        gap    : '1rem',
+        pagination: true,
+      arrows: true,
+       start: 5 // to get through code
+
+    }).mount();
+    
+
+
+  };
+  
+  
+    const initializeCarousel2 = (parent, list) => {
+    const gliderContain = document.createElement("div");
+      gliderContain.classList.add("glider-contain");
+
+
+    // Move the 'list' inside 'glider-contain'
+    list.classList.add("glider");
+      gliderContain.appendChild(list);
+      parent.appendChild(gliderContain);
+
+
+
+    // Create navigation buttons
+    const prevArrow = document.createElement("button");
+    prevArrow.setAttribute("aria-label", "Previous");
+    prevArrow.classList.add("glider-prev");
+    prevArrow.textContent = "«";
+
+    const nextArrow = document.createElement("button");
+    nextArrow.setAttribute("aria-label", "Next");
+    nextArrow.classList.add("glider-next");
+    nextArrow.textContent = "»";
+
+    // Create the dots container
+    const dots = document.createElement("div");
+    dots.classList.add("dots");
+    dots.setAttribute("role", "tablist");
+
+    // Append arrows and dots to the 'glider-contain' container
+    gliderContain.appendChild(prevArrow);
+    gliderContain.appendChild(nextArrow);
+    gliderContain.appendChild(dots);
+
+    // Initialize Glider.js on the list
+const carousel = new Glider(list, {
+  slidesToShow: "auto",
+  type: "carousel",
+  slidesToScroll: 1, // Move one slide at a time
+  itemWidth: 250,
+  draggable: true, // Allow dragging/swiping
+  arrows: {
+    prev: prevArrow,
+    next: nextArrow,
+  },
+  dots: dots,
+  scrollLock: true, // Lock to a slide even if the swipe was not forceful
+  scrollLockDelay: 150, // Slightly increase the delay to ensure scroll lock calculates correctly
+  startAt: 0,
+  gap: 92,
+  dragVelocity: 1, // Adjust velocity to control swipe sensitivity, might need fine-tuning
+  duration: 0.5, // Reduce the animation duration to make transitions quicker
+});
+
+
+    function checkDotsVisibility() {
+      const dotsContainer = document.querySelector(".glider-dots");
+      if (dotsContainer) {
+        dotsContainer.style.display =
+          dotsContainer.children.length <= 1 ? "none" : "";
+      }
+    }
+
+    // Debouncer function
+    function debounce(func, wait, immediate) {
+      let timeout;
+      return function () {
+        const context = this,
+          args = arguments;
+        const later = function () {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+      };
+    }
+
+    // Wrapped checkDotsVisibility in a debouncer
+    const debouncedCheckDotsVisibility = debounce(checkDotsVisibility, 250);
+
+    // Event listener for window resize
+    window.addEventListener("resize", debouncedCheckDotsVisibility);
+
+    // Initial check
+    checkDotsVisibility();
+  };
+
+
+
+
+
+
+  const pollingInterval = setInterval(pollForElement, 200);
+});
+
+(function () {
+  function startPollingCarousel() {
+    let poller = setInterval(() => {
+      const relatedStoryCarousel = document.querySelector(
+        '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
+      );
+
+      const navContainer = document.querySelector(".custom-min-nav-container");
+
+      if (relatedStoryCarousel && navContainer) {
+        clearInterval(poller);
+       navContainer.appendChild(
+          document.querySelector(".Theme-RelatedStoriesSection")
+        );
+      }
+    }, 250);
+
+    setTimeout(() => {
+      clearInterval(poller);
+    }, 10000);
+  }
+
+  startPollingCarousel();
+})();
+
+  
+
+</script>
+
+
+
+
+
+////// CSS ////////
+
+
+@media only screen and (max-width: 799px) {
+    .glider-contain {
+        display: none;
+    }
+}
+
+@media only screen and (min-width: 800px) {
+    .splide {
+        display: none;
+    }
+
+    .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
+        position: relative;
+    }
+
+    .custom-min-nav-container .RelatedStories-container {
+        padding: 0 30px !important;
+    }
+
+    .custom-min-nav-container .Theme-RelatedStoriesSection {
+        min-height: 400px;
+        background: #ffffffC8;
+        position: relative;
+        bottom: 20px;
+    }
+
+    .custom-min-nav-container .Theme-RelatedStoriesSection .Theme-Layer-BodyText {
+        position: relative;
+        top: 8px;
+    }
+
+    .Theme-RelatedStoriesSection ul {
+        display: flex !important;
+        flex-direction: row !important;
+    }
+
+    .Theme-RelatedStoriesSection .glider-contain > ul,
+.custom-min-nav-container .glider-contain > ul {
+        display: flex !important;
+        justify-content: unset !important;
+        flex-wrap: unset !important;
+  }
+  
+  .custom-min-nav-container {
+    max-width: 800px;
+    width: 95% !important;
+  }
+  
+
+
+.glider-next {
+    right: -19px !important;
+    top: 50% !important;
+    transform: translateY(-88%);
+}
+
+  
+ .glider-prev {
+   left: -19px !important;
+    top: 50% !important;
+    transform: translateY(-88%);
+  }
+  
+ 
+
+.glider-dots {
+   position: relative;
+    top: 9px;
+}
+
+
+
+
+}
+
+@media only screen and (min-width: 832px) {
+  
+  .glider-dots {
+   position: relative;
+    top: 0;
+}
+  .custom-min-nav-container {
+    height: 355px !important;
+  }
+  
+  
+}
+
+
+
+
+
+
+@media only screen and (max-width: 619px) {
+.custom-min-nav-container .Theme-Layer-BodyText {
+  overflow: visible !important;
+  }
+  
+  .custom-min-nav-container .splide__pagination {
+   bottom: -1.5em !important;   
+
+}
+
+
+}
+
+
+.splide__arrows {
+  display: none;
+}
+
+.splide__pagination__page.is-active {
+    background: grey !important;
+}
+.splide__pagination__page {
+  margin: 3px 9px !important;
+  padding: 4px !important;
+}
+
+
+.splide__pagination li {
+    width: auto !important;
+}
+
+.splide__pagination {
+    bottom: -1.35em  !important;
+    left: 0 !important;
+    padding: 0 1em !important;
+    position: absolute !important;
+    right: 0 !important;
+    z-index: 1 !important;
+}
+
+.splide__pagination {
+    align-items: center !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    pointer-events: none !important;
+}
+
+
+.Theme-RelatedStories--Medium .related-stories-list li:not(:only-child) {
+
+  max-width: unset !important;
+  }
+
+
+
+.related-stories-list li {
+    border: unset !important;
+}
+
+
+.custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
+ position: relative; 
+}
+
+.custom-min-nav-container .RelatedStories-container {
+   padding: 0 20px !important; 
+}
+
+.custom-min-nav-container .Theme-RelatedStoriesSection {
+    min-height: 400px;
+    background: #ffffffC8;
+    position: relative;
+    bottom: 20px;
+}
+
+@media only screen and (min-width: 1100px) {
+  /* .custom-min-nav-container .Theme-RelatedStoriesSection {
+    width: 100vw;
+    width: 100svw;
+} */
+}
+
+.custom-min-nav-container .Theme-RelatedStoriesSection .Theme-Layer-BodyText {
+  position: relative;
+    top: 8px;
+}
+
+
+.Theme-RelatedStoriesSection ul {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.Theme-RelatedStoriesSection .splide__track > ul,
+.custom-min-nav-container .splide__track > ul
+{
+      display: flex !important;
+    justify-content: unset !important;
+    flex-wrap: unset !important;
+}
+
+
+
+
+
+
+
+/* old css below this line */
+
+#StandardFooter {
+  display: none;
+}#StandardFooter {
+  display: none;
+}h1 {
+  font-family: 'Kanit', sans-serif;
+}
+
+
+/* alex's css */
+.Project-HeaderContainer {
+  display: none;
+}
+
+.Theme-TitleSection {
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+}
+
+.hide {
+  opacity: 0 !important;
+  cursor: unset !important;
+}
+
+.custom-nav-hidden .nav_container {
+  transform: translateY(150%);
+}
+
+.show-custom-mini-nav .custom-min-nav-container {
+  transform: translate(-50%, 0%);
+}
+
+.show-custom-mini-nav .nav_container {
+  transform: translateY(150%) !important;
+}
+
+.show-custom-mini-nav .nav_container {
+  transition-delay: 0s;
+}
+
+body:not(.custom-nav-hidden).show-custom-mini-nav .custom-min-nav-container {
+  transition-delay: 0.5s;
+}
+
+body:not(.show-custom-mini-nav, .custom-nav-hidden) .nav_container {
+  transition-delay: 0.8s;
+}
+
+body:not(.show-custom-mini-nav) .custom-min-nav-container {
+  transition-delay: 0s;
+}
+
+.scroll-up .nav_container {
+  transition-delay: 0s !important;
+}
+
+.custom-min-nav-container {
+  transform: translate(-50%, 100%);
+  background: #ffffffde;
+  height: 344px;
+  width: 380px;
+  border-radius: 3px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transition: transform 0.8s ease-in-out;
+  z-index: 100;
+  transition-delay: 0.5s;
+}
+
+.nav_container {
+  position: fixed;
+  bottom: 7px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 10px;
+  box-sizing: border-box;
+  z-index: 1000;
+  color: white;
+  height: 97px;
+  transition: transform 0.5s ease-in-out;
+}
+
+.button_container {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+  opacity: 0.8;
+  transition: opacity 1s;
+  overflow: hidden;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  width: 140px;
+}
+
+@media only screen and (max-width: 500px) {
+  .button_container:not(.hide) {
+    opacity: 0.9 !important;
+  }
+
+  .image_div img {
+    height: 110px;
+    border-radius: 4px;
+    filter: brightness(0.8);
+  }
+}
+
+.button_container:hover {
+  opacity: 1;
+}
+
+.button {
+  cursor: pointer;
+  pointer-events: none;
+  font-family: "Lato", sans-serif;
+  z-index: 10;
+  padding-top: 20px;
+}
+
+.arrow {
+  font-size: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.image_div {
+  position: absolute;
+  bottom: 0;
+  max-height: 100px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 1s;
+  max-height: 100%;
+  pointer-events: none;
+}
+
+.button_container:nth-of-type(1) {
+  margin-right: 20px;
+}
+
+.edition-logo {
+  height: 100%;
+  padding: 4px;
+}
+
+.button_container:nth-of-type(2) {
+  background: #ffffffde;
+  cursor: pointer;
+  width: 94px;
+  height: 106px;
+}
+
+.button_container:nth-of-type(3) {
+  margin-left: 20px;
+}
+
+.button_container:nth-of-type(1) .image_div {
+  left: 0;
+  width: 100%;
+}
+
+.button_container:nth-of-type(3) .image_div {
+  right: 0;
+  width: 100%;
+}
+
+.image_div img {
+  min-height: 110px;
+  width: 100%;
+  border-radius: 4px;
+  filter: brightness(0.7);
+}
+
+.PreviewFooter,
+.Theme-OverlayedCaption {
+  display: none;
+}
+
+.custom-min-nav-container-inner {
+  overflow-y: scroll;
+  height: 342px;
+  margin: 10px;
+  margin-right: 5px;
+  margin-top: 6px;
+}
+
+/* Scrollbar styling for linkContainer */
+.custom-min-nav-container-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-min-nav-container-inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-min-nav-container-inner::-webkit-scrollbar-thumb {
+  background: #888888de;
+  border-radius: 2.5px;
+}
+
+.custom-min-nav-container-inner::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.inner-logo-container {
+  margin: 12px 12px 0;
+}
+
+.edition-logo-inner {
+  height: 20px;
+}
+
+/* Reset default anchor styling while keeping the cursor pointer */
+.linkAnchor {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  margin: 0 2px 20px;
+  border-radius: 8px;
+}
+
+.linkAnchor:last-of-type {
+  margin: 0 2px;
+}
+
+/* Styling for linkAnchor with current-link class */
+.linkAnchor.current-link {
+  background-color: #d0d0d0; /* Different background color */
+  color: #555; /* Darker text color for contrast */
+  font-weight: bold; /* Make the text bolder */
+  border-left: 4px solid #666; /* Add a left border for emphasis */
+}
+
+/* Adjusting the linkText and pageNumber inside the current linkAnchor */
+.linkAnchor.current-link .linkText,
+.linkAnchor.current-link .pageNumber {
+  color: #555; /* Change text color to match the linkAnchor */
+}
+
+/* Optional: Adjust hover effect for current-link */
+.linkAnchor.current-link:hover {
+  background-color: #c8c8c8; /* Slightly different hover background */
+}
+
+.linkAnchor.current-link .linkContainer {
+  border-radius: 0 10px 10px 0;
+}
+
+/* Container styling */
+.linkContainer {
+  background-color: #f0f0f0; /* Default background color */
+  border-radius: 10px; /* Rounded corners */
+  padding: 10px; /* Internal spacing */
+  transition: background-color 0.3s ease-in-out; /* Smooth background color transition on hover */
+}
+
+/* Styling for linkText */
+.linkText {
+  font-size: 1.2em; /* Larger font size */
+  color: black; /* Main text color */
+  margin-bottom: 5px; /* Space between linkText and pageNumber */
+  font-family: "Lato", sans-serif;
+}
+
+/* Styling for pageNumber */
+.pageNumber {
+  font-size: 0.8em;
+  color: grey; /* Subtle color for pageNumber */
+  font-family: "Lato", sans-serif;
+}
+
+/* Hover effect on linkContainer */
+.linkContainer:hover {
+  background-color: #e8e8e8; /* Light color on hover */
+}
+
+.linkText,
+.pageNumber {
+  text-align: center;
+}
+
+/* Additional visual enhancements */
+@media (max-width: 600px) {
+  .linkAnchor {
+    border-radius: 8px; /* Slightly smaller border-radius for mobile */
+  }
+
+  .linkContainer {
+    padding: 8px;
+    border-radius: 8px; /* Slightly smaller border-radius for mobile */
+  }
+
+  .linkAnchor.current-link .linkContainer {
+    border-radius: 0 8px 8px 0;
+  }
+}
+
+/* Optional: adding a subtle shadow to linkContainer for depth */
+.linkContainer {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+///// Header
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/splide-core.min.css">
+<!-- Optional: include a theme of your choice -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/themes/splide-default.min.css">
+<link href="https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.css" rel="stylesheet">
