@@ -286,11 +286,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = document.querySelectorAll(
       ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
     );
-    if ((list && list.length === 2) || attempts >= maxAttempts) {
+    if ((list && list.length) || attempts >= maxAttempts) {
       clearInterval(pollingInterval);
-      if (list && list.length === 2) {
+      if (list && list.length) {
         //list.forEach(function (list) {
-        initializeCarousel(list[1]);
+        initializeCarousel(list[list.length - 1]);
         // });
       }
     }
@@ -375,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dots: dots,
       scrollLock: true, // Lock to a slide even if the swipe was not forceful
       scrollLockDelay: 150, // Slightly increase the delay to ensure scroll lock calculates correctly
-      startAt: 0,
+      startAt: 1,
       gap: 92,
       dragVelocity: 1, // Adjust velocity to control swipe sensitivity, might need fine-tuning
       duration: 0.5, // Reduce the animation duration to make transitions quicker
@@ -429,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const navContainer = document.querySelector(".custom-min-nav-container");
 
       if (relatedStoryCarousel && relatedStoryCarousel.length && navContainer) {
+        console.log("polled");
         clearInterval(poller);
         const relatedStoryCarousel2 = document.querySelectorAll(
           ".Theme-RelatedStoriesSection"
