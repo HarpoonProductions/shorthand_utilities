@@ -10,7 +10,7 @@
 
   .horizontal-scroll__container {
     position: -webkit-sticky;
-    position: sticky;
+    position: sticky !important;
     overflow: hidden;
     top: 0;
   }
