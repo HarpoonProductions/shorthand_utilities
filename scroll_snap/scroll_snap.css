@@ -7,6 +7,7 @@
   scroll-margin: 20px 0 0;
 }
 
-#article > [id^="section"] {
+#article > [id^="section"],
+#article > .Project-FooterContainer {
   scroll-snap-align: start none;
 }
