@@ -1,4 +1,5 @@
 (function () {
+  let currentPageIndex = null;
   var logoUrl =
     "https://harpn.s3.eu-west-2.amazonaws.com/imperial/imperial_logo.png";
   var logoUrlInner =
@@ -38,11 +39,12 @@
     }
 
     const rootUl = document.querySelector(
-      ".Layout.Navigation__itemList.Theme-Navigation-ItemList"
+      ".Project-HeaderContainer .Layout.Navigation__itemList.Theme-Navigation-ItemList"
     );
     dfs(rootUl);
 
     return links.map((link, i) => {
+      if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
       if (i !== 0) return link;
       return {
         href: link.href,
@@ -211,6 +213,7 @@
 
   function renderCustomNavigation(links) {
     const currentIndex = links.findIndex((link) => link.current);
+    if (currentIndex === 0) document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");
     navContainer.classList.add("nav_container");
@@ -339,259 +342,278 @@
   }
 
   startPollingExtractLinks();
-})();
 
-document.addEventListener("DOMContentLoaded", () => {
-  let lastPosition = 1; // Track the last observed position
+  document.addEventListener("DOMContentLoaded", () => {
+    let lastPosition = 1; // Track the last observed position
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // Extract position from the class name
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Extract position from the class name
 
-          const currentPosition = parseInt(
-            entry.target.className.match(/Theme-Section-Position-(\d+)/)[1],
-            10
+            const currentPosition = parseInt(
+              entry.target.className.match(/Theme-Section-Position-(\d+)/)[1],
+              10
+            );
+
+            if (currentPageIndex === 0 && currentPosition === 1) {
+              document.body.classList.add("custom-nav-hidden");
+              document.body.classList.remove("show-custom-mini-nav");
+              document.body.classList.remove("tab_container");
+              document.body.classList.remove("tab_options");
+            } else if (/Final-ABCDEFGHI/.test(entry.target.className)) {
+              document.body.classList.remove("custom-nav-hidden");
+              document.body.classList.add("scroll-up");
+            } else if (currentPosition > lastPosition) {
+              // Scrolling down
+              document.body.classList.add("custom-nav-hidden");
+              document.body.classList.remove("show-custom-mini-nav");
+              document.body.classList.remove("tab_container");
+              document.body.classList.remove("tab_options");
+            } else if (currentPosition <= lastPosition) {
+              // Scrolling up
+              document.body.classList.remove("custom-nav-hidden");
+              document.body.classList.add("scroll-up");
+            }
+
+            // Update lastPosition for the next intersection
+            lastPosition = currentPosition;
+          }
+        });
+      },
+      {
+        root: null, // observing intersections relative to the viewport
+        rootMargin: "-50px 0px -50px 0px",
+        threshold: 0.1, // Trigger when 50% of the element is in the viewport
+      }
+    );
+
+    // Observe all sections
+    const sections = document.querySelectorAll(
+      ".Theme-Section:not(.Theme-RelatedStoriesSection), .Project-FooterContainer"
+    );
+    sections.forEach((section, i) => {
+      if (i === sections.length - 1) {
+        section.classList.add("Theme-Section-Position-" + (i + 1));
+        section.classList.add("Final-ABCDEFGHI");
+      }
+      observer.observe(section);
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const maxAttempts = 50;
+    let attempts = 0;
+
+    const pollForElement = () => {
+      const list = document.querySelectorAll(
+        ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
+      );
+      if (
+        (list && list.length === 1 && currentPageIndex !== null) ||
+        attempts >= maxAttempts
+      ) {
+        clearInterval(pollingInterval);
+        if (list && list.length === 1) {
+          //list.forEach(function (list) {
+          initializeCarousel(list[0]);
+          // });
+        }
+      }
+
+      attempts++;
+    };
+
+    const initializeCarousel = (list) => {
+      const clonedSlides = list.cloneNode(true);
+      const parent = list.parentNode;
+      initializeCarousel2(parent, clonedSlides);
+
+      const slides = list.querySelectorAll("li");
+      slides.forEach(function (slide) {
+        slide.classList.add("splide__slide");
+      });
+
+      const splideContainer = document.createElement("div");
+      splideContainer.classList.add("splide");
+
+      const track = document.createElement("div");
+      track.classList.add("splide__track");
+
+      list.classList.add("splide__list");
+
+      parent.insertBefore(splideContainer, list);
+      splideContainer.appendChild(track);
+      track.appendChild(list);
+
+      console.log("Current Page Index", currentPageIndex);
+
+      new Splide(splideContainer, {
+        type: "loop",
+        perPage: 1,
+        perMove: 1,
+        gap: "1rem",
+        pagination: true,
+        arrows: true,
+        start: currentPageIndex,
+      }).mount();
+    };
+
+    const initializeCarousel2 = (parent, list) => {
+      const gliderContain = document.createElement("div");
+      gliderContain.classList.add("glider-contain");
+
+      // Move the 'list' inside 'glider-contain'
+      list.classList.add("glider");
+      gliderContain.appendChild(list);
+      parent.appendChild(gliderContain);
+
+      // Create navigation buttons
+      const prevArrow = document.createElement("button");
+      prevArrow.setAttribute("aria-label", "Previous");
+      prevArrow.classList.add("glider-prev");
+      prevArrow.textContent = "«";
+
+      const nextArrow = document.createElement("button");
+      nextArrow.setAttribute("aria-label", "Next");
+      nextArrow.classList.add("glider-next");
+      nextArrow.textContent = "»";
+
+      // Create the dots container
+      const dots = document.createElement("div");
+      dots.classList.add("dots");
+      dots.setAttribute("role", "tablist");
+
+      // Append arrows and dots to the 'glider-contain' container
+      gliderContain.appendChild(prevArrow);
+      gliderContain.appendChild(nextArrow);
+      gliderContain.appendChild(dots);
+
+      const links = list.querySelectorAll("li a");
+      links.forEach((element, i) => element.setAttribute("tabindex", i + 4));
+
+      // Initialize Glider.js on the list
+      new Glider(list, {
+        slidesToShow: "auto",
+        type: "carousel",
+        slidesToScroll: 1, // Move one slide at a time
+        itemWidth: 250,
+        draggable: true, // Allow dragging/swiping
+        arrows: {
+          prev: prevArrow,
+          next: nextArrow,
+        },
+        dots: dots,
+        scrollLock: true, // Lock to a slide even if the swipe was not forceful
+        scrollLockDelay: 150, // Slightly increase the delay to ensure scroll lock calculates correctly
+        startAt: currentPageIndex,
+        gap: 92,
+        dragVelocity: 1, // Adjust velocity to control swipe sensitivity, might need fine-tuning
+        duration: 0.5, // Reduce the animation duration to make transitions quicker
+      });
+
+      function checkDotsVisibility() {
+        const dotsContainer = document.querySelector(".glider-dots");
+        if (dotsContainer) {
+          dotsContainer.style.display =
+            dotsContainer.children.length <= 1 ? "none" : "";
+        }
+      }
+
+      // Debouncer function
+      function debounce(func, wait, immediate) {
+        let timeout;
+        return function () {
+          const context = this,
+            args = arguments;
+          const later = function () {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+          };
+          const callNow = immediate && !timeout;
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+          if (callNow) func.apply(context, args);
+        };
+      }
+
+      // Wrapped checkDotsVisibility in a debouncer
+      const debouncedCheckDotsVisibility = debounce(checkDotsVisibility, 250);
+
+      // Event listener for window resize
+      window.addEventListener("resize", debouncedCheckDotsVisibility);
+
+      // Initial check
+      checkDotsVisibility();
+    };
+
+    const pollingInterval = setInterval(pollForElement, 200);
+  });
+
+  (function () {
+    function startPollingCarousel() {
+      let poller = setInterval(() => {
+        const relatedStoryCarousel = document.querySelectorAll(
+          '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
+        );
+
+        const navContainer = document.querySelector(
+          ".custom-min-nav-container"
+        );
+
+        if (
+          relatedStoryCarousel &&
+          relatedStoryCarousel.length &&
+          navContainer
+        ) {
+          clearInterval(poller);
+          const relatedStoryCarousel2 = document.querySelectorAll(
+            ".Theme-RelatedStoriesSection"
           );
 
-          console.log("intersect", currentPosition);
-          // Determine the direction of scroll based on positions
-          if (currentPosition > lastPosition) {
-            // Scrolling down
-            document.body.classList.add("custom-nav-hidden");
-            document.body.classList.remove("show-custom-mini-nav");
-            document.body.classList.remove("tab_container");
-            document.body.classList.remove("tab_options");
-          } else if (currentPosition < lastPosition) {
-            // Scrolling up
-            document.body.classList.remove("custom-nav-hidden");
-            document.body.classList.add("scroll-up");
-          }
-
-          // Update lastPosition for the next intersection
-          lastPosition = currentPosition;
+          navContainer.appendChild(
+            relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
+          );
         }
-      });
-    },
-    {
-      root: null, // observing intersections relative to the viewport
-      rootMargin: "0px 0px -50px 0px",
-      threshold: 0, // Trigger when 50% of the element is in the viewport
-    }
-  );
+      }, 250);
 
-  // Observe all sections
-  const sections = document.querySelectorAll(
-    ".Theme-Section:not(.Theme-RelatedStoriesSection), .Project-FooterContainer"
-  );
-  sections.forEach((section, i) => {
-    if (i === sections.length - 1)
-      section.classList.add("Theme-Section-Position-" + (i + 1));
-    observer.observe(section);
-  });
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const maxAttempts = 50;
-  let attempts = 0;
-
-  const pollForElement = () => {
-    const list = document.querySelectorAll(
-      ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
-    );
-    if ((list && list.length === 1) || attempts >= maxAttempts) {
-      clearInterval(pollingInterval);
-      if (list && list.length === 1) {
-        //list.forEach(function (list) {
-        initializeCarousel(list[0]);
-        // });
-      }
-    }
-
-    attempts++;
-  };
-
-  const initializeCarousel = (list) => {
-    const clonedSlides = list.cloneNode(true);
-    const parent = list.parentNode;
-    initializeCarousel2(parent, clonedSlides);
-
-    const slides = list.querySelectorAll("li");
-    slides.forEach(function (slide) {
-      slide.classList.add("splide__slide");
-    });
-
-    const splideContainer = document.createElement("div");
-    splideContainer.classList.add("splide");
-
-    const track = document.createElement("div");
-    track.classList.add("splide__track");
-
-    list.classList.add("splide__list");
-
-    parent.insertBefore(splideContainer, list);
-    splideContainer.appendChild(track);
-    track.appendChild(list);
-
-    new Splide(splideContainer, {
-      type: "loop",
-      perPage: 1,
-      perMove: 1,
-      gap: "1rem",
-      pagination: true,
-      arrows: true,
-      start: 1, // to get through code
-    }).mount();
-  };
-
-  const initializeCarousel2 = (parent, list) => {
-    const gliderContain = document.createElement("div");
-    gliderContain.classList.add("glider-contain");
-
-    // Move the 'list' inside 'glider-contain'
-    list.classList.add("glider");
-    gliderContain.appendChild(list);
-    parent.appendChild(gliderContain);
-
-    // Create navigation buttons
-    const prevArrow = document.createElement("button");
-    prevArrow.setAttribute("aria-label", "Previous");
-    prevArrow.classList.add("glider-prev");
-    prevArrow.textContent = "«";
-
-    const nextArrow = document.createElement("button");
-    nextArrow.setAttribute("aria-label", "Next");
-    nextArrow.classList.add("glider-next");
-    nextArrow.textContent = "»";
-
-    // Create the dots container
-    const dots = document.createElement("div");
-    dots.classList.add("dots");
-    dots.setAttribute("role", "tablist");
-
-    // Append arrows and dots to the 'glider-contain' container
-    gliderContain.appendChild(prevArrow);
-    gliderContain.appendChild(nextArrow);
-    gliderContain.appendChild(dots);
-
-    const links = list.querySelectorAll("li a");
-    links.forEach((element, i) => element.setAttribute("tabindex", i + 4));
-
-    // Initialize Glider.js on the list
-    new Glider(list, {
-      slidesToShow: "auto",
-      type: "carousel",
-      slidesToScroll: 1, // Move one slide at a time
-      itemWidth: 250,
-      draggable: true, // Allow dragging/swiping
-      arrows: {
-        prev: prevArrow,
-        next: nextArrow,
-      },
-      dots: dots,
-      scrollLock: true, // Lock to a slide even if the swipe was not forceful
-      scrollLockDelay: 150, // Slightly increase the delay to ensure scroll lock calculates correctly
-      startAt: 0,
-      gap: 92,
-      dragVelocity: 1, // Adjust velocity to control swipe sensitivity, might need fine-tuning
-      duration: 0.5, // Reduce the animation duration to make transitions quicker
-    });
-
-    function checkDotsVisibility() {
-      const dotsContainer = document.querySelector(".glider-dots");
-      if (dotsContainer) {
-        dotsContainer.style.display =
-          dotsContainer.children.length <= 1 ? "none" : "";
-      }
-    }
-
-    // Debouncer function
-    function debounce(func, wait, immediate) {
-      let timeout;
-      return function () {
-        const context = this,
-          args = arguments;
-        const later = function () {
-          timeout = null;
-          if (!immediate) func.apply(context, args);
-        };
-        const callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(context, args);
-      };
-    }
-
-    // Wrapped checkDotsVisibility in a debouncer
-    const debouncedCheckDotsVisibility = debounce(checkDotsVisibility, 250);
-
-    // Event listener for window resize
-    window.addEventListener("resize", debouncedCheckDotsVisibility);
-
-    // Initial check
-    checkDotsVisibility();
-  };
-
-  const pollingInterval = setInterval(pollForElement, 200);
-});
-
-(function () {
-  function startPollingCarousel() {
-    let poller = setInterval(() => {
-      const relatedStoryCarousel = document.querySelectorAll(
-        '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
-      );
-
-      const navContainer = document.querySelector(".custom-min-nav-container");
-
-      if (relatedStoryCarousel && relatedStoryCarousel.length && navContainer) {
-        clearInterval(poller);
-        const relatedStoryCarousel2 = document.querySelectorAll(
-          ".Theme-RelatedStoriesSection"
-        );
-
-        navContainer.appendChild(
-          relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
-        );
-      }
-    }, 250);
-
-    setTimeout(() => {
-      clearInterval(poller);
-    }, 10000);
-  }
-
-  startPollingCarousel();
-
-  // Accessibility
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Tab") {
-      // Introduce a delay to allow focus to update
       setTimeout(() => {
-        console.log(
-          "Tabbed",
-          document.activeElement,
-          document.activeElement.closest(".custom-min-nav-container")
-        );
-        // Check if the currently focused element is within '.custom-min-nav-container'
-        if (document.activeElement.closest(".custom-min-nav-container")) {
-          document.body.classList.add("tab_options");
-          document.body.classList.remove("tab_container");
-        }
-        // Check if the currently focused element has the class 'button_container'
-        else if (
-          document.activeElement.classList.contains("button_container")
-        ) {
-          document.body.classList.add("tab_container");
-          document.body.classList.remove("tab_options");
-        }
-        // If the focused element doesn't meet the above conditions
-        else {
-          document.body.classList.remove("tab_container", "tab_options");
-        }
-      }, 0); // A delay of 0 milliseconds effectively waits until the browser can process the focus shift
+        clearInterval(poller);
+      }, 10000);
     }
-  });
+
+    startPollingCarousel();
+
+    // Accessibility
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        // Introduce a delay to allow focus to update
+        setTimeout(() => {
+          console.log(
+            "Tabbed",
+            document.activeElement,
+            document.activeElement.closest(".custom-min-nav-container")
+          );
+          // Check if the currently focused element is within '.custom-min-nav-container'
+          if (document.activeElement.closest(".custom-min-nav-container")) {
+            document.body.classList.add("tab_options");
+            document.body.classList.remove("tab_container");
+          }
+          // Check if the currently focused element has the class 'button_container'
+          else if (
+            document.activeElement.classList.contains("button_container")
+          ) {
+            document.body.classList.add("tab_container");
+            document.body.classList.remove("tab_options");
+          }
+          // If the focused element doesn't meet the above conditions
+          else {
+            document.body.classList.remove("tab_container", "tab_options");
+          }
+        }, 0); // A delay of 0 milliseconds effectively waits until the browser can process the focus shift
+      }
+    });
+  })();
 })();
