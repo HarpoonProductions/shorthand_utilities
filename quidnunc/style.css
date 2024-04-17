@@ -1,6 +1,9 @@
-.Project-FooterContainer ul {
+.Project-FooterContainer ul,
+.Project-HeaderContainer {
   display: none !important;
 }
+
+.button_container::next { display: none }
 
 .tab_container .nav_container {
     transform: translateY(0%) !important;

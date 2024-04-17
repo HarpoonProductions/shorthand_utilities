@@ -411,13 +411,13 @@
         ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
       );
       if (
-        (list && list.length === 1 && currentPageIndex !== null) ||
+        (list && list.length && currentPageIndex !== null) ||
         attempts >= maxAttempts
       ) {
         clearInterval(pollingInterval);
-        if (list && list.length === 1) {
+        if (list && list.length) {
           //list.forEach(function (list) {
-          initializeCarousel(list[0]);
+          initializeCarousel(list[list.length - 1]);
           // });
         }
       }
