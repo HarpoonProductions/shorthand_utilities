@@ -213,7 +213,7 @@
 
   function renderCustomNavigation(links) {
     const currentIndex = links.findIndex((link) => link.current);
-    if (currentIndex === 0) document.body.classList.add("custom-nav-hidden");
+    document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");
     navContainer.classList.add("nav_container");
@@ -324,8 +324,6 @@
         document.body.classList.remove("tab_options");
       }
     });
-
-    document.body.classList.add("custom-nav-hidden");
   }
 
   function startPollingExtractLinks() {
