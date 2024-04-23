@@ -357,7 +357,7 @@
         document.body.classList.remove("show-custom-mini-nav");
         document.body.classList.remove("tab_container");
         document.body.classList.remove("tab_options");
-      } else {
+      } else if (currentScrollTop <= lastScrollTop || currentScrollTop <= 350) {
         // Scrolling up
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
