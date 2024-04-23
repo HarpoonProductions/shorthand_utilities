@@ -350,20 +350,29 @@
       const currentScrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
 
-      if (currentScrollTop >= lastScrollTop + 10) {
-        // should be 300 on cover, 0 on others
-        // Scrolling down
-        if (currentScrollTop > 150) {
-          document.body.classList.add("custom-nav-hidden");
-          document.body.classList.remove("show-custom-mini-nav");
-          document.body.classList.remove("tab_container");
-          document.body.classList.remove("tab_options");
-        }
-      } else {
-        // Scrolling up
+      if (currentScrollTop < lastScrollTop - 20) {
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
+      } else {
+        document.body.classList.add("custom-nav-hidden");
+        document.body.classList.remove("show-custom-mini-nav");
+        document.body.classList.remove("tab_container");
+        document.body.classList.remove("tab_options");
       }
+      // if (currentScrollTop >= lastScrollTop + 10) {
+      //   // should be 300 on cover, 0 on others
+      //   // Scrolling down
+      //   if (currentScrollTop > 150) {
+      //     document.body.classList.add("custom-nav-hidden");
+      //     document.body.classList.remove("show-custom-mini-nav");
+      //     document.body.classList.remove("tab_container");
+      //     document.body.classList.remove("tab_options");
+      //   }
+      // } else {
+      //   // Scrolling up
+      //   document.body.classList.remove("custom-nav-hidden");
+      //   document.body.classList.add("scroll-up");
+      // }
 
       lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
     },
