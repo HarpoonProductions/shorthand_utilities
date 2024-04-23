@@ -350,14 +350,14 @@
       const currentScrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
 
-      if (currentScrollTop > lastScrollTop && currentScrollTop > 350) {
+      if (currentScrollTop > lastScrollTop && currentScrollTop <= 350) {
         // should be 300 on cover, 0 on others
         // Scrolling down
         document.body.classList.add("custom-nav-hidden");
         document.body.classList.remove("show-custom-mini-nav");
         document.body.classList.remove("tab_container");
         document.body.classList.remove("tab_options");
-      } else if (currentScrollTop <= lastScrollTop || currentScrollTop <= 350) {
+      } else {
         // Scrolling up
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
