@@ -353,7 +353,7 @@
       if (currentScrollTop > lastScrollTop) {
         // should be 300 on cover, 0 on others
         // Scrolling down
-        if (currentScrollTop > 350) {
+        if (currentScrollTop > 150) {
           document.body.classList.add("custom-nav-hidden");
           document.body.classList.remove("show-custom-mini-nav");
           document.body.classList.remove("tab_container");
