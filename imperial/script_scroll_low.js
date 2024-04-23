@@ -343,14 +343,14 @@
 
   startPollingExtractLinks();
 
-  let lastScrollTop = 300;
+  let lastScrollTop = 0;
   window.addEventListener(
     "scroll",
     () => {
       const currentScrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
 
-      if (currentScrollTop > lastScrollTop && currentScrollTop > 300) {
+      if (currentScrollTop > lastScrollTop && currentScrollTop > 350) {
         // should be 300 on cover, 0 on others
         // Scrolling down
         document.body.classList.add("custom-nav-hidden");
