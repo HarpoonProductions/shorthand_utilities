@@ -350,7 +350,7 @@
       const currentScrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
 
-      if (currentScrollTop >= lastScrollTop) {
+      if (currentScrollTop >= lastScrollTop + 10) {
         // should be 300 on cover, 0 on others
         // Scrolling down
         if (currentScrollTop > 150) {
