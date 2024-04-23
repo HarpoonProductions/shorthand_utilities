@@ -262,13 +262,13 @@ border-left: 0.5px solid #fff;
 }
 
 
-/* alex's css */
+/* alex's css 
 
 .Theme-TitleSection {
   min-height: 100vh !important;
   min-height: 100svh !important;
 }
-
+*/
 .hide {
   opacity: 0 !important;
   cursor: unset !important;
