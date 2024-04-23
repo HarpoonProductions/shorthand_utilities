@@ -364,12 +364,8 @@
           document.body.classList.add("scroll-up");
         }
       } else {
-        // should be 300 on cover, 0 on others
-        // Scrolling down
-        document.body.classList.add("custom-nav-hidden");
-        document.body.classList.remove("show-custom-mini-nav");
-        document.body.classList.remove("tab_container");
-        document.body.classList.remove("tab_options");
+        document.body.classList.remove("custom-nav-hidden");
+        document.body.classList.add("scroll-up");
       }
 
       lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
