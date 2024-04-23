@@ -350,7 +350,7 @@
       const currentScrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
 
-      if (currentScrollTop >= lastScrollTop - 2) {
+      if (currentScrollTop >= lastScrollTop) {
         if (currentScrollTop > 150) {
           console.log("removing", currentScrollTop, lastScrollTop);
           document.body.classList.add("custom-nav-hidden");
