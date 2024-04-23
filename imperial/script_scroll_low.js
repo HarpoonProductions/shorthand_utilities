@@ -324,6 +324,8 @@
         document.body.classList.remove("tab_options");
       }
     });
+
+    document.body.classList.add("custom-nav-hidden");
   }
 
   function startPollingExtractLinks() {
