@@ -25,7 +25,6 @@
 /* End hide cookie banner */
 
 h1 {
-font-family: "kanit", sans-serif;
 font-weight: 400;
 font-style: normal;
 }
@@ -257,10 +256,7 @@ border-left: 0.5px solid #fff;
   display: none;
 }#StandardFooter {
   display: none;
-}h1 {
-  font-family: 'Kanit', sans-serif;
 }
-
 
 /* alex's css 
 
@@ -537,14 +533,12 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   font-size: 1.2em; /* Larger font size */
   color: black; /* Main text color */
   margin-bottom: 5px; /* Space between linkText and pageNumber */
-  font-family: "Lato", sans-serif;
 }
 
 /* Styling for pageNumber */
 .pageNumber {
   font-size: 0.8em;
   color: grey; /* Subtle color for pageNumber */
-  font-family: "Lato", sans-serif;
 }
 
 /* Hover effect on linkContainer */
