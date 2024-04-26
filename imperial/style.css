@@ -336,7 +336,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   flex-direction: column;
   cursor: pointer;
   position: relative;
-  opacity: 0.8;
+  opacity: 1;
   transition: opacity 1s;
   overflow: hidden;
   border-radius: 5px;
@@ -345,6 +345,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   width: 140px;
   color: white;
   text-decoration: none;
+  background: #1a1a27;
 }
 
 .button_container:focus {
@@ -393,6 +394,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transition: opacity 1s;
   max-height: 100%;
   pointer-events: none;
+  display: none;
 }
 
 .button_container.prev {
