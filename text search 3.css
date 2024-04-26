@@ -1,0 +1,39 @@
+.sh-names {
+  display: none;
+}
+
+.sh-names.show {
+  display: block;
+}
+
+/* Styles for the toggle container */
+.toggle-container {
+  display: flex;
+  justify-content: center; /* Centers the button horizontally */
+  align-items: center; /* Centers the button vertically */
+  width: 100%; /* Container takes full width of the page */
+  height: 100px; /* Adjust height as needed */
+  background-color: rgb(3, 16, 65); /* Deep blue background */
+}
+
+/* Styles for the toggle button */
+.toggle-button {
+  padding: 10px 20px; /* Padding for button size */
+  background-color: white; /* Button color */
+  color: rgb(
+    3,
+    16,
+    65
+  ); /* Text color that matches the container's background */
+  border: none; /* No border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.3s; /* Smooth transition for hover effects */
+  font-size: 16px; /* Font size of the button text */
+}
+
+/* Hover effect for the button */
+.toggle-button:hover {
+  background-color: #f2f2f2; /* Light grey background on hover */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
