@@ -157,7 +157,8 @@ document.addEventListener("DOMContentLoaded", function () {
           yOffset;
         window.scrollTo({ top: yPosition, behavior: "smooth" });
         current = (current + 1) % matches.length;
-        updateResultButtonText(current || matches.length, matches.length); // Correct index display
+        matches.length > 1 &&
+          updateResultButtonText(current || matches.length, matches.length); // Correct index display
       }
     };
 
