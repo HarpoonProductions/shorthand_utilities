@@ -35,7 +35,7 @@ font-style: normal;
 
 .contents-label {
   position: absolute;
-    bottom: -5px;
+    bottom: -3px;
     font-size: 11px;
     font-family: "Imperial Sans Text", sans-serif !important;
 }
@@ -409,7 +409,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .edition-logo {
   position: relative;
     bottom: 5.5px;
-    height: 108%;
+    height: 100%;
 }
 
 .button_container.contents {
