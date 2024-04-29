@@ -163,7 +163,7 @@ font-style: normal;
 }
 
 .splide__pagination__page.is-active {
- background: #40e0d0 !important;
+ background: #fff !important;
 }
 .splide__pagination__page {
   margin: 3px 9px !important;
