@@ -1,3 +1,7 @@
+.splide__pagination {
+  padding: 0 !important;
+}
+
 .Project-FooterContainer ul {
   display: none !important;
 }
