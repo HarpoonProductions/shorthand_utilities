@@ -48,7 +48,7 @@
       if (i !== 0) return link;
       return {
         href: link.href,
-        label: "Cover",
+        label: link.label,
         current: link.current,
       };
     });
