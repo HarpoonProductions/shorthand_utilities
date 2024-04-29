@@ -494,7 +494,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
       height: 22px;
     position: relative;
   bottom: 1px;
-  opacity: 0.8;
 }
 
 /* Reset default anchor styling while keeping the cursor pointer */
