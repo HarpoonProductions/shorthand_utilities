@@ -1,7 +1,7 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/imperial/imperial_icon.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/imperial/imperial_logo_white.png";
   var logoUrlInner =
     "https://harpn.s3.eu-west-2.amazonaws.com/imperial/imperial_long.png";
 
