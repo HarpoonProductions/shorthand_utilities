@@ -346,7 +346,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   border-radius: 5px;
   justify-content: center;
   align-items: center;
-  width: 140px;
+  width: 142px;
   color: white;
   text-decoration: none;
   background: #1a1a27;
@@ -377,18 +377,21 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   pointer-events: none;
   font-family: "Imperial Sans Text", sans-serif !important;
   z-index: 10;
-  min-height: 46px;
+  min-height: 43px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: end;
   padding-top: 4px;
+  padding-bottom: 1px;
 }
 
 .arrow {
   font-size: 20px;
   pointer-events: none;
   z-index: 10;
+  position: relative;
+  bottom: 2px;
 }
 
 .image_div {
