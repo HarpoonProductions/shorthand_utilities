@@ -375,7 +375,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button {
   cursor: pointer;
   pointer-events: none;
-  font-family: "Lato", sans-serif;
+  font-family: "Imperial Sans Text", sans-serif !important;
   z-index: 10;
   padding-top: 20px;
 }
@@ -581,10 +581,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
   border-radius: 8px;
   border: 0.5px solid #fff;
-}
-
-.custom-min-nav-container .Theme-RelatedStories--Title .related-story-card .related-story-image img {
-  opacity: 0.8
 }
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-text {
