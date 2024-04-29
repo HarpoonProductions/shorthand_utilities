@@ -140,7 +140,9 @@ font-style: normal;
 
 
 
-
+.custom-min-nav-container .splide__pagination {
+ padding: 0 !important;
+}
 
 @media only screen and (max-width: 619px) {
 .custom-min-nav-container .Theme-Layer-BodyText {
@@ -148,7 +150,7 @@ font-style: normal;
   }
   
   .custom-min-nav-container .splide__pagination {
-   bottom: -1.5em !important;   
+    bottom: -1.15em !important;
 
 }
 
@@ -161,11 +163,13 @@ font-style: normal;
 }
 
 .splide__pagination__page.is-active {
- background: #fff !important;
+ background: #40e0d0 !important;
 }
 .splide__pagination__page {
   margin: 3px 9px !important;
   padding: 4px !important;
+  background: #323333 !important;
+
 }
 
 
