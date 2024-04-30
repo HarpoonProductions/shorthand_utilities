@@ -28,6 +28,13 @@
           isCurrent = href === hrefTest;
         }
 
+        if (!isCurrent) {
+          const pathname = window.location.pathname;
+          const clean = pathname.replace("/graduation-programme-2024", "");
+          const check = new RegExp(clean, "gi");
+          isCurrent = check.test(href);
+        }
+
         console.log(`Current: ${window.location.href}, From nav: ${href}`);
 
         links.push({
@@ -356,7 +363,6 @@
 
       if (currentScrollTop > lastScrollTop) {
         if (currentScrollTop > 150) {
-          console.log("removing", currentScrollTop, lastScrollTop);
           document.body.classList.add("custom-nav-hidden");
           document.body.classList.remove("show-custom-mini-nav");
           document.body.classList.remove("tab_container");
