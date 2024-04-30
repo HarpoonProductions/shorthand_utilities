@@ -28,6 +28,8 @@
           isCurrent = href === hrefTest;
         }
 
+        console.log(`Current: ${window.location.href}, From nav: ${href}`);
+
         links.push({
           href,
           label,
