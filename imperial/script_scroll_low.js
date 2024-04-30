@@ -390,6 +390,7 @@
         (list && list.length && currentPageIndex !== null) ||
         attempts >= maxAttempts
       ) {
+        console.log("polling", attempts, list);
         clearInterval(pollingInterval);
         if (list && list.length) {
           //list.forEach(function (list) {
