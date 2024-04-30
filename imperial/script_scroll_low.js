@@ -44,6 +44,7 @@
     dfs(rootUl);
 
     return links.map((link, i) => {
+      console.log(link, i);
       if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
       if (i !== 0) return link;
       return {
@@ -212,6 +213,7 @@
   }
 
   function renderCustomNavigation(links) {
+    console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
     document.body.classList.add("custom-nav-hidden");
 
