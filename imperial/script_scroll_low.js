@@ -24,7 +24,7 @@
           isCurrent = true;
         } else {
           const page = window.location.href.split("/")[4];
-          const hrefTest = "../" + page + "/index.html";
+          const hrefTest = "../../" + page + "/index.html";
           isCurrent = href === hrefTest;
         }
 
