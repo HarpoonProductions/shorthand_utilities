@@ -363,8 +363,6 @@
           document.body.classList.remove("tab_options");
         }
       } else {
-        console.log("adding", currentScrollTop, lastScrollTop);
-
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
       }
