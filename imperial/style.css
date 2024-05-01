@@ -318,6 +318,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transition: transform 0.8s ease-in-out;
   z-index: 100;
   transition-delay: 0.5s;
+  border: 1px solid #bfbfbf;
 }
 
 .nav_container {
@@ -411,7 +412,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid;
+  border: 1px solid #bfbfbf;
 }
 
 .edition-logo {
@@ -422,7 +423,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.contents {
   background: #232333;
-  border: 1px solid;
+  border: 1px solid #bfbfbf;
   cursor: pointer;
   width: 90px;
   height: 125px;
@@ -430,7 +431,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid;
+  border: 1px solid #bfbfbf;
 }
 
 .button_container.prev .image_div {
@@ -484,10 +485,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .inner-logo-container {
     padding: 6px 15px 0;
-    border-top: 1px solid #40E0D0;
-    border-left: 0.5px solid #40E0D0;
     border-radius: 3px 3px 0 0;
-    border-right: 0.5px solid #40E0D0;
 }
 
 .edition-logo-inner {
