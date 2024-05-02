@@ -76,11 +76,11 @@ font-style: normal;
 
     .custom-min-nav-container .Theme-RelatedStoriesSection {
         min-height: 400px;
-        background: #40E0D0;
+        background: #d1f9f1;
         position: relative;
       bottom: 20px;
-     border-left: 0.5px solid #40E0D0;
-    border-right: 0.5px solid #40E0D0;
+     border-left: 0.5px solid #d1f9f1;
+    border-right: 0.5px solid #d1f9f1;
 
     }
 
@@ -172,12 +172,12 @@ font-style: normal;
 }
 
 .splide__pagination__page.is-active {
- background: #40e0d0 !important;
+ background: #d1f9f1 !important;
 }
 .splide__pagination__page {
   margin: 3px 9px !important;
   padding: 4px !important;
-  background: #232333 !important;
+  background: #133844 !important;
 
 }
 
@@ -229,8 +229,8 @@ font-style: normal;
     min-height: 400px;
     background: #fff;
   position: relative;
-border-left: 0.5px solid #40E0D0;
-    border-right: 0.5px solid #40E0D0;
+border-left: 0.5px solid #d1f9f1;
+    border-right: 0.5px solid #d1f9f1;
 
     bottom: 20px;
 }
@@ -321,7 +321,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container {
   transform: translate(-50%, 100%);
-  background: #232333;
+  background: #133844;
   height: 344px;
   width: 380px;
   border-radius: 3px;
@@ -331,7 +331,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transition: transform 0.8s ease-in-out;
   z-index: 100;
   transition-delay: 0.5s;
-  border: 1px solid #bfbfbf;
+  border: 1px solid #d1f9f1;
 }
 
 .nav_container {
@@ -425,7 +425,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid #bfbfbf;
+  border: 1px solid #d1f9f1;
 }
 
 .edition-logo {
@@ -435,8 +435,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .button_container.contents {
-  background: #232333;
-  border: 1px solid #bfbfbf;
+  background: #133844;
+  border: 1px solid #d1f9f1;
   cursor: pointer;
   width: 90px;
   height: 125px;
@@ -444,7 +444,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid #bfbfbf;
+  border: 1px solid #d1f9f1;
 }
 
 .button_container.prev .image_div {
@@ -597,7 +597,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
-  border: 0.5px solid #40E0D0;
+  border: 0.5px solid #d1f9f1;
 }
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-text {

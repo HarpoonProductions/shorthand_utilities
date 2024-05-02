@@ -1,9 +1,9 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/imperial/imperial_logo.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmagicon.png";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/imperial/Imperial_college_full_logo.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmagicon-long.png";
 
   function extractLinks() {
     const links = [];
