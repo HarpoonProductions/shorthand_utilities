@@ -411,13 +411,14 @@
         ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
       );
       if (
-        (list && list.length === 1 && currentPageIndex !== null) ||
+        (list && list.length && currentPageIndex !== null) ||
         attempts >= maxAttempts
       ) {
+        console.log("polling", attempts, list);
         clearInterval(pollingInterval);
-        if (list && list.length === 1) {
+        if (list && list.length) {
           //list.forEach(function (list) {
-          initializeCarousel(list[0]);
+          initializeCarousel(list[list.length - 1]);
           // });
         }
       }
@@ -557,6 +558,8 @@
         const relatedStoryCarousel = document.querySelectorAll(
           '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
         );
+
+        console.log(relatedStoryCarousel);
 
         const navContainer = document.querySelector(
           ".custom-min-nav-container"
