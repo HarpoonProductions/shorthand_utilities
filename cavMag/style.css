@@ -497,13 +497,12 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .inner-logo-container {
-    padding: 6px 15px 0;
-    border-radius: 3px 3px 0 0;
+    height: 30px;
 }
 
 .edition-logo-inner {
-      height: 22px;
-    position: relative;
+  height: 30px;
+  position: relative;
   bottom: 1px;
 }
 
