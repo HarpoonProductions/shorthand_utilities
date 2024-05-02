@@ -430,7 +430,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .edition-logo {
   position: relative;
-    bottom: 5.5px;
+    right: 2px;
     height: 100%;
 }
 
