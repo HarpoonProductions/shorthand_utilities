@@ -37,7 +37,7 @@ span[style="background-color: rgba(255, 255, 255, 0.114);"] {
 
 /* Hide cookie banner */
 
-/* #onetrust-consent-sdk { display: none } */
+#onetrust-consent-sdk { display: none }
 
 /* End hide cookie banner */
 
