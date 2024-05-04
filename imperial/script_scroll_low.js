@@ -126,7 +126,7 @@
 
     if (isPrevious) {
       buttonContainer.classList.add("prev");
-      buttonContainer.setAttribute("tabindex", lastIndex);
+      // buttonContainer.setAttribute("tabindex", lastIndex);
       if (!hide)
         buttonContainer.setAttribute("aria-label", "Previous story: " + text);
 
@@ -165,7 +165,7 @@
       }
     } else {
       buttonContainer.classList.add("next");
-      buttonContainer.setAttribute("tabindex", lastIndex + 2);
+      // buttonContainer.setAttribute("tabindex", lastIndex + 2);
       if (!hide)
         buttonContainer.setAttribute("aria-label", "Next story :" + text);
 
@@ -481,9 +481,9 @@
       gliderContain.appendChild(dots);
 
       const links = list.querySelectorAll("li a");
-      links.forEach((element, i) =>
-        element.setAttribute("tabindex", i + 4 + lastIndex)
-      );
+      // links.forEach((element, i) =>
+      //   element.setAttribute("tabindex", i + 4 + lastIndex)
+      // );
 
       // Initialize Glider.js on the list
       new Glider(list, {
