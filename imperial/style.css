@@ -48,8 +48,8 @@ font-style: normal;
 
 .contents-label {
   position: absolute;
-    bottom: -3px;
-    font-size: 11px;
+    bottom: -2px;
+    font-size: 9px;
     font-family: "Imperial Sans Text", sans-serif !important;
 }
 
@@ -439,7 +439,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   border: 1px solid #bfbfbf;
   cursor: pointer;
   width: 90px;
-  height: 125px;
+  height: 94px;
 }
 
 .button_container.next {
