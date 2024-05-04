@@ -1,4 +1,17 @@
 (function () {
+  const focusableSelectors =
+    'a, button, input, textarea, select, details,[tabindex]:not([tabindex="-1"])';
+  const focusableElements = Array.from(
+    document.querySelectorAll(focusableSelectors)
+  );
+
+  // Optionally filter out elements not visible or disabled
+  const visibleElements = focusableElements.filter(
+    (el) => !el.disabled && el.offsetWidth > 0 && el.offsetHeight > 0
+  );
+
+  // Set high tabindex for specific elements
+  const lastIndex = visibleElements.length + 1;
   let currentPageIndex = null;
   var logoUrl =
     "https://harpn.s3.eu-west-2.amazonaws.com/imperial/imperial_logo_white.png";
@@ -113,9 +126,9 @@
 
     if (isPrevious) {
       buttonContainer.classList.add("prev");
-      buttonContainer.setAttribute("tabindex", "1");
+      buttonContainer.setAttribute("tabindex", lastIndex);
       if (!hide)
-        buttonContainer.setAttribute("aria-label", "Link To Previous Story");
+        buttonContainer.setAttribute("aria-label", "Previous story: " + text);
 
       if (url) {
         let touchstartX = 0;
@@ -152,9 +165,9 @@
       }
     } else {
       buttonContainer.classList.add("next");
-      buttonContainer.setAttribute("tabindex", "2");
+      buttonContainer.setAttribute("tabindex", lastIndex + 2);
       if (!hide)
-        buttonContainer.setAttribute("aria-label", "Link To Next Story");
+        buttonContainer.setAttribute("aria-label", "Next story :" + text);
 
       if (url) {
         let touchstartX = 0;
@@ -468,7 +481,9 @@
       gliderContain.appendChild(dots);
 
       const links = list.querySelectorAll("li a");
-      links.forEach((element, i) => element.setAttribute("tabindex", i + 4));
+      links.forEach((element, i) =>
+        element.setAttribute("tabindex", i + 4 + lastIndex)
+      );
 
       // Initialize Glider.js on the list
       new Glider(list, {
