@@ -35,6 +35,8 @@
           href === "index.html"
         ) {
           isCurrent = true;
+        } else if (pathname === "/" || pathname === "/index.html") {
+          isCurrent = true;
         } else {
           const page = window.location.href.split("/")[4];
           const hrefTest = "../../" + page + "/index.html";
@@ -42,7 +44,6 @@
         }
 
         if (!isCurrent) {
-          const pathname = window.location.pathname;
           const clean = pathname.replace("/graduation-programme-2024", "");
           const check = new RegExp(clean, "gi");
           isCurrent = check.test(href);
