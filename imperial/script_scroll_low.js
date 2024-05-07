@@ -35,7 +35,10 @@
           href === "index.html"
         ) {
           isCurrent = true;
-        } else if (pathname === "/" || pathname === "/index.html") {
+        } else if (
+          window.Location.pathname === "/" ||
+          window.Location.pathname === "/index.html"
+        ) {
           isCurrent = true;
         } else {
           const page = window.location.href.split("/")[4];
@@ -44,7 +47,10 @@
         }
 
         if (!isCurrent) {
-          const clean = pathname.replace("/graduation-programme-2024", "");
+          const clean = window.Location.pathname.replace(
+            "/graduation-programme-2024",
+            ""
+          );
           const check = new RegExp(clean, "gi");
           isCurrent = check.test(href);
         }
