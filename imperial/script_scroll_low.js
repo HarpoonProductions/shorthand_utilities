@@ -214,9 +214,11 @@
     arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
     button.textContent =
       text &&
-      text.replace(/\b(\w)(\w*)/g, function (_, firstLetter, restOfString) {
-        return firstLetter.toUpperCase() + restOfString.toLowerCase();
-      });
+      text
+        .replace(/\b(\w)(\w*)/g, function (_, firstLetter, restOfString) {
+          return firstLetter.toUpperCase() + restOfString.toLowerCase();
+        })
+        .replace(" Of ", " of ");
 
     buttonContainer.appendChild(button);
     buttonContainer.appendChild(arrow);
