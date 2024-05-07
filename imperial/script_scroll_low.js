@@ -36,8 +36,8 @@
         ) {
           isCurrent = true;
         } else if (
-          window.Location.pathname === "/" ||
-          window.Location.pathname === "/index.html"
+          window.location.pathname === "/" ||
+          window.location.pathname === "/index.html"
         ) {
           isCurrent = true;
         } else {
@@ -47,7 +47,7 @@
         }
 
         if (!isCurrent) {
-          const clean = window.Location.pathname.replace(
+          const clean = window.location.pathname.replace(
             "/graduation-programme-2024",
             ""
           );
