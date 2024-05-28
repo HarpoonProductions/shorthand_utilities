@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showTooltip(index) {
       if (index >= tooltips.length) {
+        // All tooltips shown, remove overlay and re-enable scrolling
         overlay.remove();
         document.body.style.overflow = "";
         return;
@@ -19,13 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const tooltip = document.createElement("div");
       tooltip.className = "custom-tooltip";
       tooltip.innerHTML = `
-           <div class="tooltip-content">
-                <button class="tooltip-close">×</button>
-                   ${message}
-                  
-               </div>
-               <div class="tooltip-caret"></div>
-           `;
+                <div class="tooltip-content">
+                    ${message}
+                    <button class="tooltip-close">×</button>
+                </div>
+                <div class="tooltip-caret"></div>
+            `;
       document.body.appendChild(tooltip);
 
       // Positioning logic
@@ -35,50 +35,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let top, left, caretTop, caretLeft, caretClass;
 
-      if (rect.bottom + tooltipRect.height + 10 <= window.innerHeight) {
-        // Below
-        top = rect.bottom + window.scrollY + 10;
-        left = Math.min(
-          rect.left + window.scrollX + rect.width / 2 - tooltipRect.width / 2,
-          window.innerWidth - tooltipRect.width - 10
-        );
-        caretTop = "-6px";
-        caretLeft =
-          Math.min(tooltipRect.width / 2 - 5, tooltipRect.width - 15) + "px";
-        caretClass = "caret-top";
-      } else if (rect.top - tooltipRect.height - 10 >= 0) {
-        // Above
+      // 3a and 3b: Position above or below based on available space
+      if (rect.top >= tooltipRect.height + 10) {
+        // Enough space above
         top = rect.top + window.scrollY - tooltipRect.height - 10;
-        left = Math.min(
-          rect.left + window.scrollX + rect.width / 2 - tooltipRect.width / 2,
-          window.innerWidth - tooltipRect.width - 10
-        );
-        caretTop = tooltipRect.height + "px";
-        caretLeft =
-          Math.min(tooltipRect.width / 2 - 5, tooltipRect.width - 15) + "px";
         caretClass = "caret-bottom";
-      } else if (rect.left + tooltipRect.width + 10 <= window.innerWidth) {
-        // Right
-        top =
-          rect.top + window.scrollY + rect.height / 2 - tooltipRect.height / 2;
-        left = rect.right + window.scrollX + 10;
-        caretTop = tooltipRect.height / 2 - 5 + "px";
-        caretLeft = "-6px";
-        caretClass = "caret-left";
+        caretTop = tooltipRect.height + "px";
       } else {
-        // Left
-        top =
-          rect.top + window.scrollY + rect.height / 2 - tooltipRect.height / 2;
-        left = rect.left + window.scrollX - tooltipRect.width - 10;
-        caretTop = tooltipRect.height / 2 - 5 + "px";
-        caretLeft = tooltipRect.width + "px";
-        caretClass = "caret-right";
+        // Position below
+        top = rect.bottom + window.scrollY + 10;
+        caretClass = "caret-top";
+        caretTop = "-6px";
+      }
+
+      left =
+        rect.left + window.scrollX + rect.width / 2 - tooltipRect.width / 2;
+
+      // 5a and 5b: Adjust horizontal position if overflowing
+      if (left + tooltipRect.width > window.innerWidth - 10) {
+        // Overflowing right
+        left = window.innerWidth - tooltipRect.width - 10;
+      }
+      if (left < 10) {
+        // Overflowing left
+        left = 10;
       }
 
       tooltip.style.top = `${top}px`;
       tooltip.style.left = `${left}px`;
+
       caret.style.top = caretTop;
-      caret.style.left = caretLeft;
+
+      // 6: Place caret horizontally based on available space
+      const elementCenter = rect.left + rect.width / 2;
+      const tooltipCenter = left + tooltipRect.width / 2;
+      const caretShift = Math.min(
+        Math.max(elementCenter - tooltipCenter, -tooltipRect.width / 2 + 15),
+        tooltipRect.width / 2 - 15
+      );
+      caret.style.left = `${tooltipRect.width / 2 + caretShift - 5}px`;
       caret.classList.add(caretClass);
 
       // Close button logic
@@ -98,6 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Example usage
   const tooltips = [
+    {
+      element: document.querySelector(".Theme-StoryTitle"),
+      message: "Click here to search for a student",
+    },
     {
       element: document.querySelector(".project-search-button"),
       message: "Click here to search for a student",
