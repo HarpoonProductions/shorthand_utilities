@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Close button logic
       const closeButton = tooltip.querySelector(".tooltip-close");
-      closeButton.addEventListener("click", () => {
+      tooltip.addEventListener("click", () => {
         tooltip.classList.add("fade-out");
         setTimeout(() => {
           tooltip.remove();
@@ -88,15 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Start the tooltip sequence
-    showTooltip(currentIndex);
+    setTimeout(() => showTooltip(currentIndex), 200);
   }
 
-  // Example usage
   const tooltips = [
-    {
-      element: document.querySelector(".Theme-StoryTitle"),
-      message: "Click here to search for a student",
-    },
     {
       element: document.querySelector(".project-search-button"),
       message: "Click here to search for a student",
@@ -108,6 +103,10 @@ document.addEventListener("DOMContentLoaded", () => {
     {
       element: document.querySelector(".Navigation__itemList"),
       message: "Navigate to other stories here",
+    },
+    {
+      element: document.querySelector(".Theme-Byline"),
+      message: "Made by this person",
     },
   ];
 

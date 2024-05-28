@@ -1,0 +1,77 @@
+/* Tooltip overlay */
+.tooltip-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+}
+
+/* Tooltip container */
+.custom-tooltip {
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: "Lato", sans-serif;
+  font-size: 14px;
+  z-index: 9999;
+  max-width: 220px;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
+  cursor: pointer;
+}
+
+/* Tooltip content */
+.tooltip-content {
+  position: relative;
+}
+
+/* Close button */
+.tooltip-close {
+  position: absolute;
+  top: -12px;
+  right: -10px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Caret */
+.tooltip-caret {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.caret-bottom {
+  border-width: 6px 6px 0;
+  border-color: #333 transparent transparent transparent;
+}
+
+.caret-top {
+  border-width: 0 6px 6px 6px;
+  border-color: transparent transparent #333 transparent;
+}
+
+.caret-left {
+  border-width: 6px 0 6px 6px;
+  border-color: transparent transparent transparent #333;
+}
+
+.caret-right {
+  border-width: 6px 6px 6px 0;
+  border-color: transparent #333 transparent transparent;
+}
+
+/* Fade out animation */
+.custom-tooltip.fade-out {
+  opacity: 0;
+}
