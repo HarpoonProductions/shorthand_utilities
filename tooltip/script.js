@@ -91,10 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
       message: "Click here to go back to the home page",
     },
     {
-      element: ".Navigation__itemList",
-      message: "Navigate to other stories here",
-    },
-    {
       element: ".Theme-Byline",
       message: "Made by this person",
     },
