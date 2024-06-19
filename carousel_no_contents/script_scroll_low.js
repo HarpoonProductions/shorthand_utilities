@@ -72,7 +72,7 @@
     );
     dfs(rootUl);
 
-    const rawLinks = links.filter((_, i) => i >= 3)
+    const rawLinks = links.filter((_, i) => i >= 3);
 
     return rawLinks.map((link, i) => {
       console.log(link, i);
@@ -83,7 +83,7 @@
         label: link.label,
         current: link.current,
       };
-    }).;
+    });
   }
 
   function fetchSrcset(url) {
