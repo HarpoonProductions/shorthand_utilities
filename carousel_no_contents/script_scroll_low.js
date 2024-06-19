@@ -72,7 +72,9 @@
     );
     dfs(rootUl);
 
-    return links.map((link, i) => {
+    const rawLinks = links.filter((_, i) => i >= 3)
+
+    return rawLinks.map((link, i) => {
       console.log(link, i);
       if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
       if (i !== 0) return link;
@@ -81,7 +83,7 @@
         label: link.label,
         current: link.current,
       };
-    });
+    }).;
   }
 
   function fetchSrcset(url) {

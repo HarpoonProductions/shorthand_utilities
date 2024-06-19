@@ -1,3 +1,7 @@
+.Theme-NavigationBarItem:nth-of-type(4) {
+  display: none !important;
+}
+
 .student-search-container {
     margin: 20px;
     padding: 20px;
@@ -396,8 +400,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   position: fixed;
   bottom: 7px;
   width: 100%;
+  margin: 0 40px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: flex-end;
   padding: 10px;
   box-sizing: border-box;
