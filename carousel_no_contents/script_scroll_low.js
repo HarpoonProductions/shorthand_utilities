@@ -41,8 +41,8 @@
         ) {
           isCurrent = true;
         } else {
-          const page = window.location.href.split("/")[4];
-          const hrefTest = "../../" + page + "/index.html";
+          const page = window.location.href.split("/")[5];
+          const hrefTest = "../../graduation-2024/" + page + "/index.html";
           isCurrent = href === hrefTest;
         }
 
