@@ -505,6 +505,11 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   height: 131px;
 }
 
+.button_container {
+  font-family: "Poppins", sans-serif;
+  background-color: #2e003b;
+}
+
 .button_container.next {
   margin-left: 20px;
   border: 1px solid #bfbfbf;
