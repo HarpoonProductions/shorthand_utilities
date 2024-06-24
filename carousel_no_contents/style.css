@@ -426,7 +426,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   width: 142px;
   color: white;
   text-decoration: none;
-  background: #1a1a27;
+  font-family: "Poppins", sans-serif;
+  background-color: #2e003b;
 }
 
 .button_container:focus {
@@ -503,11 +504,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   cursor: pointer;
   width: 124px;
   height: 131px;
-}
-
-.button_container {
-  font-family: "Poppins", sans-serif;
-  background-color: #2e003b;
 }
 
 .button_container.next {
