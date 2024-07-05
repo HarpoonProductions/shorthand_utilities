@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
           yOffset;
         if (window.pageYOffset > 0 || yPosition > 0) {
           // Check if the page has likely scrolled or can scroll
-          window.scrollTo({ top: yPosition - 100, behavior: "smooth" });
+          window.scrollTo({ top: yPosition - 250, behavior: "smooth" });
           current = (current + 1) % matches.length;
           matches.length > 1 &&
             updateResultButtonText(current || matches.length, matches.length);
