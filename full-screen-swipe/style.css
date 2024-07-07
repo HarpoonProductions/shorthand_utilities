@@ -121,9 +121,17 @@ font-style: normal;
 
 
 .related-story-card {
-  height: 100vh !important;
+  height: 98vh !important;
   flex-direction: column !important;
+  padding: 20px 0px 20px 26px;
+  background: beige !important;
 }
+
+.body,
+.Theme-CustomHtmlSection {
+  background: beige !important;
+}
+
 
 .splide__slide img {
   object-fit: cover !important;
@@ -131,12 +139,12 @@ font-style: normal;
 }
 
 .related-story-image {
-  height: 80vh !important;
+  height: 76vh !important;
 }
 
-/* .related-story-text {
-  display: none !important;
-} */
+.related-story-text {
+  margin: 0 20px;
+}
 
 .Theme-Section-Position-3 {
   display: none !important
