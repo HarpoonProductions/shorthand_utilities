@@ -30,7 +30,7 @@
 
       list.classList.add("splide__list");
 
-      parent.insertBefore(splideContainer, list);
+      parent.appendChild(splideContainer);
       splideContainer.appendChild(track);
       track.appendChild(list);
 
