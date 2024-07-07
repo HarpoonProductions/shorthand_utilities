@@ -127,16 +127,20 @@ font-style: normal;
 
 .splide__slide img {
   object-fit: cover !important;
+  height: 80vh !important;
 }
 
 .related-story-image {
-  height: 100%;
+  height: 80vh !important;
 }
 
 /* .related-story-text {
   display: none !important;
 } */
 
+.Theme-Section-Position-3 {
+  display: none !important
+}
 
 
     .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
