@@ -1,3 +1,7 @@
+.full-screen-carousel {
+  height: 100svh;
+}
+
 .Theme-TitleSection {
   display: none !important;
 }

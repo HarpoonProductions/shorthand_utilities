@@ -36,7 +36,7 @@
 
       new Splide(splideContainer, {
         type: "loop",
-        perPage: 1,
+        perPage: 1.5,
         perMove: 1,
         gap: "1rem",
         pagination: true,
