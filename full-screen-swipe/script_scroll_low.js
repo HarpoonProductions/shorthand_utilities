@@ -60,7 +60,7 @@
         dots: dots,
         scrollLock: true, // Lock to a slide even if the swipe was not forceful
         scrollLockDelay: 150, // Slightly increase the delay to ensure scroll lock calculates correctly
-        startAt: currentPageIndex,
+        startAt: 0,
         gap: 92,
         dragVelocity: 1, // Adjust velocity to control swipe sensitivity, might need fine-tuning
         duration: 0.5, // Reduce the animation duration to make transitions quicker
