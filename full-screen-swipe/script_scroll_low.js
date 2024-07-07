@@ -8,7 +8,7 @@
         ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
       );
       const parent = document.querySelector(".full-screen-carousel");
-      if ((list && list.length && page) || attempts >= maxAttempts) {
+      if ((list && list.length && parent) || attempts >= maxAttempts) {
         clearInterval(pollingInterval);
         initializeCarousel(list[list.length - 1], parent);
       }
