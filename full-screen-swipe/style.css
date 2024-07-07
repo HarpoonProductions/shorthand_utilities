@@ -1,5 +1,5 @@
 .Theme-TitleSection {
-  display: none;
+  display: none !important;
 }
 
 .student-search-container {
