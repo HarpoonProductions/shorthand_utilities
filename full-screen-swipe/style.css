@@ -139,15 +139,24 @@ font-style: normal;
 }
 
 .related-story-image {
-  height: 76vh !important;
+  height: 52vh !important;
 }
 
 .related-story-text {
-  margin: 0 20px;
+  background: white;
+  padding: 0 20px 10px;
 }
 
 .Theme-Section-Position-3 {
   display: none !important
+}
+
+h3.related-story-title {
+  font-size: 15px !important;
+}
+
+p.related-story-description {
+  font-size: 11px;
 }
 
 
