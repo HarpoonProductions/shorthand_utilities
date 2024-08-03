@@ -19,29 +19,26 @@
     const initializeCarousel = (list, parent) => {
       const slides = list.querySelectorAll("li");
       slides.forEach(function (slide) {
-        slide.classList.add("splide__slide");
+        slide.classList.add("glide__slide");
       });
 
-      const splideContainer = document.createElement("div");
-      splideContainer.classList.add("splide");
+      const glideContainer = document.createElement("div");
+      glideContainer.classList.add("glide");
 
       const track = document.createElement("div");
-      track.classList.add("splide__track");
+      track.classList.add("glide__track");
+      track.setAttribute("data-glide-el", "track");
 
-      list.classList.add("splide__list");
+      list.classList.add("glide__slides");
 
-      parent.appendChild(splideContainer);
-      splideContainer.appendChild(track);
+      parent.appendChild(glideContainer);
+      glideContainer.appendChild(track);
       track.appendChild(list);
 
-      new Splide(splideContainer, {
-        type: "loop",
-        perPage: 1.5,
-        perMove: 1,
-        gap: "1rem",
-        pagination: true,
-        arrows: true,
-        start: 0,
+      new Glide(".glide", {
+        type: "carousel",
+        perView: 1.5,
+        swipeThreshold: 50,
       }).mount();
     };
 
