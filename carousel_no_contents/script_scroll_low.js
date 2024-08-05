@@ -72,7 +72,11 @@
     );
     dfs(rootUl);
 
+    console.log(links);
+
     const rawLinks = links.filter((_, i) => i >= 3);
+
+    console.log(rawLinks);
 
     return rawLinks.map((link, i) => {
       console.log(link, i);
