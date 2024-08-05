@@ -72,13 +72,7 @@
     );
     dfs(rootUl);
 
-    console.log(links);
-
-    const rawLinks = links.filter((_, i) => i >= 3);
-
-    console.log(rawLinks);
-
-    return rawLinks.map((link, i) => {
+    return links.map((link, i) => {
       console.log(link, i);
       if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
       if (i !== 0) return link;
