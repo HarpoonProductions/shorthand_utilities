@@ -329,7 +329,7 @@
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Extract position from the class name
+            console.log(entry.target.className);
 
             const currentPosition = parseInt(
               entry.target.className.match(/Theme-Section-Position-(\d+)/)[1],
@@ -358,6 +358,11 @@
 
             // Update lastPosition for the next intersection
             lastPosition = currentPosition;
+
+            if (/Final-ABCDEFGHI/.test(entry.target.className)) {
+              document.body.classList.remove("custom-nav-hidden");
+              document.body.classList.add("scroll-up");
+            }
           }
         });
       },
