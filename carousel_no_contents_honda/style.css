@@ -424,10 +424,12 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   justify-content: center;
   align-items: center;
   width: 142px;
-  color: white;
   text-decoration: none;
   font-family: "Poppins", sans-serif;
-  background-color: #2e003b;
+  border: 1px solid #bfbfbf; /* You may choose to keep or remove the border */
+  color: #333; /* Dark gray for better visibility on white */
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .button_container:focus {
@@ -489,7 +491,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid #bfbfbf;
 }
 
 .edition-logo {
@@ -508,7 +509,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid #bfbfbf;
 }
 
 .button_container.prev .image_div {
