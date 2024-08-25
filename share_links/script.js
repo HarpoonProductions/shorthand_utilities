@@ -2,11 +2,10 @@
 function addShareButtons() {
   // Select all p tags within the specified structure
   const paragraphs = document.querySelectorAll(
-    ".sh-names .Theme-Layer-BodyText--inner p.fade-in-bottom"
+    ".sh-names .Theme-Layer-BodyText--inner p"
   );
 
   paragraphs.forEach((p) => {
-    // Extract text content, ignoring any nested structure
     const studentName = p.textContent.trim();
 
     // Create the share button
