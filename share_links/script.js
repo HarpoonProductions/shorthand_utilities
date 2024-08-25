@@ -49,8 +49,8 @@ function addShareButtons() {
 }
 
 // Add some basic styles
-const style = document.createElement("style");
-style.textContent = `
+let styleShare = document.createElement("style");
+styleShare.textContent = `
     .share-button {
         background: none;
         border: none;
@@ -65,7 +65,7 @@ style.textContent = `
         vertical-align: middle;
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(styleShare);
 
 // Run the function when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", addShareButtons);
