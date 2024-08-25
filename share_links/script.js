@@ -2,7 +2,7 @@
 function addShareButtons() {
   // Select all p tags within the specified structure
   const paragraphs = document.querySelectorAll(
-    ".sh-names .Theme-Layer-BodyText--inner p.fade-in-bottom"
+    ".sh-names-tagged .Theme-Layer-BodyText--inner p.fade-in-bottom"
   );
 
   paragraphs.forEach((p) => {
