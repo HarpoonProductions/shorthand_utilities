@@ -10,16 +10,11 @@ function addShareButtons() {
   paragraphs.forEach((p) => {
     const studentName = p.textContent.trim();
 
-    console.log(studentName);
-
-    if (names[studentName]) {
+    if (names[studentName] === undefined) {
       names[studentName]++;
     } else {
       names[studentName] = 0;
     }
-
-    console.log(names);
-    console.log(names[studentName]);
 
     // Create the share button
     const shareButton = document.createElement("button");
