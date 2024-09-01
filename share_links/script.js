@@ -13,7 +13,7 @@ function addShareButtons() {
     if (names[studentName]) {
       names[studentName]++;
     } else {
-      names[studentName] = 1;
+      names[studentName] = 0;
     }
 
     // Create the share button

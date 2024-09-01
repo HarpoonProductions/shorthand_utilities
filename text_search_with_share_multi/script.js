@@ -152,7 +152,11 @@ document.addEventListener("DOMContentLoaded", function () {
             frag.appendChild(document.createTextNode(part));
             if (index !== endIndex) {
               const span = document.createElement("span");
-              span.style.backgroundColor = "yellow";
+
+              if (!nameIndex || matches.length !== parseInt(nameIndex, 10)) {
+                span.style.backgroundColor = "yellow";
+              }
+
               span.textContent = text;
               frag.appendChild(span);
               matches.push(span);
