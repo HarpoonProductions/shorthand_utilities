@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log(!nameIndex);
     console.log(matches.length > 1 && !nameIndex);
 
-    if (matches.length > 1 && nameIndex === "null") {
+    if (matches.length > 1 && !nameIndex) {
       createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
     } else {
       console.log("Only one match found, no need for result button.");
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Decode URI component in case the name is encoded
     scrollToAndHighlightText(
       decodeURIComponent(studentName),
-      decodeURIComponent(nameIndex)
+      nameIndex && decodeURIComponent(nameIndex)
     );
   }
 });
