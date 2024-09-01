@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })(document);
 
-  function scrollToAndHighlightText(text, nameIndex) {
+  function scrollToAndHighlightText(text) {
     const containers = document.querySelectorAll(".sh-names");
     if (!containers.length) {
       console.error("Container .sh-names not found.");
@@ -172,12 +172,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (matches.length > 0) {
-      scrollToMatch(matches, nameIndex);
+      scrollToMatch(matches);
     }
   }
 
-  function scrollToMatch(matches, nameIndex, yOffset = -100) {
-    let current = nameIndex ? parseInt(nameIndex, 10) : 0;
+  function scrollToMatch(matches, yOffset = -100) {
+    let current = 0;
 
     const scroll = () => {
       const attemptScroll = () => {
@@ -201,28 +201,22 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     };
 
-    if (matches.length > 1 && !nameIndex) {
+    if (matches.length > 1) {
       createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
     } else {
       console.log("Only one match found, no need for result button.");
     }
 
     // Initial scroll to the first match
-    scroll(nameIndex);
+    scroll();
   }
 
   // Get the 'student_name' query parameter
   const urlParams = new URLSearchParams(window.location.search);
   const studentName = urlParams.get("student_name");
-  const nameIndex = urlParams.get("name_index");
-
-  console.log("NEW LOG", studentName, nameIndex);
 
   if (studentName) {
     // Decode URI component in case the name is encoded
-    scrollToAndHighlightText(
-      decodeURIComponent(studentName),
-      decodeURIComponent(nameIndex)
-    );
+    scrollToAndHighlightText(decodeURIComponent(studentName));
   }
 });
