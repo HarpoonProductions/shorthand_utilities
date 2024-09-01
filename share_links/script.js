@@ -20,6 +20,7 @@ function addShareButtons() {
 
     // Create the share button
     const shareButton = document.createElement("button");
+    const index = names[studentName];
     shareButton.className = "share-button";
     shareButton.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -32,11 +33,11 @@ function addShareButtons() {
         `;
 
     // Add click event listener
-    shareButton.addEventListener("click", () => {
+    shareButton.addEventListener("click", (index) => {
       const currentURL = window.location.href.split("?")[0]; // Remove any existing query params
       const shareURL = `${currentURL}?student_name=${encodeURIComponent(
         studentName
-      )}&name_index=${encodeURIComponent(names[studentName] - 1)}`;
+      )}&name_index=${encodeURIComponent(index - 1)}`;
 
       if (navigator.share) {
         navigator
