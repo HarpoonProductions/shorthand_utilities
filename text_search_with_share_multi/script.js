@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (index !== endIndex) {
               const span = document.createElement("span");
 
-              if (!nameIndex || matches.length !== parseInt(nameIndex, 10)) {
+              if (!nameIndex || matches.length === parseInt(nameIndex, 10)) {
                 span.style.backgroundColor = "yellow";
               }
 
