@@ -33,7 +33,7 @@ function addShareButtons() {
         `;
 
     // Add click event listener
-    shareButton.addEventListener("click", (index) => {
+    shareButton.addEventListener("click", () => {
       const currentURL = window.location.href.split("?")[0]; // Remove any existing query params
       const shareURL = `${currentURL}?student_name=${encodeURIComponent(
         studentName
