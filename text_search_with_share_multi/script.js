@@ -207,11 +207,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log(matches);
     console.log(nameIndex);
+    console.log(typeof nameIndex);
     console.log(matches.length > 1);
     console.log(!nameIndex);
     console.log(matches.length > 1 && !nameIndex);
 
-    if (matches.length > 1 && !nameIndex) {
+    if (matches.length > 1 && nameIndex === "null") {
       createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
     } else {
       console.log("Only one match found, no need for result button.");
