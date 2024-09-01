@@ -172,11 +172,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (matches.length > 0) {
-      scrollToMatch(matches);
+      scrollToMatch(matches, nameIndex);
     }
   }
 
-  function scrollToMatch(matches, yOffset = -100) {
+  function scrollToMatch(matches, nameIndex, yOffset = -100) {
     let current = nameIndex ? parseInt(nameIndex, 10) : 0;
 
     const scroll = () => {
@@ -215,6 +215,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
   const studentName = urlParams.get("student_name");
   const nameIndex = urlParams.get("name_index");
+
+  console.log("NEW LOG", studentName, nameIndex);
 
   if (studentName) {
     // Decode URI component in case the name is encoded
