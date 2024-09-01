@@ -205,6 +205,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     };
 
+    console.log(matches);
+
     if (matches.length > 1 && !nameIndex) {
       createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
     } else {
