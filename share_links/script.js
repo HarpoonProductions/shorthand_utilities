@@ -10,10 +10,10 @@ function addShareButtons() {
   paragraphs.forEach((p) => {
     const studentName = p.textContent.trim();
 
-    if (names[studentName] === undefined) {
+    if (names[studentName]) {
       names[studentName]++;
     } else {
-      names[studentName] = 0;
+      names[studentName] = 1;
     }
 
     // Create the share button
@@ -34,7 +34,7 @@ function addShareButtons() {
       const currentURL = window.location.href.split("?")[0]; // Remove any existing query params
       const shareURL = `${currentURL}?student_name=${encodeURIComponent(
         studentName
-      )}&name_index=${encodeURIComponent(names[studentName])}`;
+      )}&name_index=${encodeURIComponent(names[studentName] - 1)}`;
 
       if (navigator.share) {
         navigator
