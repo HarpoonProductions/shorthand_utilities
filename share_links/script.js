@@ -11,8 +11,10 @@ function addShareButtons() {
     const studentName = p.textContent.trim();
 
     if (names[studentName]) {
+      console.log(studentName, "exists");
       names[studentName]++;
     } else {
+      console.log(studentName, "doesnt exist");
       names[studentName] = 1;
     }
 
