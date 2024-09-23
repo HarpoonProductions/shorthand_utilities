@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
   (function (d) {
     var qsa = "querySelectorAll";
     var buttons = d[qsa](".toggle-button");
-    var sections = d[qsa](".sh-names");
+    var sections = d[qsa](".sh-names, .sh-prizewinnernames");
     buttons.forEach((button, i) => {
       button.addEventListener("click", function () {
         sections[i].classList.toggle("show");
@@ -123,7 +123,9 @@ document.addEventListener("DOMContentLoaded", function () {
   })(document);
 
   function scrollToAndHighlightText(text, nameIndex) {
-    const containers = document.querySelectorAll(".sh-names");
+    const containers = document.querySelectorAll(
+      ".sh-names, .sh-prizewinnernames"
+    );
     if (!containers.length) {
       console.error("Container .sh-names not found.");
       return;
