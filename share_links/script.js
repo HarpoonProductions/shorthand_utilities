@@ -40,15 +40,35 @@ function addShareButtons() {
       )}&name_index=${encodeURIComponent(index - 1)}`;
 
       if (navigator.share) {
-        navigator
-          .share({
-            title: "Student Information",
-            text: `Check out information for ${studentName}`,
-            url: shareURL,
+        let sharePromise = navigator.share({
+          title: "Student Information",
+          text: `Check out information for ${studentName}`,
+          url: shareURL,
+        });
+
+        // Set a timeout to detect if the share action doesn't complete
+        let timeoutId = setTimeout(() => {
+          sharePromise.catch(() => {}); // Ignore any error from the cancelled promise
+          fallbackShare();
+        }, 5000); // 5 seconds timeout
+
+        sharePromise
+          .then(() => {
+            clearTimeout(timeoutId);
+            console.log("Shared successfully");
           })
-          .catch(console.error);
+          .catch((error) => {
+            clearTimeout(timeoutId);
+            console.error("Share failed:", error);
+            fallbackShare();
+          });
       } else {
+        fallbackShare();
+      }
+
+      function fallbackShare() {
         // Fallback for browsers that don't support the Web Share API
+        // or when sharing fails
         prompt("Copy this link to share:", shareURL);
       }
     });
