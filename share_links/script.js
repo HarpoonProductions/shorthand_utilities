@@ -2,7 +2,8 @@
 function addShareButtons() {
   // Select all p tags within the specified structure
   const paragraphs = document.querySelectorAll(
-    ".sh-names .Theme-Layer-BodyText--inner p"
+    ".sh-names .Theme-Layer-BodyText--inner p",
+    ".sh-prizewinnernames .Theme-Layer-BodyText--inner p"
   );
 
   const names = {};
