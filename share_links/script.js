@@ -32,7 +32,6 @@ function addShareButtons() {
             </svg>
         `;
 
-    // Add click event listener
     shareButton.addEventListener("click", () => {
       const currentURL = window.location.href.split("?")[0]; // Remove any existing query params
       const shareURL = `${currentURL}?student_name=${encodeURIComponent(
@@ -40,6 +39,7 @@ function addShareButtons() {
       )}&name_index=${encodeURIComponent(index - 1)}`;
 
       if (navigator.share) {
+        let hasResponded = false;
         let sharePromise = navigator.share({
           title: "Student Information",
           text: `Check out information for ${studentName}`,
@@ -48,19 +48,25 @@ function addShareButtons() {
 
         // Set a timeout to detect if the share action doesn't complete
         let timeoutId = setTimeout(() => {
-          sharePromise.catch(() => {}); // Ignore any error from the cancelled promise
-          fallbackShare();
+          if (!hasResponded) {
+            hasResponded = true;
+            fallbackShare();
+          }
         }, 5000); // 5 seconds timeout
 
         sharePromise
           .then(() => {
             clearTimeout(timeoutId);
+            hasResponded = true;
             console.log("Shared successfully");
           })
           .catch((error) => {
             clearTimeout(timeoutId);
             console.error("Share failed:", error);
-            fallbackShare();
+            if (!hasResponded) {
+              hasResponded = true;
+              fallbackShare();
+            }
           });
       } else {
         fallbackShare();
