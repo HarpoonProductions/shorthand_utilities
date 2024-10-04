@@ -125,16 +125,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
+      console.log("TESTING UPDATES", updates);
+
       // Apply all collected updates
       updates.forEach((update) => {
-        update.oldNode.parentNode.replaceChild(update.frag, update.oldNode);
-
-        // Find the nearest ancestor with class 'panel' and set its display to inline
+        console.log("TESTING OUTER", update);
         let currentElement = update.oldNode.parentElement;
         while (currentElement && !currentElement.classList.contains("panel")) {
           console.log("TESTING", currentElement);
           currentElement = currentElement.parentElement;
         }
+        update.oldNode.parentNode.replaceChild(update.frag, update.oldNode);
+
+        // Find the nearest ancestor with class 'panel' and set its display to inline
         if (currentElement) {
           currentElement.style.display = "inline";
         }
