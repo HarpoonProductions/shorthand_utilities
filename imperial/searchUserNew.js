@@ -191,39 +191,3 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollToAndHighlightText(decodeURIComponent(studentName));
   }
 });
-
-document.addEventListener("DOMContentLoaded", function () {
-  (function (d) {
-    var qsa = "querySelectorAll";
-
-    // First set
-    var buttons1 = d[qsa](".toggle-button3");
-    var sections1 = d[qsa](".sh-bio");
-
-    // Second set
-    var buttons2 = d[qsa](".toggle-button2");
-    var sections2 = d[qsa](".sh-prizewinnernames");
-
-    // Third set
-    var buttons3 = d[qsa](".toggle-button1");
-    var sections3 = d[qsa](".sh-speech");
-
-    buttons1.forEach((button, i) => {
-      button.addEventListener("click", function () {
-        sections1[i].classList.toggle("show");
-      });
-    });
-
-    buttons2.forEach((button, i) => {
-      button.addEventListener("click", function () {
-        sections2[i].classList.toggle("show");
-      });
-    });
-
-    buttons3.forEach((button, i) => {
-      button.addEventListener("click", function () {
-        sections3[i].classList.toggle("show");
-      });
-    });
-  })(document);
-});
