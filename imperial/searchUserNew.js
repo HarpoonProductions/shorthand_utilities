@@ -132,6 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Find the nearest ancestor with class 'panel' and set its display to inline
         let currentElement = update.oldNode.parentElement;
         while (currentElement && !currentElement.classList.contains("panel")) {
+          console.log("TESTING", currentElement);
           currentElement = currentElement.parentElement;
         }
         if (currentElement) {
