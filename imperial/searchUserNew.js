@@ -192,6 +192,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (studentName) {
     // Decode URI component in case the name is encoded
-    scrollToAndHighlightText(decodeURIComponent(studentName));
+    // scrollToAndHighlightText(decodeURIComponent(studentName));
   }
 });
