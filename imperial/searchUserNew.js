@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function scrollToMatch(matches, yOffset = -100) {
+  function scrollToMatch(matches, yOffset = -300) {
     console.log("scrolling", matches);
     let current = 0;
 
