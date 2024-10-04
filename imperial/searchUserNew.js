@@ -152,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function scrollToMatch(matches, yOffset = -100) {
+    console.log("scrolling", matches);
     let current = 0;
 
     const scroll = () => {
@@ -192,6 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (studentName) {
     // Decode URI component in case the name is encoded
-    // scrollToAndHighlightText(decodeURIComponent(studentName));
+    scrollToAndHighlightText(decodeURIComponent(studentName));
   }
 });
