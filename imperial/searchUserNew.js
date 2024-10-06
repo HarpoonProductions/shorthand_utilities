@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // search user
-  const matches = [];
+  const searchedAccordions = [];
 
   function scrollToAndHighlightText(text) {
     const containers = document.querySelectorAll(
@@ -195,21 +195,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Find the nearest ancestor with class 'panel' and set its display to inline
         if (currentElement) {
+          currentElement.style.display = "inline";
           console.log(currentElement);
           const parent = currentElement.parentElement;
           console.log(parent);
           const accordion = parent.querySelector(".accordion");
           console.log(accordion);
           if (accordion) {
-            accordion.click();
-          } else {
-            currentElement.style.display = "inline";
+            searchedAccordions.push(accordion);
           }
         }
 
         container.classList.add("show");
       });
     });
+
+    if (accordions.length > 0) {
+      updateConsolidatedDropdown();
+    }
 
     if (matches.length > 0) {
       scrollToMatch(matches);
