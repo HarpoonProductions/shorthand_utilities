@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const accordions = document.querySelectorAll(".accordion");
+
   const innerDropdowns = document.querySelectorAll(".inner-dropdown");
 
   const consolidatedDropdown = document.createElement("div");

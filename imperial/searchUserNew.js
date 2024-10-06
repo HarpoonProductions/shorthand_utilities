@@ -106,6 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       openAccordions.forEach((accordion, index) => {
         const step = accordion.className.replace(/step-(\d+)/, "$1");
+        console.log(step);
         const associatedDropdown = innerDropdowns[+step];
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
@@ -215,6 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (accordions.length > 0) {
+      console.log("multi");
       updateConsolidatedDropdown();
     }
 
