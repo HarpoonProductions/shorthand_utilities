@@ -105,9 +105,9 @@ document.addEventListener("DOMContentLoaded", function () {
         consolidatedDropdown.querySelector(".dropdown-content");
 
       openAccordions.forEach((accordion, index) => {
-        const step = accordion.className.replace(/step-(\d+)/, "$1");
+        const step = accordion.className.replace(/[^\d]/g, "");
         console.log(step);
-        const associatedDropdown = innerDropdowns[+step];
+        const associatedDropdown = innerDropdowns[step];
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
           links.forEach((link) => {
