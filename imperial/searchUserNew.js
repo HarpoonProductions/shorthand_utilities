@@ -140,6 +140,12 @@ document.addEventListener("DOMContentLoaded", function () {
         // Find the nearest ancestor with class 'panel' and set its display to inline
         if (currentElement) {
           currentElement.style.display = "inline";
+          const parent = currentElement.parentElement;
+          const accordion = parent.querySelector(".accordion");
+
+          if (accordion) {
+            accordion.click();
+          }
         }
 
         container.classList.add("show");

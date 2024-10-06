@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const accordions = document.querySelectorAll(".accordion");
+  const innerDropdowns = document.querySelectorAll(".inner-dropdown");
+
   const consolidatedDropdown = document.createElement("div");
   consolidatedDropdown.className = "consolidated-dropdown";
   consolidatedDropdown.style.display = "none";
@@ -18,9 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const dropdownContent =
         consolidatedDropdown.querySelector(".dropdown-content");
 
-      openAccordions.forEach((accordion) => {
-        const associatedDropdown =
-          accordion.nextElementSibling.querySelector(".inner-dropdown");
+      openAccordions.forEach((accordion, index) => {
+        const associatedDropdown = innerDropdowns[index];
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
           links.forEach((link) => {
