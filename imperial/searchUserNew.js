@@ -81,6 +81,9 @@ if (targetNode) {
 document.addEventListener("DOMContentLoaded", function () {
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
+  accordions.forEach((accordion, index) =>
+    accordion.classList.add("step-" + index)
+  );
   const innerDropdowns = document.querySelectorAll(".inner-dropdown");
 
   const consolidatedDropdown = document.createElement("div");
@@ -102,7 +105,8 @@ document.addEventListener("DOMContentLoaded", function () {
         consolidatedDropdown.querySelector(".dropdown-content");
 
       openAccordions.forEach((accordion, index) => {
-        const associatedDropdown = innerDropdowns[index];
+        const step = accordion.className.replace(/step-(\d+)/, "$1");
+        const associatedDropdown = innerDropdowns[+step];
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
           links.forEach((link) => {
