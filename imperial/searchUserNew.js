@@ -38,7 +38,8 @@ function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
-    const studentName = encodeURIComponent(highlightSpan.innerText);
+    const input = document.querySelector(".project-search-input");
+    const studentName = encodeURIComponent(input ? input.value : "");
     const url = new URL(link.href);
     url.searchParams.set("student_name", studentName);
     link.href = url.href;
