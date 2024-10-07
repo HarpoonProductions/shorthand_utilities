@@ -175,6 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (index !== endIndex) {
               const span = document.createElement("span");
               span.style.backgroundColor = "#ffffff1d";
+              span.classList.add("found-text-piece");
               span.textContent = text;
               frag.appendChild(span);
               matches.push(span);
