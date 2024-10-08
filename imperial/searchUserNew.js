@@ -38,8 +38,11 @@ function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
+    const preview = document.querySelector(".project-match-snippet-container");
     const input = document.querySelector(".project-search-input");
-    const studentName = encodeURIComponent(input ? input.value : "");
+    const name = input ? input.value : "";
+    const studentName = encodeURIComponent(name);
+    preview.innerHTML = "Search " + name;
     const url = new URL(link.href);
     url.searchParams.set("student_name", studentName);
     link.href = url.href;
@@ -80,6 +83,14 @@ if (targetNode) {
 // Optionally, disconnect the observer at some point using observer.disconnect();
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Update Search Placeholder
+  const projectInput = document.querySelector(".Theme-ProjectInput");
+  if (projectInput)
+    projectInput.setAttribute(
+      "placeholder",
+      "Search Full Name (case sensitive)"
+    );
+
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
   accordions.forEach((accordion, index) =>
