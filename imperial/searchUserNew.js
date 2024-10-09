@@ -46,7 +46,7 @@ function processListItem(li) {
     preview.innerHTML = "Search " + name;
     const url = new URL(link.href);
     url.searchParams.set("student_name", studentName);
-    window.location.replace(url.href);
+    // window.location.replace(url.href);
   }
 }
 
