@@ -39,6 +39,7 @@ function processListItem(li) {
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
     const preview = document.querySelector(".project-match-snippet-container");
+    preview.style.display = "none";
     const input = document.querySelector(".project-search-input");
     const name = input ? input.value : "";
     const studentName = encodeURIComponent(name);
