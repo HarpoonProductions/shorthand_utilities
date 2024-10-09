@@ -38,15 +38,14 @@ function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
-    const preview = document.querySelector(".project-match-snippet-container");
-    preview.style.display = "none";
+    const result = document.querySelector(".project-search-results");
+    result.style.display = "none";
     const input = document.querySelector(".project-search-input");
     const name = input ? input.value : "";
     const studentName = encodeURIComponent(name);
-    preview.innerHTML = "Search " + name;
     const url = new URL(link.href);
     url.searchParams.set("student_name", studentName);
-    // window.location.replace(url.href);
+    window.location.replace(url.href);
   }
 }
 
