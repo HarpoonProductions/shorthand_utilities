@@ -45,7 +45,7 @@ function processListItem(li) {
     preview.innerHTML = "Search " + name;
     const url = new URL(link.href);
     url.searchParams.set("student_name", studentName);
-    link.href = url.href;
+    window.location.replace(url.href);
   }
 }
 
@@ -85,11 +85,7 @@ if (targetNode) {
 document.addEventListener("DOMContentLoaded", function () {
   // Update Search Placeholder
   const projectInput = document.querySelector(".Theme-ProjectInput");
-  if (projectInput)
-    projectInput.setAttribute(
-      "placeholder",
-      "Search Full Name (case sensitive)"
-    );
+  if (projectInput) projectInput.setAttribute("placeholder", "Search Name");
 
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
@@ -154,7 +150,16 @@ document.addEventListener("DOMContentLoaded", function () {
   // search user
   const searchedAccordions = [];
 
-  function scrollToAndHighlightText(text) {
+  const toTitleCase = (phrase) => {
+    return phrase
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  function scrollToAndHighlightText(t) {
+    const text = toTitleCase(t);
     const containers = document.querySelectorAll(
       ".sh-names, .sh-prizewinnernames"
     );
