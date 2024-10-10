@@ -45,29 +45,6 @@ function addShareButtons() {
           text: `Check out information for ${studentName}`,
           url: shareURL,
         });
-
-        // Set a timeout to detect if the share action doesn't complete
-        let timeoutId = setTimeout(() => {
-          if (!hasResponded) {
-            hasResponded = true;
-            fallbackShare();
-          }
-        }, 5000); // 5 seconds timeout
-
-        sharePromise
-          .then(() => {
-            clearTimeout(timeoutId);
-            hasResponded = true;
-            console.log("Shared successfully");
-          })
-          .catch((error) => {
-            clearTimeout(timeoutId);
-            console.error("Share failed:", error);
-            if (!hasResponded) {
-              hasResponded = true;
-              fallbackShare();
-            }
-          });
       } else {
         fallbackShare();
       }
