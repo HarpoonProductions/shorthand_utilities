@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
       content.style.display = "inline";
     } else {
       content.style.display = "none";
-      clickedAccordion.scrollIntoView();
+      clickedAccordion.scrollIntoView({ behavior: "instant" });
     }
     updateConsolidatedDropdown();
   }
