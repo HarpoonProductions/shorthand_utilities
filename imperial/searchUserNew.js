@@ -89,9 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
-  accordions.forEach((accordion, index) =>
-    accordion.classList.add("step-" + index)
-  );
+  accordions.forEach((accordion, index) => {
+    accordion.classList.add("step-" + index);
+    accordion.style.scrollMarginTop = "150px";
+  });
   const innerDropdowns = document.querySelectorAll(".inner-dropdown");
 
   const consolidatedDropdown = document.createElement("div");
