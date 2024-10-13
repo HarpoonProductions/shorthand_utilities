@@ -1123,7 +1123,7 @@ h1 {
 }
 
 .section h4 {
-  top: 162px !important;
+  top: 161px !important;
 }
 
 .dropbtn {
@@ -1152,6 +1152,14 @@ h1 {
 }
 
 @media only screen and (max-width: 540px) {
+  .section h3 {
+    top: 106px !important;
+    padding: 12px 0px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   .section h4.after-long-title {
     top: 198px !important;
   }
@@ -1161,6 +1169,18 @@ h1 {
     display: flex;
     align-items: center;
     line-height: normal !important;
+  }
+}
+
+@media only screen and (min-width: 620px) and (max-width: 625px) {
+  .section h4.after-long-title.longerA {
+    top: 198px !important;
+  }
+}
+
+@media only screen and (min-width: 620px) and (max-width: 659px) {
+  .section h4.after-long-title.longerB {
+    top: 198px !important;
   }
 }
 
@@ -1174,8 +1194,25 @@ h1 {
   }
 }
 
+@media only screen and (max-width: 900px) {
+  .section h4.after-long.longer {
+    padding: 13px 0px !important;
+  }
+
+  .section h4 {
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+  }
+}
+
 @media only screen and (min-width: 754px) and (max-width: 846px) {
   .section h4.after-long {
     padding: 13px 0px !important;
   }
+}
+
+.dropdown-content {
+  max-height: 70vh;
+  overflow: auto;
 }
