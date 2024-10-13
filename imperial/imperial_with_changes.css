@@ -1,0 +1,31 @@
+.section h3 {
+  top: 106px !important;
+}
+
+.section h4 {
+  top: 200px !important;
+}
+
+.dropbtn {
+  top: 80px !important;
+}
+
+@media only screen and (min-width: 900px) {
+  .dropbtn {
+    top: 60px !important;
+  }
+}
+
+@media only screen and (min-width: 1100px) {
+  .section h3 {
+    top: 125px !important;
+  }
+
+  .section h4 {
+    top: 200px !important;
+  }
+
+  .dropbtn {
+    top: 80px !important;
+  }
+}
