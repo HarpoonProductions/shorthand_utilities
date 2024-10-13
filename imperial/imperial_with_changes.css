@@ -1139,10 +1139,11 @@ h1 {
 @media only screen and (min-width: 1100px) {
   .section h3 {
     top: 125px !important;
+    padding: 12px 0px !important;
   }
 
   .section h4 {
-    top: 200px !important;
+    top: 189px !important;
   }
 
   .dropbtn {
@@ -1150,18 +1151,31 @@ h1 {
   }
 }
 
-.section h4.after-long-title {
-  top: 198px !important;
+@media only screen and (max-width: 540px) {
+  .section h4.after-long-title {
+    top: 198px !important;
+  }
+
+  .sh-names .section h3.long-title {
+    min-height: 92px;
+    display: flex;
+    align-items: center;
+    line-height: normal !important;
+  }
 }
 
-.long-title {
-  min-height: 92px;
+@media only screen and (max-width: 379px) {
+  .section h4.after-long {
+    padding: 13px 0px !important;
+  }
+
+  .long-heading {
+    min-height: 70px;
+  }
 }
 
-.section h4.after-long {
-  padding: 13px 0px !important;
-}
-
-.long-heading {
-  min-height: 70px;
+@media only screen and (min-width: 754px) and (max-width: 846px) {
+  .section h4.after-long {
+    padding: 13px 0px !important;
+  }
 }
