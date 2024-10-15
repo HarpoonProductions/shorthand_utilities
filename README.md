@@ -478,7 +478,7 @@ To use this functionality, you will need to paste this `<link>` tag into the Cus
 <link
     rel="stylesheet"
     type="text/css"
-    href="https://harpoonproductions.github.io/shorthand_utilities/auto_indent/indent.css"
+    href="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.css"
 />
 ```
 
