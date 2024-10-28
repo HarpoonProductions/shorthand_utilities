@@ -131,3 +131,49 @@ var observer = new IntersectionObserver(
     observer.observe(container);
   });
 })(document);
+
+(function (d) {
+  // Define button-section pairs
+  const togglePairs = [
+    { button: ".toggle-button1", section: ".sh-detail" },
+    { button: ".toggle-button2", section: ".sh-extra1" },
+    { button: ".toggle-button3", section: ".sh-extra2" },
+    { button: ".toggle-button4", section: ".sh-extra3" },
+    { button: ".toggle-button5", section: ".sh-extra4" },
+    { button: ".toggle-button6", section: ".sh-extra5" },
+    { button: ".toggle-button7", section: ".sh-extra6" },
+    { button: ".toggle-button8", section: ".sh-extra7" },
+    { button: ".toggle-button9", section: ".sh-extra8" },
+  ];
+
+  // Set up toggle functionality for each pair
+  togglePairs.forEach((pair, index) => {
+    const button = d.querySelector(pair.button);
+    const section = d.querySelector(pair.section);
+
+    if (button && section) {
+      console.log(`Set ${index + 1} initialized:`, {
+        button: button,
+        section: section,
+        initialState: section.classList.contains("show"),
+      });
+
+      button.addEventListener("click", () => {
+        console.log(`Set ${index + 1} clicked:`, {
+          beforeState: section.classList.contains("show"),
+        });
+
+        section.classList.toggle("show");
+
+        console.log(`Set ${index + 1} after toggle:`, {
+          afterState: section.classList.contains("show"),
+        });
+      });
+    } else {
+      console.warn(`Set ${index + 1} missing elements:`, {
+        buttonFound: !!button,
+        sectionFound: !!section,
+      });
+    }
+  });
+})(document);

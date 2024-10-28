@@ -1,4 +1,4 @@
-@media only screen and (min-width: 900px) {
+@media only screen and (min-width: 400px) {
   .horizontal-scroll {
     position: relative;
   }
@@ -42,7 +42,7 @@
   }
 }
 
-@media only screen and (max-width: 899px) {
+@media only screen and (max-width: 399px) {
   .horizontal-scroll {
     height: 100% !important;
   }
