@@ -61,6 +61,9 @@
 }
 
 .live-mode.shorthand-embed-body #section-q6XxPSf6nk {
-  z-index: 1000 !important;
   top: 99px !important;
+}
+
+#section-ysrLhnGQh9 {
+  z-index: 0 !important;
 }
