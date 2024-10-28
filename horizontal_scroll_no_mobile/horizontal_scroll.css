@@ -55,3 +55,7 @@
 .horizontal_align_left .Theme-BackgroundImage picture img {
   object-position: left !important;
 }
+
+.shorthand-embed-body.sticky-nav--active .Theme-NavigationBar {
+  top: 44px !important;
+}
