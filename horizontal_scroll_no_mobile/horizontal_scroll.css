@@ -59,3 +59,8 @@
 .shorthand-embed-body.sticky-nav--active .Theme-NavigationBar {
   top: 44px !important;
 }
+
+.live-mode.shorthand-embed-body #section-q6XxPSf6nk {
+  z-index: 1000 !important;
+  top: 99px !important;
+}
