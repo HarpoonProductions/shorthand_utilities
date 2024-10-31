@@ -55,6 +55,7 @@ font-style: normal;
     bottom: -3px;
     font-size: 11px;
     font-family: "Imperial Sans Text", sans-serif !important;
+    color: #133844
 }
 
 
@@ -366,9 +367,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   justify-content: center;
   align-items: center;
   width: 142px;
-  color: white;
+  color: #133844;
   text-decoration: none;
-  background: #1a1a27;
+  background: #d1f9f1;
 }
 
 .button_container:focus {
@@ -430,7 +431,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid #d1f9f1;
+  border: 1px solid #133844;
 }
 
 .edition-logo {
@@ -440,7 +441,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.contents {
   background: #133844;
-  border: 1px solid #d1f9f1;
+  border: 1px solid #133844;
   cursor: pointer;
   width: 90px;
   height: 125px;
@@ -448,7 +449,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid #d1f9f1;
+  border: 1px solid #133844;
 }
 
 .button_container.prev .image_div {
