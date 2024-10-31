@@ -1,9 +1,9 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmagicon.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_logo.jpg";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmagicon-long.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_wide.jpg";
 
   function extractLinks() {
     const links = [];
