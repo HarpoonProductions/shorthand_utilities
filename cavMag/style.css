@@ -326,7 +326,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container {
   transform: translate(-50%, 100%);
-  background: #133844;
+  background: black;
   height: 344px;
   width: 380px;
   border-radius: 3px;
