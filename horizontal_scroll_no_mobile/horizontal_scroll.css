@@ -64,10 +64,14 @@
   top: 99px !important;
 }
 
-#section-ysrLhnGQh9,
-#section-cBNKNJ7zKE,
-#section-eHNC3RP28d,
-#section-0RgCIeWqXE,
-#section-Vn07ga3Hph {
+body:not(.body-editor) .sh-detail.show,
+body:not(.body-editor) .sh-extra1.show,
+body:not(.body-editor) .sh-extra2.show,
+body:not(.body-editor) .sh-extra3.show,
+body:not(.body-editor) .sh-extra4.show,
+body:not(.body-editor) .sh-extra5.show,
+body:not(.body-editor) .sh-extra6.show,
+body:not(.body-editor) .sh-extra7.show,
+body:not(.body-editor) .sh-extra8.show {
   z-index: 0 !important;
 }
