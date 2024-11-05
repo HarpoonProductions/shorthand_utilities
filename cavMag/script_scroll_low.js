@@ -16,29 +16,22 @@
         let isCurrent;
 
         if (/preview\.shorthand\.com/.test(currentUrl)) {
-          console.log("preview");
           isCurrent = href === currentUrl;
         } else if (
           window.location.href.split("/").length === 5 &&
           href === "index.html"
         ) {
-          console.log("length is 5");
           isCurrent = true;
         } else {
-          console.log("length is 4");
           const page = window.location.href.split("/")[4];
           const hrefTest = "../../" + page + "/index.html";
           isCurrent = href === hrefTest;
         }
 
         if (!isCurrent) {
-          console.log("not current");
           const pathname = window.location.pathname;
-          console.log(pathname);
           const clean = pathname.replace("/issue-32", "");
-          console.log(clean);
           const check = new RegExp(clean, "gi");
-          console.log("comparing", clean, href);
           isCurrent = clean !== "/issue-32/index.html" && check.test(href);
         }
 
@@ -58,8 +51,10 @@
     dfs(rootUl);
 
     return links.map((link, i) => {
-      console.log(link, i);
-      if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
+      if (link.current) {
+        console.log("current link is", link.href);
+        currentPageIndex = i < links.length - 1 ? i : 0;
+      }
       if (i !== 0) return link;
       return {
         href: link.href,
