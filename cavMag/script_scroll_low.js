@@ -16,26 +16,31 @@
         let isCurrent;
 
         if (/preview\.shorthand\.com/.test(currentUrl)) {
+          console.log("preview");
           isCurrent = href === currentUrl;
         } else if (
           window.location.href.split("/").length === 5 &&
           href === "index.html"
         ) {
+          console.log("length is 5");
           isCurrent = true;
         } else {
+          console.log("length is 4");
           const page = window.location.href.split("/")[4];
           const hrefTest = "../../" + page + "/index.html";
           isCurrent = href === hrefTest;
         }
 
         if (!isCurrent) {
+          console.log("not current");
           const pathname = window.location.pathname;
+          console.log(pathname);
           const clean = pathname.replace("/issue-32", "");
+          console.log(clean);
           const check = new RegExp(clean, "gi");
-          isCurrent = check.test(href);
+          console.log("comparing", clean, href);
+          isCurrent = clean !== "/issue-32/index.html" && check.test(href);
         }
-
-        console.log(`Current: ${window.location.href}, From nav: ${href}`);
 
         links.push({
           href,
