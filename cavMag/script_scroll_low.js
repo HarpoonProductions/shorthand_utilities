@@ -32,7 +32,7 @@
           const pathname = window.location.pathname;
           const clean = pathname.replace("/issue-32", "");
           const check = new RegExp(clean, "gi");
-          isCurrent = clean !== "/issue-32/index.html" && check.test(href);
+          isCurrent = clean !== "/index.html" && check.test(href);
         }
 
         links.push({
