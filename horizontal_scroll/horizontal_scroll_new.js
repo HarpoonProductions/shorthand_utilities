@@ -1,3 +1,4 @@
+/* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 var ce = "createElement",
   qs = "querySelector",
   supportPageOffset = void 0 !== window.pageXOffset,
