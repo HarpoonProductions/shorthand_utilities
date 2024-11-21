@@ -98,7 +98,17 @@ body:not(.body-editor) .Theme-HeaderContainer--hidden.Theme-HeaderContainer--nav
 .related-story-text {
   height: 30vh !important;
   overflow: hidden;
+}
 
+@media only screen and (min-width: 600px) {
+  .related-story-text {
+    height: 17vh !important;
+    overflow: hidden;
+  }
+
+  .glide__slide .related-story-image {
+    height: 47vh !important;
+}
 }
 
 #viewport-height-element {
