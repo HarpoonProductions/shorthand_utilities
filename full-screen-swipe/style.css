@@ -92,7 +92,7 @@ body:not(.body-editor) .Theme-HeaderContainer--hidden.Theme-HeaderContainer--nav
 }
 
 .glide__slide h3.related-story-title {
-    font-size: 20px !important;
+    font-size: 26px !important;
 }
 
 .related-story-text {
@@ -100,7 +100,7 @@ body:not(.body-editor) .Theme-HeaderContainer--hidden.Theme-HeaderContainer--nav
   overflow: hidden;
 }
 
-@media only screen and (min-width: 600px) {
+@media only screen and (min-width: 768px) {
   .related-story-text {
     height: 17vh !important;
     overflow: hidden;
@@ -277,7 +277,7 @@ h3.related-story-title {
 }
 
 p.related-story-description {
-  font-size: 11px;
+  font-size: 16px;
 }
 
 
