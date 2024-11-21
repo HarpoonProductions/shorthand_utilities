@@ -11,6 +11,10 @@ overscroll-behavior-y: none;
   margin-top: 0;
 }
 
+.full-screen-carousel .crop-uncropped.crop-uncropped img {
+  height: 100% !important
+}
+
 body:not(.body-editor) .Theme-HeaderContainer--hidden.Theme-HeaderContainer--navigable+.Theme-Story {
     margin-top: -20px !important;
 }
