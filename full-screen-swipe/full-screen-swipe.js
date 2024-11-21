@@ -12,6 +12,25 @@
       if ((list && list.length && parent) || attempts >= maxAttempts) {
         clearInterval(pollingInterval);
         initializeCarousel(list[list.length - 1], parent);
+
+        const slides = document.querySelectorAll(
+          ".full-screen-carousel .related-story-card"
+        );
+
+        slides.forEach((slide) => {
+          // Create new wrapper div
+          const wrapperDiv = document.createElement("div");
+          wrapperDiv.className = "slide-wrapper-new";
+
+          // Get all direct div children of the slide
+          const innerDivs = [...slide.children];
+
+          // Move inner divs into the wrapper
+          innerDivs.forEach((div) => wrapperDiv.appendChild(div));
+
+          // Add wrapper to slide
+          slide.appendChild(wrapperDiv);
+        });
       }
 
       attempts++;

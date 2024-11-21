@@ -7,6 +7,10 @@ html {
 overscroll-behavior-y: none;
 }
 
+.slide-wrapper-new {
+  box-shadow: 2px 1px 8px #00000022;
+}
+
 .container-new {
   margin-top: 0;
 }
