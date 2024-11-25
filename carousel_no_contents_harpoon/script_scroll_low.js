@@ -74,7 +74,7 @@
 
     console.log(links);
 
-    const rawLinks = links.filter((_, i) => i >= 3);
+    const rawLinks = links.filter((_, i) => i >= 1);
 
     console.log(rawLinks);
 
@@ -252,6 +252,7 @@
   function renderCustomNavigation(links) {
     console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
+    if (currentIndex === -1) return null;
     document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");
@@ -266,7 +267,7 @@
       true,
       currentIndex <= 0
     );
-    navContainer.appendChild(prevButton);
+    // navContainer.appendChild(prevButton);
 
     const middleLogoContainer = document.createElement("div");
     const middleLogo = document.createElement("img");
@@ -277,8 +278,8 @@
     middleLogo.classList.add("edition-logo");
     middleLogoContainer.classList.add("button_container");
     middleLogoContainer.classList.add("contents");
-    middleLogoContainer.appendChild(middleLogo);
-    middleLogoContainer.appendChild(contentsLabel);
+    // middleLogoContainer.appendChild(middleLogo);
+    // middleLogoContainer.appendChild(contentsLabel);
     // navContainer.appendChild(middleLogoContainer);
     // middleLogoContainer.addEventListener("click", () => {
     //   document.body.classList.add("show-custom-mini-nav");
@@ -305,9 +306,9 @@
       false,
       currentIndex === links.length - 1
     );
-    navContainer.appendChild(nextButton);
+    // navContainer.appendChild(nextButton);
 
-    document.body.appendChild(navContainer);
+    // document.body.appendChild(navContainer);
 
     // Add custom nav box
     const customMiniNavContainer = document.createElement("div");
@@ -321,15 +322,15 @@
     innerLogo.setAttribute("src", logoUrlInner);
     innerLogo.classList.add("edition-logo-inner");
     innerLogoContainer.classList.add("inner-logo-container");
-    innerLogoContainer.appendChild(innerLogo);
-    innerLogoAnchor.appendChild(innerLogoContainer);
-    customMiniNavContainer.appendChild(innerLogoAnchor);
+    // innerLogoContainer.appendChild(innerLogo);
+    // innerLogoAnchor.appendChild(innerLogoContainer);
+    // customMiniNavContainer.appendChild(innerLogoAnchor);
 
     customMiniNavContainer.addEventListener("click", () => {
       document.body.classList.remove("scroll-up");
     });
 
-    document.body.appendChild(customMiniNavContainer);
+    // document.body.appendChild(customMiniNavContainer);
 
     document.body.addEventListener("click", function (event) {
       function hasClassInParents(element, className) {
