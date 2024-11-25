@@ -47,10 +47,9 @@
         }
 
         if (!isCurrent) {
-          const clean = window.location.pathname.replace(
-            "/harpoon-international",
-            ""
-          );
+          const clean = window.location.pathname
+            .replace("/harpoon-international/", "")
+            .replace("/index.html", "");
           const check = new RegExp(clean, "gi");
           isCurrent = check.test(href);
         }
