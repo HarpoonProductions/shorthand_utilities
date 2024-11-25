@@ -234,7 +234,7 @@
       : "url('https://harpn.s3.eu-west-2.amazonaws.com/harpoon/noun-chevron-right-1746094-FFFFFF.png')";
     arrow.style.backgroundPosition = "center";
     arrow.style.backgroundRepeat = "no-repeat";
-    arrow.style.backgroundSize = "24px";
+    arrow.style.backgroundSize = "34px";
     button.textContent =
       text &&
       text

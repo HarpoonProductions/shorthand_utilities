@@ -429,6 +429,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   flex-direction: column;
   cursor: pointer;
   position: relative;
+  border: none !important;
   opacity: 1;
   transition: background-color 1s ease-in-out;
   overflow: hidden;
@@ -439,7 +440,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   color: white;
   text-decoration: none;
   font-family: "Poppins", sans-serif;
-  background-color: #2e003b32;
+  background-color: transparent;
 }
 
 .button_container:focus {
@@ -460,7 +461,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container:hover {
   opacity: 1;
-  background-color: #2e003b99;
+  background-color: transparent;
 }
 
 .button {
