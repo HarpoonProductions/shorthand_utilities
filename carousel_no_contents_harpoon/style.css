@@ -363,6 +363,7 @@ border-left: 0.5px solid #40E0D0;
 
 .custom-nav-hidden .nav_container {
   transform: translateY(150%);
+  opacity: 0;
 }
 
 .show-custom-mini-nav .custom-min-nav-container {
@@ -421,7 +422,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   z-index: 1000;
   color: white;
   height: 97px;
-  transition: transform 0.5s ease-in-out;
+  opacity: 1;
+  transition: all 0.8s ease-in-out;
 }
 
 .button_container {
