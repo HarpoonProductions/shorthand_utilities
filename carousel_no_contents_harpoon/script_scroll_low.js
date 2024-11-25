@@ -367,7 +367,7 @@
     console.log("prevURL", prevUrl);
 
     const prevButton = createButtonWithImage(prevText, prevUrl, true);
-    // navContainer.appendChild(prevButton);
+    navContainer.appendChild(prevButton);
 
     const middleLogoContainer = document.createElement("div");
     const middleLogo = document.createElement("img");
@@ -407,9 +407,9 @@
     const nextButton = createButtonWithImage(nextText, nextUrl, false);
 
     console.log("nextURL", nextUrl);
-    // navContainer.appendChild(nextButton);
+    navContainer.appendChild(nextButton);
 
-    // document.body.appendChild(navContainer);
+    document.body.appendChild(navContainer);
 
     // Add custom nav box
     const customMiniNavContainer = document.createElement("div");
