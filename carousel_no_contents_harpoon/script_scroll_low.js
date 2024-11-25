@@ -279,9 +279,11 @@
           display: flex;
           align-items: center;
           border: 1px solid #e9ecef;
+          font-family: 'Lato';
+          text-align: center;
       `;
       messageContainer.textContent =
-        "Swipe left or right to navigate between pages";
+        "Swipe left or right to navigate between stories";
 
       // Create dismiss button
       const dismissButton = document.createElement("button");
