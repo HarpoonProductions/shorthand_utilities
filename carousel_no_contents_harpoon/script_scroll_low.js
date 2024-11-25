@@ -130,6 +130,12 @@
   }
 
   function createButtonWithImage(text, url, isPrevious, hide) {
+    console.log(
+      "creating button to",
+      isPrevious ? "previous" : "next",
+      "with",
+      url
+    );
     const buttonContainer = document.createElement("a");
     const button = document.createElement("div");
     const arrow = document.createElement("div");
@@ -261,7 +267,12 @@
       currentIndex > 0
         ? links[currentIndex - 1].href
         : links[links.length - 1].href;
-    const prevText = currentIndex > 0 ? links[currentIndex - 1].label : null;
+    const prevText =
+      currentIndex > 0
+        ? links[currentIndex - 1].label
+        : links[links.length - 1].href;
+
+    console.log("prevURL", prevUrl);
 
     const prevButton = createButtonWithImage(prevText, prevUrl, true);
     // navContainer.appendChild(prevButton);
@@ -293,11 +304,17 @@
     // });
 
     const nextUrl =
-      currentIndex < links.length - 1 ? links[currentIndex + 1].href : links[0];
+      currentIndex < links.length - 1
+        ? links[currentIndex + 1].href
+        : links[0].href;
     const nextText =
-      currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
+      currentIndex < links.length - 1
+        ? links[currentIndex + 1].label
+        : links[0].label;
 
     const nextButton = createButtonWithImage(nextText, nextUrl, false);
+
+    console.log("nextURL", nextUrl);
     // navContainer.appendChild(nextButton);
 
     // document.body.appendChild(navContainer);
