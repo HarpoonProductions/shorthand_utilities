@@ -1,4 +1,5 @@
-.Theme-NavigationBarItem:nth-of-type(4) {
+.Theme-NavigationBarItem:nth-of-type(4),
+.Project-HeaderContainer {
   display: none !important;
 }
 
