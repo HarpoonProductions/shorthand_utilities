@@ -314,6 +314,21 @@
           border: 1px solid #e9ecef;
           font-family: 'Lato';
           text-align: center;
+          @media (max-width: 600px) {
+            .Theme-Story::after {
+              content: "";
+              background: url('https://harpn.s3.eu-west-2.amazonaws.com/harpoon/swipe-right.png') 
+                              no-repeat;
+              position: fixed;
+              opacity: 1;
+              width: 100%;
+              height: 100%;
+              background-size: 15%;
+              z-index: 100 !important;
+              top: 45%;
+              left: 85%;
+            }
+          }
       `;
       messageContainer.textContent =
         "Swipe left or right to navigate between stories";
