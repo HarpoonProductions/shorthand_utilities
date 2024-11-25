@@ -258,6 +258,7 @@
     console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
     if (currentIndex === -1) return null;
+    if (links.filter((link) => link.isCurrent).length > 1) return null;
     document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");
