@@ -228,15 +228,7 @@
     }
     button.classList.add("button");
     arrow.classList.add("arrow");
-    // arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
-    arrow.style.backgroundImage = isPrevious
-      ? "url('https://harpn.s3.eu-west-2.amazonaws.com/harpoon/noun-chevron-1746062-FFFFFF.png')"
-      : "url('https://harpn.s3.eu-west-2.amazonaws.com/harpoon/noun-chevron-right-1746094-FFFFFF.png')";
-    arrow.style.backgroundPosition = isPrevious
-      ? "center left"
-      : "center right";
-    arrow.style.backgroundRepeat = "no-repeat";
-    arrow.style.backgroundSize = "34px";
+    arrow.innerHTML = isPrevious ? "&#8592;" : "&#8594;";
     button.textContent =
       text &&
       text

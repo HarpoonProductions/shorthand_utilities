@@ -363,7 +363,6 @@ border-left: 0.5px solid #40E0D0;
 
 .custom-nav-hidden .nav_container {
   transform: translateY(150%);
-  opacity: 0;
 }
 
 .show-custom-mini-nav .custom-min-nav-container {
@@ -422,8 +421,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   z-index: 1000;
   color: white;
   height: 97px;
-  opacity: 1;
-  transition: all 0.8s ease-in-out;
+  transition: transform 0.5s ease-in-out;
 }
 
 .button_container {
@@ -431,9 +429,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   flex-direction: column;
   cursor: pointer;
   position: relative;
-  border: none !important;
-  opacity: 0.8;
-  transition: opacity 1s ease-in-out;
+  opacity: 1;
+  transition: background-color 1s ease-in-out;
   overflow: hidden;
   border-radius: 5px;
   justify-content: center;
@@ -442,7 +439,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   color: white;
   text-decoration: none;
   font-family: "Poppins", sans-serif;
-  background-color: transparent;
+  background-color: #2e003b32;
 }
 
 .button_container:focus {
@@ -463,6 +460,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container:hover {
   opacity: 1;
+  background-color: #2e003b99;
 }
 
 .button {
@@ -485,8 +483,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   z-index: 10;
   position: relative;
   bottom: 2px;
-  height: 74px;
-  width: 100%;
 }
 
 .image_div {
