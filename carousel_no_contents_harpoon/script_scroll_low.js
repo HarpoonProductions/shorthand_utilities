@@ -260,7 +260,6 @@
     if (currentIndex === -1) return null;
     if (links.filter((link) => link.current).length > 1) return null;
 
-    // Check for cookie
     if (!document.cookie.includes("dismissed-swipe-message")) {
       // Create message container
       const messageContainer = document.createElement("div");
@@ -311,6 +310,9 @@
         // Remove message from DOM
         messageContainer.remove();
       });
+
+      messageContainer.appendChild(dismissButton);
+      document.body.appendChild(messageContainer);
     }
 
     document.body.classList.add("custom-nav-hidden");
