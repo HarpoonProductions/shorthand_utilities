@@ -29,6 +29,12 @@
     font-family: "Imperial Sans Text", sans-serif !important;
 }
 
+@media only screen and (min-width: 600px) {
+  .notification-banner-new {
+    display: none;
+  }
+}
+
 @media only screen and (max-width: 500px) {
   .DeviceDetect--isiOS .input-text {
    font-size: 16px;   

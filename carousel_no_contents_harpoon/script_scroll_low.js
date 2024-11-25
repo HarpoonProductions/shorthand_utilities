@@ -263,6 +263,7 @@
     if (!document.cookie.includes("dismissed-swipe-message")) {
       // Create message container
       const messageContainer = document.createElement("div");
+      messageContainer.classList.add("notification-banner-new");
       messageContainer.style.cssText = `
           position: fixed;
           bottom: 20px;
