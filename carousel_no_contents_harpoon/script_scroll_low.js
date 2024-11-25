@@ -259,6 +259,58 @@
     const currentIndex = links.findIndex((link) => link.current);
     if (currentIndex === -1) return null;
     if (links.filter((link) => link.current).length > 1) return null;
+
+    // Check for cookie
+    if (!document.cookie.includes('dismissed-swipe-message')) {
+      // Create message container
+      const messageContainer = document.createElement('div');
+      messageContainer.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: #f8f9fa;
+          padding: 15px 45px 15px 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          z-index: 1000;
+          font-size: 14px;
+          max-width: 90%;
+          width: auto;
+          display: flex;
+          align-items: center;
+          border: 1px solid #e9ecef;
+      `;
+      messageContainer.textContent = 'Swipe left or right to navigate between pages';
+
+      // Create dismiss button
+      const dismissButton = document.createElement('button');
+      dismissButton.innerHTML = '×';
+      dismissButton.style.cssText = `
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+          padding: 5px;
+          color: #6c757d;
+          line-height: 1;
+      `;
+
+      // Add dismiss functionality
+      dismissButton.addEventListener('click', () => {
+          // Set cookie that expires in 30 days
+          const expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + 30);
+          document.cookie = `dismissed-swipe-message=true; expires=${expiryDate.toUTCString()}; path=/`;
+          
+          // Remove message from DOM
+          messageContainer.remove();
+      });
+
     document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");

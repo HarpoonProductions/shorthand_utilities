@@ -8,24 +8,20 @@
   }
 
   .glide__arrow {
-    transform: translateY(-129%);
-    position: fixed;
-    top: 100%;
-    height: 64vh;
-    width: 5vw;
-    border: none;
-    padding: 0;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    z-index: 2;
-  }
+    transform: translateY(-129%) !important;
+    position: fixed !important;
+    top: 100% !important;
+    height: 64vh !important;
+    width: 5vw !important;
+    border: none !important;
+    padding: 0 !important;
+    background-color: transparent !important;  /* Changed to transparent */
+    color: white !important;
+    font-size: 24px !important;
+    cursor: pointer !important;
+    z-index: 2 !important;
+}
 
-  .glide__arrow:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-  }
 
   .glide__arrow--left {
     left: 0;
