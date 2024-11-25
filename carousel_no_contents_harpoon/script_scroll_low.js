@@ -263,12 +263,7 @@
         : links[links.length - 1].href;
     const prevText = currentIndex > 0 ? links[currentIndex - 1].label : null;
 
-    const prevButton = createButtonWithImage(
-      prevText,
-      prevUrl,
-      true,
-      currentIndex <= 0
-    );
+    const prevButton = createButtonWithImage(prevText, prevUrl, true);
     // navContainer.appendChild(prevButton);
 
     const middleLogoContainer = document.createElement("div");
@@ -302,12 +297,7 @@
     const nextText =
       currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
 
-    const nextButton = createButtonWithImage(
-      nextText,
-      nextUrl,
-      false,
-      currentIndex === links.length - 1
-    );
+    const nextButton = createButtonWithImage(nextText, nextUrl, false);
     // navContainer.appendChild(nextButton);
 
     // document.body.appendChild(navContainer);
