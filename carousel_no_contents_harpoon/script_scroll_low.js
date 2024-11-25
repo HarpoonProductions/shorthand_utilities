@@ -237,7 +237,7 @@
         })
         .replace(" Of ", " of ");
 
-    buttonContainer.appendChild(button);
+    // buttonContainer.appendChild(button);
     buttonContainer.appendChild(arrow);
 
     if (url) buttonContainer.setAttribute("href", url);

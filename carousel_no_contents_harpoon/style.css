@@ -3,6 +3,11 @@
   display: none !important;
 }
 
+.Theme-TitleSection.DisplayContainerHeight--minHeight {
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+}
+
 .student-search-container {
     margin: 20px;
     padding: 20px;
@@ -425,7 +430,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   cursor: pointer;
   position: relative;
   opacity: 1;
-  transition: opacity 1s;
+  transition: background-color 1s ease-in-out;
   overflow: hidden;
   border-radius: 5px;
   justify-content: center;
@@ -434,7 +439,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   color: white;
   text-decoration: none;
   font-family: "Poppins", sans-serif;
-  background-color: #2e003b;
+  background-color: #2e003b32;
 }
 
 .button_container:focus {
@@ -455,6 +460,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container:hover {
   opacity: 1;
+  background-color: #2e003b99;
 }
 
 .button {
