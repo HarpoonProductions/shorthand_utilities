@@ -260,6 +260,38 @@
     if (currentIndex === -1) return null;
     if (links.filter((link) => link.current).length > 1) return null;
 
+    const frontButton = document.createElement("a");
+    frontButton.href =
+      "https://harpoon.shorthandstories.com/harpoon-international/";
+    frontButton.textContent = "Front";
+    frontButton.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 8px 16px;
+        background-color: transparent;
+        color: white;
+        text-decoration: none;
+        font-family: 'Lato', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        z-index: 1000;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        transition: border-color 0.2s ease;
+    `;
+
+    // Add subtle hover effect
+    frontButton.addEventListener("mouseenter", () => {
+      frontButton.style.borderColor = "rgba(255, 255, 255, 0.8)";
+    });
+
+    frontButton.addEventListener("mouseleave", () => {
+      frontButton.style.borderColor = "rgba(255, 255, 255, 0.3)";
+    });
+
+    document.body.appendChild(frontButton);
+
     if (!document.cookie.includes("dismissed-swipe-message")) {
       // Create message container
       const messageContainer = document.createElement("div");
