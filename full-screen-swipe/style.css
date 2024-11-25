@@ -8,9 +8,10 @@
   }
 
   .glide__arrow {
-    position: absolute;
-    top: 0;
-    height: 100%;
+    transform: translateY(-129%);
+    position: fixed;
+    top: 100%;
+    height: 64vh;
     width: 5vw;
     border: none;
     padding: 0;
