@@ -261,9 +261,9 @@
     if (links.filter((link) => link.current).length > 1) return null;
 
     // Check for cookie
-    if (!document.cookie.includes('dismissed-swipe-message')) {
+    if (!document.cookie.includes("dismissed-swipe-message")) {
       // Create message container
-      const messageContainer = document.createElement('div');
+      const messageContainer = document.createElement("div");
       messageContainer.style.cssText = `
           position: fixed;
           bottom: 20px;
@@ -281,11 +281,12 @@
           align-items: center;
           border: 1px solid #e9ecef;
       `;
-      messageContainer.textContent = 'Swipe left or right to navigate between pages';
+      messageContainer.textContent =
+        "Swipe left or right to navigate between pages";
 
       // Create dismiss button
-      const dismissButton = document.createElement('button');
-      dismissButton.innerHTML = '×';
+      const dismissButton = document.createElement("button");
+      dismissButton.innerHTML = "×";
       dismissButton.style.cssText = `
           position: absolute;
           right: 10px;
@@ -301,15 +302,16 @@
       `;
 
       // Add dismiss functionality
-      dismissButton.addEventListener('click', () => {
-          // Set cookie that expires in 30 days
-          const expiryDate = new Date();
-          expiryDate.setDate(expiryDate.getDate() + 30);
-          document.cookie = `dismissed-swipe-message=true; expires=${expiryDate.toUTCString()}; path=/`;
-          
-          // Remove message from DOM
-          messageContainer.remove();
+      dismissButton.addEventListener("click", () => {
+        // Set cookie that expires in 30 days
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30);
+        document.cookie = `dismissed-swipe-message=true; expires=${expiryDate.toUTCString()}; path=/`;
+
+        // Remove message from DOM
+        messageContainer.remove();
       });
+    }
 
     document.body.classList.add("custom-nav-hidden");
 
