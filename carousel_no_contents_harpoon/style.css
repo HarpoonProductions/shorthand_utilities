@@ -430,8 +430,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   cursor: pointer;
   position: relative;
   border: none !important;
-  opacity: 1;
-  transition: background-color 1s ease-in-out;
+  opacity: 0.8;
+  transition: opacity 1s ease-in-out;
   overflow: hidden;
   border-radius: 5px;
   justify-content: center;
@@ -461,7 +461,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container:hover {
   opacity: 1;
-  background-color: transparent;
 }
 
 .button {
@@ -484,6 +483,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   z-index: 10;
   position: relative;
   bottom: 2px;
+  height: 74px;
+  width: 100%;
 }
 
 .image_div {
