@@ -48,7 +48,7 @@
 
         if (!isCurrent) {
           const clean = window.location.pathname.replace(
-            "/graduation-programme-2024",
+            "/harpoon-international",
             ""
           );
           const check = new RegExp(clean, "gi");
