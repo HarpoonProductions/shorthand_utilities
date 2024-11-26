@@ -129,7 +129,7 @@ var observer = new IntersectionObserver(
         .classList.add("horizontal_align_left");
     }
 
-    container.style.height = childCount * 175 + "vh";
+    container.style.height = childCount * 173 + "vh";
     observer.observe(container);
   });
 })(document);
