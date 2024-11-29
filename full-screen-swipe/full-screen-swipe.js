@@ -8,6 +8,7 @@
         ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
       );
       const parent = document.querySelector(".full-screen-carousel");
+      console.log(list);
       console.log("polling", attempts, parent);
       if ((list && list.length && parent) || attempts >= maxAttempts) {
         clearInterval(pollingInterval);
