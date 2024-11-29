@@ -307,7 +307,7 @@
       }
 
       .custom-nav-hidden .Theme-Story::after {
-        transform: translateX(-100%)
+        transform: translateX(25%)
       }
     }
     `;
