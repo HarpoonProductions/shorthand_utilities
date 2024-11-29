@@ -71,11 +71,7 @@
     );
     dfs(rootUl);
 
-    console.log(links);
-
     const rawLinks = links.filter((_, i) => i >= 1);
-
-    console.log(rawLinks);
 
     return rawLinks.map((link, i) => {
       console.log(link, i);
@@ -292,82 +288,30 @@
 
     document.body.appendChild(frontButton);
 
-    if (!document.cookie.includes("dismissed-swipe-message")) {
-      // Create message container
-      const messageContainer = document.createElement("div");
-      messageContainer.classList.add("notification-banner-new");
-      messageContainer.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background-color: #f8f9fa;
-          padding: 15px 45px 15px 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          z-index: 1000;
-          font-size: 14px;
-          max-width: 90%;
-          width: auto;
-          display: flex;
-          align-items: center;
-          border: 1px solid #e9ecef;
-          font-family: 'Lato';
-          text-align: center;
-      `;
-      messageContainer.textContent =
-        "Swipe left or right to navigate between stories";
-
-      // Create dismiss button
-      const dismissButton = document.createElement("button");
-      dismissButton.innerHTML = "×";
-      dismissButton.style.cssText = `
-          position: absolute;
-          right: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          font-size: 20px;
-          cursor: pointer;
-          padding: 5px;
-          color: #6c757d;
-          line-height: 1;
-      `;
-
-      const style = document.createElement("style");
-      style.textContent = `
-      @media (max-width: 600px) {
-        .Theme-Story::after {
-          content: "";
-          background: url('https://harpn.s3.eu-west-2.amazonaws.com/harpoon/swipe-right.png') no-repeat;
-          position: fixed;
-          opacity: 1;
-          width: 100%;
-          height: 100%;
-          background-size: 15%;
-          z-index: 100 !important;
-          top: 45%;
-          left: 85%;
-        }
+    const style = document.createElement("style");
+    style.textContent = `
+    @media (max-width: 600px) {
+      .Theme-Story::after {
+        content: "";
+        background: url('https://harpn.s3.eu-west-2.amazonaws.com/harpoon/swipe-right.png') no-repeat;
+        position: fixed;
+        opacity: 1;
+        width: 100%;
+        height: 100%;
+        background-size: 15%;
+        z-index: 100 !important;
+        top: 45%;
+        left: 85%;
+        transition: transform 0.8s ease-in-out;
+        transform: translateX(0)
       }
-      `;
-      document.head.appendChild(style);
 
-      // Add dismiss functionality
-      dismissButton.addEventListener("click", () => {
-        // Set cookie that expires in 30 days
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30);
-        document.cookie = `dismissed-swipe-message=true; expires=${expiryDate.toUTCString()}; path=/`;
-
-        // Remove message from DOM
-        messageContainer.remove();
-      });
-
-      messageContainer.appendChild(dismissButton);
-      document.body.appendChild(messageContainer);
+      .custom-nav-hidden .Theme-Story::after {
+        transform: translateX(-100%)
+      }
     }
+    `;
+    document.head.appendChild(style);
 
     document.body.classList.add("custom-nav-hidden");
 
