@@ -4,29 +4,34 @@
     let attempts = 0;
 
     const pollForElement = () => {
+      const parent = document.querySelector(".full-screen-carousel");
+
       const list = document.querySelectorAll(
         ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
       );
-      const parent = document.querySelector(".full-screen-carousel");
-      console.log(list);
-      console.log("polling", attempts, parent);
 
-      // if ((list && list.length && parent) || attempts >= maxAttempts) {
-      //   clearInterval(pollingInterval);
-      //   initializeCarousel(list[list.length - 1], parent);
+      const hasList = list && list.length;
 
-      //   const slides = document.querySelectorAll(
-      //     ".full-screen-carousel .related-story-card"
-      //   );
+      const images = hasList && list[0].querySelectorAll("img[src]");
 
-      //   slides.forEach((slide) => {
-      //     const wrapperDiv = document.createElement("div");
-      //     wrapperDiv.className = "slide-wrapper-new";
-      //     const innerDivs = [...slide.children];
-      //     innerDivs.forEach((div) => wrapperDiv.appendChild(div));
-      //     slide.appendChild(wrapperDiv);
-      //   });
-      // }
+      const ready = hasList && images?.length;
+
+      if (ready || attempts >= maxAttempts) {
+        clearInterval(pollingInterval);
+        initializeCarousel(list[list.length - 1], parent);
+
+        const slides = document.querySelectorAll(
+          ".full-screen-carousel .related-story-card"
+        );
+
+        slides.forEach((slide) => {
+          const wrapperDiv = document.createElement("div");
+          wrapperDiv.className = "slide-wrapper-new";
+          const innerDivs = [...slide.children];
+          innerDivs.forEach((div) => wrapperDiv.appendChild(div));
+          slide.appendChild(wrapperDiv);
+        });
+      }
       attempts++;
     };
 
