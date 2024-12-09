@@ -1,3 +1,7 @@
+body.shorthand-embed-body {
+  text-align: unset;
+}
+
 @keyframes panImage1 {
   0% {
     transform: translateX(0);
