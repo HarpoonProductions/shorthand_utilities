@@ -40,7 +40,6 @@ function getOffset(e) {
 var waiting = false;
 
 function scrollFunction() {
-  console.log("scroll");
   var viewportTopX = supportPageOffset
     ? window.pageYOffset
     : isCSS1Compat
@@ -63,7 +62,6 @@ function scrollFunction() {
       : maxScroll;
 
   if (!waiting) {
-    console.log("update");
     innerScroll.style.transform = "translateX(-" + percentage + "%)";
     waiting = true;
     setTimeout(function () {
@@ -78,6 +76,7 @@ var observer = new IntersectionObserver(
       var target = entry.target;
 
       if (entry.isIntersecting) {
+        console.log("intersecting", target);
         currentTarget = target;
         innerScroll = target[qs](".horizontal-scroll__inner");
         divider = innerScroll.childElementCount * 100;
@@ -85,6 +84,7 @@ var observer = new IntersectionObserver(
         viewportHeight = window.innerHeight;
         document.addEventListener("scroll", scrollFunction);
       } else {
+        console.log("not intersecting", target, "remove listener");
         document.removeEventListener("scroll", scrollFunction);
       }
     });
