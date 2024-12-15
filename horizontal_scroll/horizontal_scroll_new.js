@@ -142,7 +142,10 @@ var observer = new IntersectionObserver(
       divider = innerScroll.childElementCount * 100;
       maxScroll = divider - 100;
       viewportHeight = window.innerHeight;
-      setTimeout(document.addEventListener("scroll", scrollFunction), 50);
+      setTimeout(() => {
+        console.log("setting first");
+        document.addEventListener("scroll", scrollFunction);
+      }, 50);
     }
   });
 })(document);
