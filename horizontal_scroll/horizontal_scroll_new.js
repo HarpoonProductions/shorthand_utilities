@@ -132,7 +132,7 @@ var observer = new IntersectionObserver(
     observer.observe(container);
 
     const firstScroll = document.querySelector(
-      "#article > .horizontal-scroll__inner"
+      "#article > .horizontal-scroll .horizontal-scroll__inner"
     );
 
     console.log(firstScroll);
