@@ -130,5 +130,19 @@ var observer = new IntersectionObserver(
 
     container.style.height = childCount * 257 + "vh";
     observer.observe(container);
+
+    const firstScroll = document.querySelector(
+      "#article > .horizontal-scroll__inner"
+    );
+
+    console.log(firstScroll);
+
+    if (firstScroll) {
+      innerScroll = firstScroll;
+      divider = innerScroll.childElementCount * 100;
+      maxScroll = divider - 100;
+      viewportHeight = window.innerHeight;
+      document.addEventListener("scroll", scrollFunction);
+    }
   });
 })(document);
