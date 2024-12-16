@@ -345,7 +345,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   bottom: 0;
   left: 50%;
   transition: transform 0.8s ease-in-out;
-  z-index: 100;
+  z-index: 2000;
   transition-delay: 0.5s;
   border: 1px solid #d1f9f1;
 }
