@@ -1,10 +1,10 @@
 /* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
   let currentPageIndex = null;
-  var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_logo_2.jpg";
-  var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_wide.jpg";
+  var logoUrl = "";
+  // "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_logo_2.jpg";
+  var logoUrlInner = "";
+  // "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_wide.jpg";
 
   function extractLinks() {
     const links = [];
