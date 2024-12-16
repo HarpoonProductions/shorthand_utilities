@@ -2,9 +2,9 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/edition-logos/oxfam_logo.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam_logo.png";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/edition-logos/oxfam_wide.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam_wide.png";
 
   function extractLinks() {
     const links = [];
