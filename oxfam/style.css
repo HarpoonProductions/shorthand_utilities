@@ -445,12 +445,11 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .edition-logo {
-
-    height: 101%;
+    height: 67%;
 }
 
 .button_container.contents {
-  background: #133844;
+  background: white;
   border: 1px solid #133844;
   cursor: pointer;
   width: 90px;
