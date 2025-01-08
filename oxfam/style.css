@@ -397,6 +397,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   text-decoration: none;
   background: white;
   outline: none !important;
+  text-transform: uppercase;
 }
 
 .button_container:focus {
