@@ -208,7 +208,7 @@ font-style: normal;
 .splide__pagination__page {
   margin: 3px 9px !important;
   padding: 4px !important;
-  background: #133844 !important;
+  background: black !important;
 
 }
 
@@ -393,7 +393,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   justify-content: center;
   align-items: center;
   width: 142px;
-  color: #133844;
+  color: black;
   text-decoration: none;
   background: white;
   outline: none !important;
