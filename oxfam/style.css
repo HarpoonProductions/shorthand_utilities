@@ -396,6 +396,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   color: #133844;
   text-decoration: none;
   background: white;
+  outline: none !important;
 }
 
 .button_container:focus {
