@@ -64,7 +64,7 @@ font-style: normal;
   position: absolute;
     bottom: -3px;
     font-size: 11px;
-    font-family: "Imperial Sans Text", sans-serif !important;
+        font-family: "Oxfam" !important;
     color: #133844
 }
 
@@ -405,7 +405,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button {
   cursor: pointer;
   pointer-events: none;
-  font-family: "Imperial Sans Text", sans-serif !important;
+      font-family: "Oxfam" !important;
   z-index: 10;
   min-height: 43px;
   text-align: center;
