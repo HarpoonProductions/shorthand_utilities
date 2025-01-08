@@ -155,7 +155,7 @@ font-style: normal;
     top: 0;
 }
   .custom-min-nav-container {
-    height: 355px !important;
+    height: 306px !important;
   }
   
   
@@ -511,6 +511,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .inner-logo-container {
+  display: none;
     height: 30px;
 }
 
