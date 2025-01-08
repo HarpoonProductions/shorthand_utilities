@@ -2,7 +2,7 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam_logo_black.png";
+    "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam_logo_only.png";
   var logoUrlInner =
     "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam_wide.png";
 
