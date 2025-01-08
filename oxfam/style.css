@@ -441,7 +441,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid #133844;
+  box-shadow: rgba(28, 43, 51, 0.1) 10px 10px 20px 10px !important;
 }
 
 .edition-logo {
@@ -450,7 +450,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.contents {
   background: white;
-  border: 1px solid #133844;
+  box-shadow: rgba(28, 43, 51, 0.1) 10px 10px 20px 10px !important;
   cursor: pointer;
   width: 90px;
   height: 125px;
@@ -458,7 +458,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid #133844;
+  box-shadow: rgba(28, 43, 51, 0.1) 10px 10px 20px 10px !important;
 }
 
 .button_container.prev .image_div {
