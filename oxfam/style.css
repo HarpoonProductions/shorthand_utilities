@@ -16,6 +16,22 @@ span[style="background-color: rgba(255, 255, 255, 0.114);"] {
   max-width: auto !important;
 }
 
+.custom-min-nav-container .Theme-RelatedStoriesSection .related-story-description {
+  display: none;
+}
+
+.custom-min-nav-container .Theme-RelatedStories--Title .related-story-card .related-story-text {
+  margin: 8vh auto !important;
+}
+
+.custom-min-nav-container .Theme-RelatedStories--Title .related-story-card .related-story-title {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-bottom: 12px !important;
+}
+
 @media only screen and (max-width: 740px) {
 #resultButton {
   transition: transform 0.5s ease-in-out;
