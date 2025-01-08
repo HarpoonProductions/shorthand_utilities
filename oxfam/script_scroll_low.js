@@ -231,8 +231,8 @@
     navContainer.classList.add("nav_container");
 
     const prevUrl = currentIndex > 0 ? links[currentIndex - 1].href : null;
-    // const prevText = currentIndex > 0 ? links[currentIndex - 1].label : null;
-    const prevText = currentIndex > 0 ? "Previous" : null;
+    const prevText = currentIndex > 0 ? links[currentIndex - 1].label : null;
+    // const prevText = currentIndex > 0 ? "Previous" : null;
 
     const prevButton = createButtonWithImage(
       prevText,
@@ -270,9 +270,9 @@
 
     const nextUrl =
       currentIndex < links.length - 1 ? links[currentIndex + 1].href : null;
-    // const nextText =
-    //   currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
-    const nextText = currentIndex < links.length - 1 ? "Next" : null;
+    const nextText =
+      currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
+    // const nextText = currentIndex < links.length - 1 ? "Next" : null;
     const nextButton = createButtonWithImage(
       nextText,
       nextUrl,
