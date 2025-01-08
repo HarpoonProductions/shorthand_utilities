@@ -2,6 +2,10 @@ span[style="background-color: rgba(255, 255, 255, 0.114);"] {
   background-color: #007BFF !important;
 }
 
+.custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
+  outline: none !important;
+}
+
 .Theme-RelatedStoriesSection .Theme-RelatedStories:not(:empty) {
   padding: 0px 40px 0px 40px !important;
 }
