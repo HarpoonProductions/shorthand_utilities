@@ -78,8 +78,8 @@ font-style: normal;
 
 .contents-label {
   position: absolute;
-    bottom: -3px;
-    font-size: 11px;
+    bottom: 0px;
+    font-size: 12px;
         font-family: "Oxfam" !important;
     color: black
 }
@@ -171,7 +171,7 @@ font-style: normal;
     top: 0;
 }
   .custom-min-nav-container {
-    height: 306px !important;
+    height: 280px !important;
   }
   
   
@@ -461,7 +461,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .edition-logo {
-    height: 67%;
+  height: 50%;
+  position: relative;
+  bottom: 19px;
 }
 
 .button_container.contents {
