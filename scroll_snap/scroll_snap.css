@@ -1,6 +1,7 @@
 #article {
   height: 100vh;
   height: 100svh;
+  height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
