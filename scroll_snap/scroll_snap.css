@@ -11,6 +11,7 @@ html {
   scroll-snap-type: y mandatory;
   scroll-padding-top: 50px;
   height: 100vh;
+  height: 100svh;
   overflow-y: auto;
   box-sizing: border-box;
 }
