@@ -1,4 +1,5 @@
 #article {
+  -webkit-overflow-scrolling: touch;
   scroll-padding-top: 1px;
   height: 100vh;
   height: 100svh;
