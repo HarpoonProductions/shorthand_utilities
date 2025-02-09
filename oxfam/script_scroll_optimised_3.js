@@ -404,9 +404,9 @@
     const track = document.createElement("div");
     track.classList.add("splide__track");
 
-    list.classList.add("splide__list");
+    slides.classList.add("splide__list");
 
-    parent.insertBefore(splideContainer, list);
+    parent.insertBefore(splideContainer, slides);
     splideContainer.appendChild(track);
     track.appendChild(list);
 
