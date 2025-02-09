@@ -96,7 +96,6 @@
     });
   }
 
-  // Your existing fetchSrcset and createImageElement functions remain the same
   function fetchSrcset(url) {
     return fetch(url)
       .then((response) => {
@@ -390,28 +389,59 @@
   function initializeCarousels(list, parent) {
     if (!list || !parent) return;
 
-    // Create a placeholder for observation
-    const carouselPlaceholder = document.createElement("div");
-    carouselPlaceholder.classList.add("carousel-placeholder");
-    parent.appendChild(carouselPlaceholder);
+    // Wait for the custom mini nav container to be available
+    waitForElement(".custom-min-nav-container").then((container) => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            // When the mini nav enters the viewport (slides up into view)
+            if (entry.isIntersecting) {
+              console.log("Mini nav visible - mounting carousels");
+              mountCarousels(list, parent);
+            } else {
+              // When the mini nav leaves the viewport (slides down out of view)
+              console.log("Mini nav hidden - unmounting carousels");
+              unmountCarousels();
+            }
+          });
+        },
+        {
+          // Since the container slides up from below, we might want to start
+          // mounting slightly before it's visible for smoother transition
+          rootMargin: "50px 0px",
+          threshold: 0,
+        }
+      );
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+      // Start observing the mini nav container
+      observer.observe(container);
+
+      // We should also watch for the show-custom-mini-nav class
+      // since that's what triggers the container to slide up
+      const bodyObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.target.classList.contains("show-custom-mini-nav")) {
+            console.log(
+              "show-custom-mini-nav class added - mounting carousels"
+            );
             mountCarousels(list, parent);
-          } else {
+          } else if (
+            !mutation.target.classList.contains("show-custom-mini-nav")
+          ) {
+            console.log(
+              "show-custom-mini-nav class removed - unmounting carousels"
+            );
             unmountCarousels();
           }
         });
-      },
-      {
-        rootMargin: "100px", // Initialize slightly before visible
-        threshold: 0.1,
-      }
-    );
+      });
 
-    observer.observe(carouselPlaceholder);
+      // Observe the body element for class changes
+      bodyObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    });
   }
 
   function mountCarousels(list, parent) {
