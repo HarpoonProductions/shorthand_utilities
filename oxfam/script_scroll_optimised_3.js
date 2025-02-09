@@ -1,7 +1,9 @@
 (function () {
   let currentPageIndex = null;
-  let splideInstance = null;
-  let gliderInstance = null;
+  let slides = null;
+  let clonedSlides = null;
+  let parent = null;
+
   const logoUrl =
     "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam%20_logo_only.png";
   const logoUrlInner =
@@ -367,6 +369,7 @@
         document.body.classList.remove("show-custom-mini-nav");
         document.body.classList.remove("tab_container");
         document.body.classList.remove("tab_options");
+        unmountCarousels();
       }
     });
   }
@@ -386,43 +389,14 @@
     }
   }
 
-  // Initialize carousels with lifecycle management
-  function initializeCarousels(list, parent) {
-    if (!list || !parent) return;
-
-    // Create a placeholder for observation
-    const carouselPlaceholder = document.createElement("div");
-    carouselPlaceholder.classList.add("carousel-placeholder");
-    parent.appendChild(carouselPlaceholder);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            mountCarousels(list, parent);
-          } else {
-            unmountCarousels();
-          }
-        });
-      },
-      {
-        rootMargin: "100px", // Initialize slightly before visible
-        threshold: 0.1,
-      }
-    );
-
-    observer.observe(carouselPlaceholder);
+  function mountCarousels(slides, clonedSlides, parent) {
+    mountSplide(slides, parent);
+    mountGlider(clonedSlides, parent);
   }
 
-  function mountCarousels(list, parent) {
-    if (splideInstance || gliderInstance) return;
-
-    // Mount Splide carousel
-    const clonedSlides = list.cloneNode(true);
-    initializeGlider(parent, clonedSlides);
-
-    const slides = list.querySelectorAll("li");
-    slides.forEach((slide) => slide.classList.add("splide__slide"));
+  function mountSplide(slides, parent) {
+    const slidesLi = slides.querySelectorAll("li");
+    slidesLi.forEach((slide) => slide.classList.add("splide__slide"));
 
     const splideContainer = document.createElement("div");
     splideContainer.classList.add("splide");
@@ -447,14 +421,12 @@
     }).mount();
   }
 
-  function initializeGlider(parent, list) {
-    if (gliderInstance) return;
-
+  function mountGlider(clonedSlides, parent) {
     const gliderContain = document.createElement("div");
     gliderContain.classList.add("glider-contain");
 
-    list.classList.add("glider");
-    gliderContain.appendChild(list);
+    clonedSlides.classList.add("glider");
+    gliderContain.appendChild(clonedSlides);
     parent.appendChild(gliderContain);
 
     const prevArrow = document.createElement("button");
@@ -475,10 +447,10 @@
     gliderContain.appendChild(nextArrow);
     gliderContain.appendChild(dots);
 
-    const links = list.querySelectorAll("li a");
+    const links = clonedSlides.querySelectorAll("li a");
     links.forEach((element, i) => element.setAttribute("tabindex", i + 4));
 
-    gliderInstance = new Glider(list, {
+    gliderInstance = new Glider(clonedSlides, {
       slidesToShow: "auto",
       type: "carousel",
       slidesToScroll: 1,
@@ -537,18 +509,20 @@
       );
       const parent = list.parentNode;
       if (list && parent && currentPageIndex !== null) {
-        initializeCarousels(list, parent);
+        slides = list;
+        clonedSlides = list.cloneNode(true);
+        parent = list.parentNode;
       }
     } catch (error) {
       console.error("Failed to initialize carousels:", error);
     }
 
     try {
-      const relatedStoryCarousel = waitForElement(
+      const relatedStoryCarousel = await waitForElement(
         '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
       );
 
-      const navContainer = waitForElement(".custom-min-nav-container");
+      const navContainer = await waitForElement(".custom-min-nav-container");
 
       if (relatedStoryCarousel && relatedStoryCarousel.length && navContainer) {
         const relatedStoryCarousel2 = document.querySelectorAll(
@@ -578,10 +552,12 @@
           document.body.classList.remove("show-custom-mini-nav");
           document.body.classList.remove("tab_container");
           document.body.classList.remove("tab_options");
+          mountCarousels();
         }
       } else {
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
+        unmountCarousels();
       }
 
       lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
