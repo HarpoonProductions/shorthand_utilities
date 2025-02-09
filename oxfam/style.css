@@ -369,7 +369,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   bottom: 0;
   left: 50%;
   transition: transform 0.8s ease-in-out;
-  z-index: 2000;
+  z-index: 20000;
   transition-delay: 0.5s;
   box-shadow: rgba(28, 43, 51, 0.1) 10px 10px 20px 10px !important;
 }
