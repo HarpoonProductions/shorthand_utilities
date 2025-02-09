@@ -3,6 +3,7 @@
   let currentPageIndex = null;
   let GLIDER_LIST = null;
   let SPLIDE_CONTAINER = null;
+  let SPLIDE_INSTANCE = null;
   var logoUrl =
     "https://edition-logos.s3.eu-west-2.amazonaws.com/oxfam%20_logo_only.png";
   var logoUrlInner =
@@ -371,11 +372,11 @@
           document.body.classList.remove("show-custom-mini-nav");
           document.body.classList.remove("tab_container");
           document.body.classList.remove("tab_options");
-          mountSplide();
         }
       } else {
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
+        mountSplide();
       }
 
       lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
@@ -509,15 +510,24 @@
   });
 
   const mountSplide = () => {
-    new Splide(SPLIDE_CONTAINER, {
-      type: "loop",
-      perPage: 1,
-      perMove: 1,
-      gap: "1rem",
-      pagination: true,
-      arrows: true,
-      start: currentPageIndex,
-    }).mount();
+    if (!SPLIDE_INSTANCE) {
+      SPLIDE_INSTANCE = new Splide(SPLIDE_CONTAINER, {
+        type: "loop",
+        perPage: 1,
+        perMove: 1,
+        gap: "1rem",
+        pagination: true,
+        arrows: true,
+        start: currentPageIndex,
+      }).mount();
+    }
+  };
+
+  const unmountSplide = () => {
+    if (SPLIDE_INSTANCE) {
+      SPLIDE_INSTANCE.destroy();
+      SPLIDE_INSTANCE = null;
+    }
   };
 
   const mountGlider = () => {
