@@ -338,6 +338,7 @@
         document.body.classList.remove("show-custom-mini-nav");
         document.body.classList.remove("tab_container");
         document.body.classList.remove("tab_options");
+        unmountSplide();
       }
     });
   }
@@ -372,6 +373,7 @@
           document.body.classList.remove("show-custom-mini-nav");
           document.body.classList.remove("tab_container");
           document.body.classList.remove("tab_options");
+          unmountSplide();
         }
       } else {
         document.body.classList.remove("custom-nav-hidden");
