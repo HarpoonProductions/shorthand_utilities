@@ -507,11 +507,11 @@
       const list = await waitForElement(
         '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
       );
-      const parent = list.parentNode;
-      if (list && parent && currentPageIndex !== null) {
+      const p = list.parentNode;
+      if (list && p && currentPageIndex !== null) {
         slides = list;
         clonedSlides = list.cloneNode(true);
-        parent = list.parentNode;
+        parent = p;
       }
     } catch (error) {
       console.error("Failed to initialize carousels:", error);
