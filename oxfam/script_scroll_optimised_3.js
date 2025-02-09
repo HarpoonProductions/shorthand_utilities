@@ -408,7 +408,7 @@
 
     parent.insertBefore(splideContainer, slides);
     splideContainer.appendChild(track);
-    track.appendChild(list);
+    track.appendChild(slides);
 
     splideInstance = new Splide(splideContainer, {
       type: "loop",
