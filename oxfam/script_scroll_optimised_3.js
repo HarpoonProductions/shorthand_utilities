@@ -389,7 +389,7 @@
     }
   }
 
-  function mountCarousels(slides, clonedSlides, parent) {
+  function mountCarousels() {
     mountSplide(slides, parent);
     mountGlider(clonedSlides, parent);
   }
