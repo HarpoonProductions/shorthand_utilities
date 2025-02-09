@@ -526,8 +526,14 @@
       const navContainer = await waitForElement(".custom-min-nav-container");
 
       if (relatedStoryCarousel && relatedStoryCarousel.length && navContainer) {
+        console.log("appending");
         const relatedStoryCarousel2 = document.querySelectorAll(
           ".Theme-RelatedStoriesSection"
+        );
+
+        console.log(
+          navContainer,
+          relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
         );
 
         navContainer.appendChild(
