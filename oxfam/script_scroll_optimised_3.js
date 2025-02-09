@@ -517,32 +517,6 @@
     } catch (error) {
       console.error("Failed to initialize carousels:", error);
     }
-
-    try {
-      const relatedStoryCarousel = await waitForElement(
-        '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
-      );
-
-      const navContainer = await waitForElement(".custom-min-nav-container");
-
-      if (relatedStoryCarousel && relatedStoryCarousel.length && navContainer) {
-        console.log("appending");
-        const relatedStoryCarousel2 = document.querySelectorAll(
-          ".Theme-RelatedStoriesSection"
-        );
-
-        console.log(
-          navContainer,
-          relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
-        );
-
-        navContainer.appendChild(
-          relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
-        );
-      }
-    } catch (error) {
-      console.log("failed to append related stories", error);
-    }
   });
 
   // Keep your existing scroll handler
@@ -572,24 +546,71 @@
     { passive: true }
   );
 
-  // Your existing accessibility code
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Tab") {
-      setTimeout(() => {
-        if (document.activeElement.closest(".custom-min-nav-container")) {
-          document.body.classList.add("tab_options");
-          document.body.classList.remove("tab_container");
-        } else if (
-          document.activeElement.classList.contains("button_container")
+  (function () {
+    function startPollingCarousel() {
+      let poller = setInterval(() => {
+        const relatedStoryCarousel = document.querySelectorAll(
+          '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
+        );
+
+        const navContainer = document.querySelector(
+          ".custom-min-nav-container"
+        );
+
+        if (
+          relatedStoryCarousel &&
+          relatedStoryCarousel.length &&
+          navContainer
         ) {
-          document.body.classList.add("tab_container");
-          document.body.classList.remove("tab_options");
-        } else {
-          document.body.classList.remove("tab_container", "tab_options");
+          clearInterval(poller);
+          const relatedStoryCarousel2 = document.querySelectorAll(
+            ".Theme-RelatedStoriesSection"
+          );
+
+          navContainer.appendChild(
+            relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
+          );
         }
-      }, 0);
+      }, 250);
+
+      setTimeout(() => {
+        clearInterval(poller);
+      }, 10000);
     }
-  });
+
+    startPollingCarousel();
+
+    // Accessibility
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        // Introduce a delay to allow focus to update
+        setTimeout(() => {
+          console.log(
+            "Tabbed",
+            document.activeElement,
+            document.activeElement.closest(".custom-min-nav-container")
+          );
+          // Check if the currently focused element is within '.custom-min-nav-container'
+          if (document.activeElement.closest(".custom-min-nav-container")) {
+            document.body.classList.add("tab_options");
+            document.body.classList.remove("tab_container");
+          }
+          // Check if the currently focused element has the class 'button_container'
+          else if (
+            document.activeElement.classList.contains("button_container")
+          ) {
+            document.body.classList.add("tab_container");
+            document.body.classList.remove("tab_options");
+          }
+          // If the focused element doesn't meet the above conditions
+          else {
+            document.body.classList.remove("tab_container", "tab_options");
+          }
+        }, 0); // A delay of 0 milliseconds effectively waits until the browser can process the focus shift
+      }
+    });
+  })();
 
   // Utility function for debouncing
   function debounce(func, wait) {
