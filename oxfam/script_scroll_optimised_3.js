@@ -391,7 +391,7 @@
 
   function mountCarousels() {
     mountSplide(slides, parent);
-    mountGlider(clonedSlides, parent);
+    // mountGlider(clonedSlides, parent);
   }
 
   function mountSplide(slides, parent) {
@@ -406,6 +406,7 @@
 
     slides.classList.add("splide__list");
 
+    console.log(parent, splideContainer, slides);
     parent.insertBefore(splideContainer, slides);
     splideContainer.appendChild(track);
     track.appendChild(slides);
