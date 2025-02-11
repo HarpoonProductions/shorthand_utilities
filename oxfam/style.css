@@ -8,7 +8,7 @@
 }
 
 /* Hide scrollbar on mobile */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) { */
   .article-scroll {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -16,10 +16,10 @@
   .article-scroll::-webkit-scrollbar {
     display: none;
   }
-}
+/* } */
 
 /* Styled scrollbar on desktop */
-@media (min-width: 769px) {
+/* @media (min-width: 769px) { */
   .article-scroll::-webkit-scrollbar {
     height: 4px;
   }
@@ -34,7 +34,7 @@
   .article-scroll::-webkit-scrollbar-thumb:hover {
     background: #666;
   }
-}
+/* } */
 
 .article-link {
   padding: 8px 16px;
