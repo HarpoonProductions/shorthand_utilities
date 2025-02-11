@@ -1,0 +1,582 @@
+<script>
+  // Select elements
+  const openBtn = document.getElementById("unique-open-btn");
+  const closeBtn = document.getElementById("unique-close-btn");
+  const overlay = document.getElementById("unique-overlay");
+  const popup = document.getElementById("unique-popup");
+
+  // Open popup function
+  openBtn.addEventListener("click", () => {
+    overlay.style.display = "block";
+    popup.style.display = "block";
+  });
+
+  // Close popup function
+  const closePopup = () => {
+    overlay.style.display = "none";
+    popup.style.display = "none";
+  };
+
+  closeBtn.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
+</script>
+
+<script>
+  let toggleVideoPlaying = function () {
+    "use strict";
+
+    // Define section IDs in an array (add more as needed)
+    let sectionIDs = [
+      "#section-OiX73L4q4r",
+      // Add more sections here as needed
+      // '#section-ID',
+      // '#section-ID'
+    ];
+
+    // Function to handle video logic for a section
+    let handleSectionVideos = function (sectionID) {
+      let section = document.querySelector(sectionID);
+      if (!section) {
+        return;
+      }
+
+      let inlineVideos = section.querySelectorAll('[data-type="video/mp4"]');
+      let inlineVideoWrappers = section.getElementsByClassName(
+        "Theme-BackgroundVideo"
+      );
+
+      if (inlineVideos.length > 0) {
+        inlineVideos.forEach(function (video) {
+          video.pause();
+          video.loop = false; // Ensure video does not loop
+
+          video.addEventListener(
+            "ended",
+            function () {
+              video.pause();
+              video.currentTime = video.duration; // Keep at the last frame
+            },
+            { once: true }
+          );
+        });
+
+        let handleVideoPlay = function (entries, observer) {
+          entries.forEach(function (entry) {
+            let video = entry.target;
+            if (entry.isIntersecting) {
+              video.play();
+            } else {
+              video.pause();
+            }
+          });
+        };
+
+        let observer = new IntersectionObserver(handleVideoPlay, {
+          threshold: 0.5,
+        });
+
+        inlineVideos.forEach(function (video) {
+          observer.observe(video);
+        });
+
+        for (let i = 0; i < inlineVideoWrappers.length; i++) {
+          inlineVideoWrappers[i].insertAdjacentHTML(
+            "beforeend",
+            '<button class="inlineVideoBtn">Toggle video</button>'
+          );
+          inlineVideoWrappers[i]
+            .querySelector(".inlineVideoBtn")
+            .addEventListener("click", function (e) {
+              let inlineVideoClosest = this.closest(".Theme-BackgroundVideo");
+              let inlineVideoClosestVideo =
+                inlineVideoClosest.getElementsByTagName("video")[0];
+              this.classList.toggle("paused");
+              if (inlineVideoClosestVideo.paused) {
+                inlineVideoClosestVideo.play();
+              } else {
+                inlineVideoClosestVideo.pause();
+              }
+            });
+        }
+      }
+    };
+
+    // Iterate through all section IDs
+    sectionIDs.forEach(function (sectionID) {
+      handleSectionVideos(sectionID);
+    });
+  };
+
+  // Call the function to initiate the video logic
+  toggleVideoPlaying();
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const section = document.querySelector("#section-IbED7c5O3H");
+    const rightText = section.querySelector(".slide-in-right");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            rightText.classList.add("active");
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(section);
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const underlineElements = document.querySelectorAll("u");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate");
+        }
+      });
+    });
+
+    underlineElements.forEach((el) => observer.observe(el));
+  });
+</script>
+
+<script>
+  function appendNavigation(containerSelector, navItems) {
+    const container = document.querySelector(containerSelector);
+
+    // Create nav element
+    const navigation = document.createElement("nav");
+    navigation.className = "Navigation Theme-NavigationBar";
+    navigation.setAttribute("role", "navigation");
+    navigation.id = "navigation";
+
+    // Create ul element
+    const ul = document.createElement("ul");
+    ul.className = "Navigation__itemList Theme-Navigation-ItemList";
+
+    // Create li elements for each nav item
+    navItems.forEach((item, index) => {
+      const li = document.createElement("li");
+      li.className = `Navigation__item Theme-NavigationBarItem${
+        index === 0 ? " Theme-ActiveNavigationBarItem" : ""
+      }`;
+      const a = document.createElement("a");
+      a.href = item.id;
+      a.className = "Theme-NavigationLink";
+      a.setAttribute("data-story-nav-item", "true");
+      a.textContent = item.label;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    navigation.appendChild(ul);
+    container.appendChild(navigation);
+
+    // Set up Intersection Observer
+    const observerOptions = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const targetId = `#${entry.target.id}`;
+        const correspondingNavItem = ul.querySelector(
+          `a[href="${targetId}"]`
+        )?.parentElement;
+
+        if (entry.isIntersecting && correspondingNavItem) {
+          // Remove active class from all navigation items
+          console.log("clearing");
+
+          ul.querySelectorAll("li").forEach((li) => {
+            li.classList.remove("Theme-ActiveNavigationBarItemNew");
+          });
+
+          // Add active class to the corresponding navigation item
+          correspondingNavItem.classList.add(
+            "Theme-ActiveNavigationBarItemNew"
+          );
+        }
+      });
+    }, observerOptions);
+
+    // Observe all sections
+    navItems.forEach((item) => {
+      const sectionId = item.id.substring(1); // Remove the # from the id
+      const section = document.getElementById(sectionId);
+      if (section) {
+        observer.observe(section);
+      }
+    });
+  }
+
+  /* Add new Nav Items here */
+  const navItems = [
+    {
+      label: "AFRICA",
+      id: "#africa",
+    },
+    {
+      label: "MENA",
+      id: "#mena",
+    },
+    {
+      label: "ASIA",
+      id: "#asia",
+    },
+    {
+      label: "OTHER",
+      id: "#other",
+    },
+    {
+      label: "LAC",
+      id: "#lac",
+    },
+    {
+      label: "PACIFIC",
+      id: "#pacific",
+    },
+  ];
+
+  appendNavigation(".Project-HeaderContainer", navItems);
+</script>
+
+<script>
+  const grid = document.getElementById("imageGrid");
+  const modal = document.getElementById("modal");
+  const modalImage = document.getElementById("modalImage");
+  const modalName = document.getElementById("modalName");
+  const modalQuote = document.getElementById("modalQuote");
+  const modalText = document.getElementById("modalText");
+  const modalLink = document.getElementById("modalLink");
+  const prevModal = document.getElementById("prevModal");
+  const nextModal = document.getElementById("nextModal");
+
+  let currentIndex = 0;
+
+  const images = [
+    // Sample data structure quote: 'Quote 1',nameName
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Pavel+Martiarena.jpg",
+      name: "Pavel, Climate rights defender, Peru",
+      quote: '"We are not fighting for the future. We are fighting for today."',
+      text: '"I am from the Peruvian jungle. From a very young age, I learned to appreciate nature, landscapes, rivers and forests. We believe that Peru, like many other countries at risk from the climate crisis, is not to blame for its effects. The polluters are at fault. Bringing together activists from different parts of the Global South with the same goal, waving the same placard, shouting the same slogans, is very powerful. We believe that our voices are not alone. The time is now!"<br><br>Pavel Martiarena is a photographer and Madre de Dios activist fighting extractives in the Amazon region; his work has won an award',
+      link: "https://example.com",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Ma+Ester.jpg",
+      name: "Esther, Women’s Rights defender, Indonesia",
+      quote:
+        '"My motivation pushes me to defend women who come into contact with the law"',
+      text: "\"We know that, once women need to face the law, the dependency on men is often quite high. For example, for women whose husbands are the breadwinner, they don't know how to continue their lives. So, we encourage these women – 'You can do it, you have skills. You can sell cakes, you can sew.' We push them to start making a living, starting from what they have in them. We motivate them to rise.\"<br><br>Esther Aswatiti founded the non-profit organization LBH Apik in 2011, to help women to get free legal aid. People in East Nusa Tenggara, where LBH Apik works, now have a better understanding of women's and children's rights, as well as the laws that can protect them",
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Lavetanalagi+Seru.jpg",
+      name: "Lagi, Climate rights defender, Fiji",
+      quote:
+        '"Growing up in our village, seeing first-hand the impacts of sea level rise – this is why I am doing this work."',
+      text: '"In places where people are unable to speak out, because of the challenging context they are in, collaboration and partnerships with other activists can help to build pressure on governments. This is about intergenerational justice. This is about historical responsibility. We\'d like to see the high-emitting countries pay for the losses and damage that they are causing."<br><br>Lavetanalagi Seru has a background in youth development and human rights. He is a policy expert in humanitarian response in the Pacific and co-founder and coordinator of the Alliance for Future Generations.',
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Alexander+Reynoso+Bran.jpg",
+      name: "Alexander, Land rights defender, Guatemala",
+      quote:
+        '"I unlocked the passenger door for my daughter and went around to get in on the other side. That’s when I heard the shots and felt the bullets."',
+      text: '"After the attack, I spent a year recovering. We found out that, instead of carrying out an investigation on the attack, the public ministry was trying to investigate me. The pro-mining forces are co-opting everything – the courts, the state, Congress. Given the brutal history, the owners of the mine must be wondering how La Resistencia can still be active. Some people have been intimidated, so there are fewer of us than earlier, but now in some ways we are stronger than ever. I don’t know if we will win. What I can tell you is that we are not going to give up."<br><br>Ten years ago, Alexander Reynoso Bran’s daughter was killed in an attack – a crime which was never resolved. Topacio was an active leader of the local resistance against a mining corporation taking over the community land. While some of Alexander’s wounds will never fully heal, he is more committed than ever to keep up the fight.',
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Hilda+Flavia+Nakabuye.jpg",
+      name: "Hilda, Climate rights defender, Uganda",
+      quote:
+        '"I had to stand up, speak up and represent my community. We shouldn’t suffer a crisis that we did not create."',
+      text: '"I want to work together with other activists to increase pressure on policy makers so that they can prioritize climate action, and for big oil polluters to know that there is a link between humanity and nature, and this link is strong. For humanity to survive, we need to preserve and protect our environment."<br><br>Hilda Flavia Nakabuye is based in Kampala and is founder of Fridays for the Future in Uganda. She is focusing on raising awareness among students and organizes clean up sessions in Lake Victoria. Hilda is currently also involved in a protest against the East African Crude Oil pipeline.',
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Johanna+Duran+Gomez.jpg",
+      name: "Johanna, Women’s rights defender, Colombia",
+      quote:
+        '"There’s something important that women deserve to say and believe: I can make my own decisions about my body."',
+      text: '"The ‘Sex Truck’ gives assistance to women who have survived gender-based violence and need legal and psychological help. Our staff see the women they serve as agents of change, and as partners in the fight for women’s rights rather than as beneficiaries. The staff bring solidarity and empathy to their relationships. We are a local organization, but we have been able to amplify the voices and experience of migrant women and influence decisions made at the national level related to reproductive and children’s rights."<br><br>With her organization Fundacion Mujer y Futuro (Women and the Future Foundation), Johanna Duran Gomez helps Venezuelan refugees make the journey across the Andean mountains to the city of Bucaramanga in Santander, and beyond. The migrants have access to the Sex Truck, a mobile clinic where nurses provide free medical care and access to birth control of every description.',
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Svetlana+Jioara.jpg",
+      name: "Svetlana, Migrant rights defender, Moldova",
+      quote:
+        '"When the war broke out, we had to take a decision: either we would stay here in our office, or we would jump on this running train and see where it brings us."',
+      text: '"On 24 February 2022, we had planned a party, but then we heard about the bombing. We knew the war had started and our work would never be the same. I have had my phone on silent since then because it never stops ringing. We are 24/7 at the Palanka border crossing now, to monitor and reach out. We foresee lots of legal problems with the undocumented people under the new rules that the government is announcing, but we are ready for it."<br><br>Taking action during the war, Svetlana Jioara developed the Centrul de Drept al Avocatilor (Law Center of Advocates) from a small organization supporting groups to access legal support, to a team of 75 legal counselors, 12 monitors and facilitating staff. Promoting respect for the fundamental rights of every person crossing the border is her core concern.',
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Oumarou+Hega+Nourrath.jpg",
+      name: "Nourrath, Women’s rights defender, Niger",
+      quote:
+        '"Women have the potential to change everything if they realize the power of their impact on society."',
+      text: "\"As a slam artist, I manage to convey important messages, particularly about peace and social cohesion. Getting started was particularly difficult…. Over time, we incorporated rhythms into our slams, which my parents eventually accepted. In life it's essential to know what you want and not to give up along the way, as my success may inspire others.\"<br><br>Oumarou Hega Nourrath, also known as Nourrath la Debboslam, is a slam artist and coordinator of the non-governmental organization Debbo'arts. She organizes festivals and debates in Niger that bring together young girls from all regions of the country to discuss issues affecting women's well-being, including how to use art to combat violent extremism.",
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Laeticia+Moraes.jpg",
+      name: "Laeticia, Land rights defender, Brasil",
+      quote: '"This is not a struggle in defense of the trees."',
+      text: '"Our struggle, the struggle of the women from the fields, from the waters and the forest…is not just a struggle for us. It’s not just for us to have access to public policies and it’s not a struggle just for the trees. It’s a struggle for humanity."<br><br>Black women from traditional communities in northern Brazil, such as Laeticia Moraes, are the main defenders, protectors and guardians of the biodiversity of the Amazon region. Their care for the forest can guarantee the survival of all of us. Laeticia works with Conselho Nacional das Populações Extrativista, a civil society organization to protect the Amazon rainforest and the people who live in it.',
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Buthaina+Sobh.jpg",
+      name: "Buthaina, Women’s rights defender, Occupied Palestinian Territory",
+      quote:
+        '"This war is unlike any we\'ve experienced before. Countless displaced people, crippled communication networks, pervasive fear and imminent danger."',
+      text: "\"No one understands a woman's needs better than another woman. We monitored many cases of women and girls living in harsh displacement conditions. Some of them line up for the toilets for hours, and some of them walk long distances to fill gallons of water. The war greatly affected the sensitive nature of women and increased the burdens placed on them. While progress has been made in improving living conditions, much work lies ahead. Gaza's journey to recovery demands sustained intervention and collective action.\"<br><br>Buthaina Sobh, a 52-year-old, leads Wefaq Association for Women and Child Care. She is also a mother of three, in Rafah. Buthaina is known for her unwavering determination and tireless efforts in these acutely challenging times.",
+      link: "#",
+    },
+    {
+      src: "https://harpn.s3.eu-west-2.amazonaws.com/oxfaminternational/2025/images/Pedrito+Vieira.jpg",
+      name: "Pedrieto, Land rights defender, Timor-Leste",
+      quote:
+        '"We do advocacy work because we are committed. This is our destiny. I think it is important not to measure the cost with money, but with our dedication."',
+      text: '"This is my calling. When I was young and studying in Indonesia, I was involved in resistance activism. I was also heavily involved in the movement for independence. The risks that I experienced back then, I still experience now. Nearly all the monitoring that Rede ba Rai conducted [showed that] they [the government] violated the law. We defend people’s rights, and sometimes we receive threats from security or police. But I feel that this is my life cause."<br><br>Pedrieto Vieira leads Rede ba Rai (RBR), a long-standing national level civil society network in Timor-Leste, which advocates for just and sustainable land rights for all Timorese people. RBR members, working together with community representatives, made a compelling contribution to the development of the 2017 Land Law, a momentous win for land rights in Timor-Leste.',
+      link: "#",
+    },
+
+    // Add more image data here
+  ];
+
+  let gridRow;
+
+  function populateGrid() {
+    images.forEach((image, index) => {
+      const item = document.createElement("div");
+      item.classList.add("grid-item");
+      if (index === 0) {
+        item.classList.add("active");
+      }
+      item.innerHTML = `
+            <img src="${image.src}" alt="${image.name}">
+`;
+
+      item.style.animationDelay = `${index * 0.1}s`;
+      item.classList.add("fall");
+
+      item.addEventListener("click", () => {
+        document
+          .querySelectorAll(".grid-item")
+          .forEach((i) => i.classList.remove("active"));
+        item.classList.add("active");
+        openModal(index);
+      });
+
+      grid.appendChild(item);
+    });
+
+    // Show the first person's modal by default on desktop
+    if (window.innerWidth > 768) {
+      openModal(0);
+    }
+
+    gridRow = grid.querySelectorAll(".grid-item");
+  }
+
+  function openModal(index) {
+    console.log(index);
+    currentIndex = index;
+    const image = images[index];
+    modalName.textContent = image.name;
+    modalImage.src = image.src;
+
+    if (!gridRow) gridRow = grid.querySelectorAll(".grid-item");
+
+    if (gridRow) {
+      gridRow.forEach((item, i) => {
+        if (i === index) {
+          item.classList.add("active");
+        } else {
+          item.classList.remove("active");
+        }
+      });
+    }
+    modalImage.alt = image.name; // Set alt text for modal image
+    modalQuote.textContent = image.quote;
+    modalText.innerHTML = image.text;
+    modalLink.href = image.link;
+    modal.classList.add("visible");
+  }
+
+  function showPrevModal() {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    openModal(currentIndex);
+  }
+
+  function showNextModal() {
+    currentIndex = (currentIndex + 1) % images.length;
+    openModal(currentIndex);
+  }
+
+  prevModal.addEventListener("click", showPrevModal);
+  nextModal.addEventListener("click", showNextModal);
+
+  populateGrid();
+</script>
+
+<script>
+  // add animation classes to default elements on load
+
+  $(document).ready(function () {
+    // adds animation classes to main text h3 and p elements
+
+    $(".sh-case-intro .Theme-Layer-TextBlock-Inner").addClass("fade-in-bottom");
+    $(".Theme-Layer-TextBlock-Inner h4").addClass("fade-in-bottom");
+    $(".sh-quote-photo h4").addClass("fade-in-bottom");
+    $(".Theme-Layer-BodyText h3").addClass("fade-in-bottom");
+    $(".Theme-Layer-BodyText h6").addClass("fade-in-bottom");
+    $(".Theme-Layer-BodyText td").addClass("fade-in-bottom");
+    $("#modalQuote").addClass("fade-in-bottom");
+    $(".sh-videoreveal p").addClass("fade-in");
+    $(".sh-ourwork h3").addClass("slide-right");
+    $(".sh-stats h3").addClass("slide-right");
+    $(".sh-supporter-head h3").addClass("fade-in-bottom");
+    $(".sh-editorial-head h3").addClass("fade-in-bottom");
+    $(".sh-change-intro h3").addClass("fade-in-bottom");
+
+    // removes scroll animation trigger from introduction elements to avoid retriggering on first scroll
+    $(".sh-introduction .Theme-Layer-BodyText p").removeClass("fade-in-bottom");
+    $(".sh-introduction .Theme-Layer-BodyText h3").removeClass(
+      "fade-in-bottom"
+    );
+
+    // adds animation class back to intoduction elements - without scroll trigger, with delay to match main title page transition
+    $(".sh-introduction .Theme-Layer-BodyText p").addClass(
+      "fade-in-bottom-delay"
+    );
+    $(".sh-introduction .Theme-Layer-BodyText h3").addClass(
+      "fade-in-bottom-delay"
+    );
+
+    // adds introduction animation class to main title page
+    $(".sh-main-title").addClass("main-title-transition-anim");
+
+    // removes scroll animation trigger on expanding list h3 and p elements
+    $(".expanding-list-wrapper p").removeClass("fade-in-bottom");
+    $(".expanding-list-wrapper h3").removeClass("fade-in-bottom");
+
+    // add animation class to inline media - not working, image lazyload gets in way
+    // $(".InlineMedia--image").addClass("fade-in-bottom");
+  });
+</script>
+
+<script>
+  // animation trigger global
+
+  // if viewportWidth width <= 899
+  if (window.innerWidth <= 899) {
+    // use mobile script with lower elementInView value / faster animation load
+    const scrollElements = document.querySelectorAll(
+      ".js-scroll, .Theme-Layer-BodyText p, .Theme-Layer-BodyText h3, .Theme-Layer-BodyText h6, .Theme-Layer-TextBlock-Inner h4, .sh-videoreveal p, .sh-ourwork h3, .sh-case-intro .Theme-Layer-TextBlock-Inner, .sh-stats h3, .sh-supporter-head h3, .sh-quote-photo h4, .Theme-Layer-BodyText h4, #modalQuote, .sh-editorial-head h3, .sh-change-intro h3"
+    );
+
+    const elementInView = (el, dividend = 1) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop <=
+        (window.innerHeight || document.documentElement.clientHeight) / dividend
+      );
+    };
+
+    const elementOutofView = (el) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop >
+        (window.innerHeight || document.documentElement.clientHeight)
+      );
+    };
+
+    const displayScrollElement = (element) => {
+      element.classList.add("scrolled");
+    };
+
+    const hideScrollElement = (element) => {
+      element.classList.remove("scrolled");
+    };
+
+    const handleScrollAnimation = () => {
+      scrollElements.forEach((el) => {
+        if (elementInView(el, 0.45)) {
+          displayScrollElement(el);
+        } else if (elementOutofView(el)) {
+          hideScrollElement(el);
+        }
+      });
+    };
+
+    window.addEventListener("scroll", () => {
+      handleScrollAnimation();
+    });
+  } else {
+    // viewportWidth width > 900
+
+    // use desktop script with higher elementInView value / slower animation load
+    const scrollElements = document.querySelectorAll(
+      ".js-scroll, .Theme-Layer-BodyText p, .Theme-Layer-BodyText h3, .Theme-Layer-BodyText h6, .Theme-Layer-TextBlock-Inner h4, .sh-videoreveal p, .sh-ourwork h3, .sh-case-intro .Theme-Layer-TextBlock-Inner, .sh-stats h3, .sh-supporter-head h3, .sh-quote-photo h4, .Theme-Layer-BodyText h4, #modalQuote, .sh-editorial-head h3, .sh-change-intro h3"
+    );
+
+    const elementInView = (el, dividend = 1) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop <=
+        (window.innerHeight || document.documentElement.clientHeight) / dividend
+      );
+    };
+
+    const elementOutofView = (el) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop >
+        (window.innerHeight || document.documentElement.clientHeight)
+      );
+    };
+
+    const displayScrollElement = (element) => {
+      element.classList.add("scrolled");
+    };
+
+    const hideScrollElement = (element) => {
+      element.classList.remove("scrolled");
+    };
+
+    const handleScrollAnimation = () => {
+      scrollElements.forEach((el) => {
+        if (elementInView(el, 0.9)) {
+          displayScrollElement(el);
+        } else if (elementOutofView(el)) {
+          hideScrollElement(el);
+        }
+      });
+    };
+
+    window.addEventListener("scroll", () => {
+      handleScrollAnimation();
+    });
+  }
+</script>
+
+<script
+  type="text/javascript"
+  src="https://harpoonproductions.github.io/shorthand_utilities/horizontal_scroll/horizontal_scroll_new.js"
+></script>

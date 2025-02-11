@@ -1,0 +1,567 @@
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const widgets = document.querySelectorAll(".widget");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Get all .image-container elements in the intersecting widget
+            const containers =
+              entry.target.querySelectorAll(".image-container");
+
+            // Add visible class to each container with a delay for the second
+            containers.forEach((container, index) => {
+              setTimeout(() => {
+                container.classList.add("visible");
+              }, index * 500); // Delay by 300ms for each container
+            });
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the widget is visible
+      }
+    );
+
+    // Observe each widget
+    widgets.forEach((widget) => observer.observe(widget));
+  });
+</script>
+
+<script>
+  // Open the specified popup and overlay
+  function openPopup(popupId, overlayId) {
+    const popup = document.getElementById(popupId);
+    const overlay = document.getElementById(overlayId);
+    const container = popup.closest(".sh-thanks");
+
+    if (popup && overlay) {
+      popup.classList.add("open");
+      overlay.classList.add("open");
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
+      if (container) container.classList.add("openedModal");
+
+      // Ensure video shows the starting frame
+      const video = popup.querySelector("video");
+      if (video) {
+        video.load(); // Reloads the video to display the starting frame
+      }
+    }
+  }
+
+  // Close the specified popup and overlay
+  function closePopup(popupId, overlayId) {
+    const popup = document.getElementById(popupId);
+    const overlay = document.getElementById(overlayId);
+    const container = popup.closest(".sh-thanks");
+
+    if (popup && overlay) {
+      popup.classList.remove("open");
+      overlay.classList.remove("open");
+      document.body.style.overflow = "auto"; // Restore background scrolling
+      if (container) container.classList.remove("openedModal");
+    }
+  }
+
+  // Toggle between two specific popups
+  function togglePopup(currentPopupId, nextPopupId) {
+    const currentPopup = document.getElementById(currentPopupId);
+    const nextPopup = document.getElementById(nextPopupId);
+    const currentContainer = currentPopup.closest(".sh-thanks");
+    const nextContainer = nextPopup.closest(".sh-thanks");
+
+    if (currentPopup && nextPopup) {
+      currentPopup.classList.remove("open");
+      nextPopup.classList.add("open");
+
+      if (currentContainer) currentContainer.classList.remove("openedModal");
+      if (nextContainer) nextContainer.classList.add("openedModal");
+    }
+  }
+</script>
+
+<script>
+  document.addEventListener("scroll", () => {
+    const stickyContainer = document.querySelector(".sticky-container");
+    const boxes = document.querySelectorAll(".box");
+    const containerRect = stickyContainer.getBoundingClientRect();
+
+    // Determine which box should be visible based on scroll position
+    const containerTop = containerRect.top;
+    const containerHeight = stickyContainer.offsetHeight;
+    const scrollPosition = -containerTop;
+    const totalScroll = containerHeight * 5;
+    const boxIndex = Math.min(
+      Math.floor((scrollPosition / totalScroll) * 5),
+      4
+    );
+
+    // Update visibility of boxes
+    boxes.forEach((box, index) => {
+      if (index === boxIndex) {
+        box.classList.add("visible");
+        box.classList.remove("hidden");
+      } else if (index < boxIndex) {
+        box.classList.remove("visible");
+        box.classList.add("hidden");
+      } else {
+        box.classList.remove("visible", "hidden");
+      }
+    });
+
+    // Remove stickiness after the last box
+    if (scrollPosition >= totalScroll) {
+      stickyContainer.style.position = "relative";
+    } else {
+      stickyContainer.style.position = "sticky";
+    }
+  });
+</script>
+
+<script
+  type="text/javascript"
+  src="https://harpoonproductions.github.io/shorthand_utilities/horizontal_scroll_no_mobile/horizontal_scroll_new.js"
+></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const underlineElements = document.querySelectorAll("u");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate");
+        }
+      });
+    });
+
+    underlineElements.forEach((el) => observer.observe(el));
+  });
+</script>
+
+<!--
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+-->
+
+<script>
+  window.addEventListener(
+    "scroll",
+    () => {
+      document.body.style.setProperty(
+        "--scroll",
+        window.pageYOffset / (document.body.offsetHeight - window.innerHeight)
+      );
+    },
+    false
+  );
+</script>
+
+<script>
+  // add animation classes to default elements on load
+
+  $(document).ready(function () {
+    // adds animation classes to main text h3 and p elements
+
+    $(".sh-case-intro1 .Theme-Layer-TextBlock-Inner").addClass(
+      "fade-in-bottom"
+    );
+    $(".sh-case-intro2 .Theme-Layer-TextBlock-Inner").addClass(
+      "fade-in-bottom"
+    );
+    $(".sh-case-intro3 .Theme-Layer-TextBlock-Inner").addClass(
+      "fade-in-bottom"
+    );
+    $(".sh-case-intro4 .Theme-Layer-TextBlock-Inner").addClass(
+      "fade-in-bottom"
+    );
+    $(".Theme-Layer-TextBlock-Inner h4").addClass("fade-in-bottom");
+    $(".Theme-Layer-TextBlock-Inner h2").addClass("fade-in-bottom");
+    $(".sh-intro-quote h3").addClass("fade-in-bottom");
+    $(".sh-quote-photo h3").addClass("fade-in-bottom");
+    $("#section-YB5LigguS8 h4").addClass("fade-in-bottom");
+    $("#section-R6TfPxfSK0 h4").addClass("fade-in-bottom");
+    $(".Theme-Layer-BodyText h5").addClass("fade-in-bottom");
+    $(".Theme-Layer-BodyText h6").addClass("fade-in-bottom");
+    $(".Theme-Layer-BodyText td").addClass("fade-in-bottom");
+    $(".sh-videoreveal p").addClass("fade-in");
+    $(".sh-ourwork h3").addClass("slide-right");
+    $(".sh-stats h3").addClass("slide-right");
+
+    // removes scroll animation trigger from introduction elements to avoid retriggering on first scroll
+    $(".sh-introduction .Theme-Layer-BodyText p").removeClass("fade-in-bottom");
+    $(".sh-introduction .Theme-Layer-BodyText h3").removeClass(
+      "fade-in-bottom"
+    );
+
+    // adds animation class back to intoduction elements - without scroll trigger, with delay to match main title page transition
+    $(".sh-introduction .Theme-Layer-BodyText p").addClass(
+      "fade-in-bottom-delay"
+    );
+    $(".sh-introduction .Theme-Layer-BodyText h3").addClass(
+      "fade-in-bottom-delay"
+    );
+
+    // adds introduction animation class to main title page
+    $(".sh-main-title").addClass("main-title-transition-anim");
+
+    // removes scroll animation trigger on expanding list h3 and p elements
+    $(".expanding-list-wrapper p").removeClass("fade-in-bottom");
+    $(".expanding-list-wrapper h3").removeClass("fade-in-bottom");
+
+    // add animation class to inline media - not working, image lazyload gets in way
+    // $(".InlineMedia--image").addClass("fade-in-bottom");
+  });
+</script>
+
+<script>
+  // animation trigger global
+
+  // if viewportWidth width <= 899
+  if (window.innerWidth <= 899) {
+    // use mobile script with lower elementInView value / faster animation load
+    const scrollElements = document.querySelectorAll(
+      ".js-scroll, .Theme-Layer-BodyText p, .Theme-Layer-BodyText h3, .Theme-Layer-BodyText h6, .Theme-Layer-TextBlock-Inner h4, .sh-videoreveal p, .sh-ourwork h3, .sh-case-intro1 .Theme-Layer-TextBlock-Inner, .sh-case-intro2 .Theme-Layer-TextBlock-Inner, .sh-case-intro3 .Theme-Layer-TextBlock-Inner, .sh-case-intro4, .Theme-Layer-TextBlock-Inner, .sh-stats h3, .sh-quote-photo h3, #section-YB5LigguS8 h4, #section-R6TfPxfSK0 h4, .Theme-Layer-TextBlock-Inner h2, .sh-intro-quote h3, .Theme-Layer-BodyText h5"
+    );
+
+    const elementInView = (el, dividend = 1) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop <=
+        (window.innerHeight || document.documentElement.clientHeight) / dividend
+      );
+    };
+
+    const elementOutofView = (el) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop >
+        (window.innerHeight || document.documentElement.clientHeight)
+      );
+    };
+
+    const displayScrollElement = (element) => {
+      element.classList.add("scrolled");
+    };
+
+    const hideScrollElement = (element) => {
+      element.classList.remove("scrolled");
+    };
+
+    const handleScrollAnimation = () => {
+      scrollElements.forEach((el) => {
+        if (elementInView(el, 0.45)) {
+          displayScrollElement(el);
+        } else if (elementOutofView(el)) {
+          hideScrollElement(el);
+        }
+      });
+    };
+
+    window.addEventListener("scroll", () => {
+      handleScrollAnimation();
+    });
+  } else {
+    // viewportWidth width > 900
+
+    // use desktop script with higher elementInView value / slower animation load
+    const scrollElements = document.querySelectorAll(
+      ".js-scroll, .Theme-Layer-BodyText p, .Theme-Layer-BodyText h3, .Theme-Layer-BodyText h6, .Theme-Layer-TextBlock-Inner h4, .sh-videoreveal p, .sh-ourwork h3, .sh-case-intro1 .Theme-Layer-TextBlock-Inner, .sh-case-intro2 .Theme-Layer-TextBlock-Inner, .sh-case-intro3 .Theme-Layer-TextBlock-Inner, .sh-case-intro4, .sh-stats h3, .sh-quote-photo h3, #section-YB5LigguS8 h4, #section-R6TfPxfSK0 h4, .Theme-Layer-TextBlock-Inner h2, .sh-intro-quote h3, .Theme-Layer-BodyText h5"
+    );
+
+    const elementInView = (el, dividend = 1) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop <=
+        (window.innerHeight || document.documentElement.clientHeight) / dividend
+      );
+    };
+
+    const elementOutofView = (el) => {
+      const elementTop = el.getBoundingClientRect().top;
+
+      return (
+        elementTop >
+        (window.innerHeight || document.documentElement.clientHeight)
+      );
+    };
+
+    const displayScrollElement = (element) => {
+      element.classList.add("scrolled");
+    };
+
+    const hideScrollElement = (element) => {
+      element.classList.remove("scrolled");
+    };
+
+    const handleScrollAnimation = () => {
+      scrollElements.forEach((el) => {
+        if (elementInView(el, 0.9)) {
+          displayScrollElement(el);
+        } else if (elementOutofView(el)) {
+          hideScrollElement(el);
+        }
+      });
+    };
+
+    window.addEventListener("scroll", () => {
+      handleScrollAnimation();
+    });
+  }
+</script>
+
+<script
+  type="text/javascript"
+  src="https://harpoonproductions.github.io/shorthand_utilities/toggle_sections_button/toggle.js"
+></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const thumbnails = document.querySelectorAll(".thumbnail");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const videoSource = videoPlayer.querySelector("source");
+
+    // Initialize the first video and active thumbnail
+    thumbnails[0].classList.add("active");
+    thumbnails[0].style.opacity = 1;
+
+    // Add click event listeners to thumbnails
+    thumbnails.forEach((thumbnail, index) => {
+      thumbnail.addEventListener("click", () => {
+        // Update the active thumbnail
+        thumbnails.forEach((thumb) => {
+          thumb.classList.remove("active");
+          thumb.style.opacity = 0.2;
+        });
+        thumbnail.classList.add("active");
+        thumbnail.style.opacity = 1;
+
+        // Update the video source
+        const videoFile = thumbnail.getAttribute("data-video");
+        videoSource.setAttribute("src", videoFile);
+        videoPlayer.load(); // Load the new video source
+      });
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const fixedDiv = document.getElementById("fixedDiv");
+    const triggerSection = document.getElementById(
+      "section-CLIMATE-ACTION-INJUSTICE-NuaSZeg6gx"
+    );
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Show the fixed div
+            fixedDiv.style.transform = "translateY(0)";
+          } else {
+            // Hide the fixed div
+            fixedDiv.style.transform = "translateY(-100%)";
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Adjust this threshold as needed
+      }
+    );
+
+    observer.observe(triggerSection);
+  });
+</script>
+
+<script>
+  window.addEventListener(
+    "scroll",
+    () => {
+      document.body.style.setProperty(
+        "--scroll",
+        window.pageYOffset / (document.body.offsetHeight - window.innerHeight)
+      );
+    },
+    false
+  );
+</script>
+
+<script>
+  /*
+function appendNavigation(containerSelector, navItems) {
+  const container = document.querySelector(containerSelector);
+  
+  // Create nav element
+  const navigation = document.createElement('nav');
+  navigation.className = 'Navigation Theme-NavigationBar';
+  navigation.setAttribute('role', 'navigation');
+  navigation.id = 'navigation';
+
+  // Create ul element
+  const ul = document.createElement('ul');
+  ul.className = 'Navigation__itemList Theme-Navigation-ItemList';
+
+  // Create li elements for each nav item
+  navItems.forEach((item, index) => {
+    const li = document.createElement('li');
+    li.className = `Navigation__item Theme-NavigationBarItem${index === 0 ? ' Theme-ActiveNavigationBarItem' : ''}`;
+
+    const a = document.createElement('a');
+    a.href = item.id;
+    a.className = 'Theme-NavigationLink';
+    a.setAttribute('data-story-nav-item', 'true');
+    a.textContent = item.label;
+
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  navigation.appendChild(ul);
+  container.appendChild(navigation);
+}
+  
+  /* Add new Nav Items here 
+  const navItems = [
+  {
+    label: "COLOMBIA, SOUTH AFRICA, US",
+    id: "#section-COLOMBIA-SOUTH-AFRICA-US-uYXB1scunb"
+  },
+  {
+    label: "CAMBODIA, LAOS, VIETNAM, THAILAND",
+    id: "#section-CAMBODIA-LAOS-VIETNAM-THAILAND-INNOVATING-FOR-RESILIENCE-MU5J5ADg9Y"
+  },
+  {
+    label: "EL SALVADOR",
+    id: "#section-EL-SALVADOR-YOUNG-ENVIRONMENTAL-DEFENDERS-SPEAK-OUT-5khSFLjEKf"
+  },
+  {
+    label: "COP28",
+    id: "#section-COP28-MAKE-RICH-POLLUTERS-PAY-JItzKi06N7"
+  }
+];
+
+appendNavigation('.Project-HeaderContainer', navItems);
+*/
+</script>
+
+<script>
+  function appendNavigation(containerSelector, navItems) {
+    const container = document.querySelector(containerSelector);
+
+    // Create nav element
+    const navigation = document.createElement("nav");
+    navigation.className = "Navigation Theme-NavigationBar";
+    navigation.setAttribute("role", "navigation");
+    navigation.id = "navigation";
+
+    // Create ul element
+    const ul = document.createElement("ul");
+    ul.className = "Navigation__itemList Theme-Navigation-ItemList";
+
+    // Create li elements for each nav item
+    navItems.forEach((item, index) => {
+      const li = document.createElement("li");
+      li.className = `Navigation__item Theme-NavigationBarItem${
+        index === 0 ? " Theme-ActiveNavigationBarItem" : ""
+      }`;
+      const a = document.createElement("a");
+      a.href = item.id;
+      a.className = "Theme-NavigationLink";
+      a.setAttribute("data-story-nav-item", "true");
+      a.textContent = item.label;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    navigation.appendChild(ul);
+    container.appendChild(navigation);
+
+    // Set up Intersection Observer
+    const observerOptions = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const targetId = `#${entry.target.id}`;
+        const correspondingNavItem = ul.querySelector(
+          `a[href="${targetId}"]`
+        )?.parentElement;
+
+        if (entry.isIntersecting && correspondingNavItem) {
+          // Remove active class from all navigation items
+          console.log("clearing");
+
+          ul.querySelectorAll("li").forEach((li) => {
+            li.classList.remove("Theme-ActiveNavigationBarItemNew");
+          });
+
+          // Add active class to the corresponding navigation item
+          correspondingNavItem.classList.add(
+            "Theme-ActiveNavigationBarItemNew"
+          );
+        }
+      });
+    }, observerOptions);
+
+    // Observe all sections
+    navItems.forEach((item) => {
+      const sectionId = item.id.substring(1); // Remove the # from the id
+      const section = document.getElementById(sectionId);
+      if (section) {
+        observer.observe(section);
+      }
+    });
+  }
+
+  /* Add new Nav Items here */
+  const navItems = [
+    {
+      label: "COLOMBIA, SOUTH AFRICA, US",
+      id: "#section-COLOMBIA-SOUTH-AFRICA-US-uYXB1scunb",
+    },
+    {
+      label: "CAMBODIA, LAOS, VIETNAM, THAILAND",
+      id: "#section-CAMBODIA-LAOS-VIETNAM-THAILAND-INNOVATING-FOR-RESILIENCE-MU5J5ADg9Y",
+    },
+    {
+      label: "EL SALVADOR",
+      id: "#section-EL-SALVADOR-YOUNG-ENVIRONMENTAL-DEFENDERS-SPEAK-OUT-5khSFLjEKf",
+    },
+    {
+      label: "COP28",
+      id: "#section-COP28-MAKE-RICH-POLLUTERS-PAY-JItzKi06N7",
+    },
+  ];
+
+  appendNavigation(".Project-HeaderContainer", navItems);
+</script>
+
+<script>
+  (function (d) {
+    const qs = "querySelector";
+    const img1 = d[qs](".supportedBy");
+    const img2 = d[qs](".bigThanksFrom");
+    const gridImages = d[qs + "All"](".video-container .row > img");
+
+    img1.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") openPopup("widget2-popup1", "widget2-overlay2");
+    });
+
+    img2.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") openPopup("widget2-popup2", "widget2-overlay2");
+    });
+
+    gridImages.forEach((item) => {
+      item.setAttribute("tabindex", "0");
+      item.addEventListener("keyup", (e) => {
+        if (e.key === "Enter") item.click();
+      });
+    });
+  })(document);
+</script>
