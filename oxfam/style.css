@@ -1,3 +1,61 @@
+.article-scroll {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar on mobile */
+@media (max-width: 768px) {
+  .article-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .article-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Styled scrollbar on desktop */
+@media (min-width: 769px) {
+  .article-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+  .article-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+  }
+  .article-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+  }
+  .article-scroll::-webkit-scrollbar-thumb:hover {
+    background: #666;
+  }
+}
+
+.article-link {
+  padding: 8px 16px;
+  background: #f8f8f8;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-size: 15px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.article-link:hover {
+  background: #f0f0f0;
+}
+
+.article-link.current {
+  background: #44841a;
+  color: white;
+}
+
 body.custom-nav-hidden .custom-min-nav-container {
   display: none;
 }
