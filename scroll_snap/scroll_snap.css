@@ -16,7 +16,19 @@ html {
   box-sizing: border-box;
 }
 
+/*
 #article > [id^="section"],
 #article > .Project-FooterContainer {
   scroll-snap-align: start none;
+}
+*/
+
+#article > [id^="section"] {
+  scroll-snap-align: start;
+  height: 100vh;
+}
+
+/* Override for Theme-RevealSection */
+#article > div[id^="section"].Theme-RevealSection {
+  scroll-snap-align: none;
 }
