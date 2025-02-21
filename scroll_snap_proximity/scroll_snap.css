@@ -1,0 +1,27 @@
+/* #article {
+  height: 100vh;
+  height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-margin: 20px 0 0;
+} */
+
+html {
+  scroll-snap-type: y proximity;
+  height: 100vh;
+  /* height: 100svh;
+  height: 100dvh; */
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+#article > [id^="section"],
+#article > .Project-FooterContainer {
+  scroll-snap-align: start none;
+}
+
+/* Override for Theme-RevealSection */
+#article > div[id^="section"].Theme-RevealSection {
+  scroll-snap-align: none !important;
+}
