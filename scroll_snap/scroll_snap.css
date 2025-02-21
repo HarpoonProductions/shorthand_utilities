@@ -20,8 +20,3 @@ html {
 #article > .Project-FooterContainer {
   scroll-snap-align: start none;
 }
-
-/* Override for Theme-RevealSection */
-#article > div[id^="section"].Theme-RevealSection {
-  scroll-snap-align: none !important;
-}
