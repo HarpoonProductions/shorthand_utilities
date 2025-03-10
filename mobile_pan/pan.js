@@ -75,3 +75,15 @@
   //   );
   // }, 4000);
 })(document);
+
+(function () {
+  console.log("running hack");
+  const href = window.location.href;
+  const button = document.querySelector(".reveal-button-multiple > button");
+  const check = new RegExp("everything-you-need-to-know-2025", "gi");
+
+  if (button && check.test(href)) {
+    console.log(button);
+    button.setAttribute("onclick", "toggleSections(13, 14, 15, 16, 17)");
+  }
+})();
