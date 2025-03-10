@@ -29,6 +29,10 @@
           const page = window.location.href.split("/")[7];
           const check = new RegExp(page, "gi");
           isCurrent = check.test(href);
+        } else if (window.location.href.split("/").length === 8) {
+          const page = window.location.href.split("/")[6];
+          const check = new RegExp(page, "gi");
+          isCurrent = check.test(href);
         } else {
           const page = window.location.href.split("/")[4];
           const hrefTest = "../../" + page + "/index.html";
