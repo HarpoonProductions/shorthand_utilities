@@ -26,7 +26,7 @@
         ) {
           isCurrent = true;
         } else if (window.location.href.split("/").length === 9) {
-          const page = window.location.href.split("/")[8];
+          const page = window.location.href.split("/")[7];
           const check = new RegExp(page, "gi");
           isCurrent = check.test(href);
         } else {
