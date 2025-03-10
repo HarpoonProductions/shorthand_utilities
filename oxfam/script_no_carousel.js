@@ -20,10 +20,15 @@
         if (/preview\.shorthand\.com/.test(currentUrl)) {
           isCurrent = href === currentUrl;
         } else if (
-          window.location.href.split("/").length === 5 &&
+          (window.location.href.split("/").length === 7 ||
+            window.location.href.split("/").length === 5) &&
           href === "index.html"
         ) {
           isCurrent = true;
+        } else if (window.location.href.split("/").length === 9) {
+          const page = window.location.href.split("/")[8];
+          const check = new RegExp(page, "gi");
+          isCurrent = check.test(href);
         } else {
           const page = window.location.href.split("/")[4];
           const hrefTest = "../../" + page + "/index.html";
