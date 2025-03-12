@@ -301,87 +301,91 @@
       ${links
         .map(
           (link) => `
-        <a href="${link.href}" 
+        <span
+           data-href="${link.href}" 
            class="article-link ${link.current ? "current" : ""}"
-        >${link.label}</a>
+        >${link.label}</span>
       `
         )
         .join("")}
     </div>`;
 
-    // Detect if device supports touch events (mobile)
-    const isTouchDevice =
-      "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    // Initialize scroll handling
+    const articleScroll =
+      customMiniNavContainer.querySelector(".article-scroll");
+    let startX = 0;
+    let startTime = 0;
+    let moved = false;
+    const swipeThreshold = 10; // pixels to consider as a swipe
+    const timeThreshold = 300; // milliseconds to distinguish between tap and swipe
 
-    if (isTouchDevice) {
-      const articleScroll =
-        customMiniNavContainer.querySelector(".article-scroll");
-      let touchStartX = 0;
-      let touchEndX = 0;
-      let isSwiping = false;
-      const swipeThreshold = 10; // pixels to consider as a swipe
+    // Handle touch/mouse start
+    articleScroll.addEventListener("mousedown", handleStart);
+    articleScroll.addEventListener(
+      "touchstart",
+      (e) => handleStart(e.touches[0]),
+      { passive: true }
+    );
 
-      // Track touch start position
-      articleScroll.addEventListener(
-        "touchstart",
-        (e) => {
-          touchStartX = e.touches[0].clientX;
-          isSwiping = false;
-        },
-        { passive: true }
-      );
+    // Handle touch/mouse move
+    articleScroll.addEventListener("mousemove", handleMove);
+    articleScroll.addEventListener(
+      "touchmove",
+      (e) => handleMove(e.touches[0]),
+      { passive: true }
+    );
 
-      // Track touch movement
-      articleScroll.addEventListener(
-        "touchmove",
-        (e) => {
-          if (Math.abs(e.touches[0].clientX - touchStartX) > swipeThreshold) {
-            isSwiping = true;
-          }
-        },
-        { passive: true }
-      );
+    // Handle touch/mouse end
+    articleScroll.addEventListener("mouseup", handleEnd);
+    articleScroll.addEventListener("touchend", (e) =>
+      handleEnd(e.changedTouches[0])
+    );
+    articleScroll.addEventListener("mouseleave", handleEnd);
 
-      // Handle link clicks on touch end
-      articleScroll.addEventListener("touchend", (e) => {
-        touchEndX = e.changedTouches[0].clientX;
+    // Delegate click events for links
+    articleScroll.addEventListener("click", (e) => {
+      const link = e.target.closest(".article-link");
+      if (link && !moved) {
+        window.location.href = link.dataset.href;
+      }
+    });
 
-        // Prevent navigation if it was a swipe
-        if (isSwiping) {
-          e.preventDefault();
-
-          // Find any links that might be triggered and prevent their default action
-          const links = articleScroll.querySelectorAll(".article-link");
-          links.forEach((link) => {
-            const rect = link.getBoundingClientRect();
-            if (touchEndX >= rect.left && touchEndX <= rect.right) {
-              // Temporarily disable this link to prevent navigation on this swipe
-              link.addEventListener("click", preventClickOnce);
-              setTimeout(() => {
-                link.removeEventListener("click", preventClickOnce);
-              }, 300);
-            }
-          });
-        }
-      });
-
-      // Handle links that might be triggered after a swipe
-      articleScroll.addEventListener(
-        "click",
-        (e) => {
-          if (isSwiping && e.target.closest(".article-link")) {
-            e.preventDefault();
-            isSwiping = false;
-          }
-        },
-        { capture: true }
-      );
+    // Event handler functions
+    function handleStart(event) {
+      startX = event.clientX;
+      startTime = Date.now();
+      moved = false;
     }
 
-    // Helper function to prevent a single click
-    function preventClickOnce(e) {
-      e.preventDefault();
-      e.stopPropagation();
+    function handleMove(event) {
+      if (!startX) return;
+
+      const diffX = Math.abs(event.clientX - startX);
+      if (diffX > swipeThreshold) {
+        moved = true;
+      }
+    }
+
+    function handleEnd(event) {
+      if (!startX) return;
+
+      const endX = event.clientX;
+      const endTime = Date.now();
+      const diffTime = endTime - startTime;
+
+      // Reset start position
+      startX = 0;
+
+      // If it was a quick tap and didn't move much, consider it a click, not a swipe
+      if (diffTime < timeThreshold && !moved) {
+        moved = false;
+      } else {
+        // Prevent immediate click after swiping
+        moved = true;
+        setTimeout(() => {
+          moved = false;
+        }, 100);
+      }
     }
 
     // top logo
