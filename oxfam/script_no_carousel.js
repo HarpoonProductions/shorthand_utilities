@@ -303,11 +303,45 @@
           (link) => `
         <a href="${link.href}" 
            class="article-link ${link.current ? "current" : ""}"
+           data-href="${link.href}"
         >${link.label}</a>
       `
         )
         .join("")}
     </div>`;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const maxSwipeDistance = 10; // pixels to consider as a tap rather than a swipe
+    const articleScroll =
+      customMiniNavContainer.querySelector(".article-scroll");
+
+    articleScroll.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.touches[0].clientX;
+      },
+      { passive: true }
+    );
+
+    articleScroll.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].clientX;
+      const distance = Math.abs(touchEndX - touchStartX);
+
+      // If it's a tap (not a swipe), allow navigation
+      if (distance < maxSwipeDistance) {
+        const target = e.target.closest(".article-link");
+        if (target) {
+          window.location.href = target.getAttribute("data-href");
+        }
+      }
+    });
+
+    // Prevent default link behavior
+    articleScroll.addEventListener("click", (e) => {
+      if (e.target.closest(".article-link")) {
+        e.preventDefault();
+      }
+    });
 
     // top logo
     const innerLogoAnchor = document.createElement("a");
