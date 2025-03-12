@@ -303,45 +303,86 @@
           (link) => `
         <a href="${link.href}" 
            class="article-link ${link.current ? "current" : ""}"
-           data-href="${link.href}"
         >${link.label}</a>
       `
         )
         .join("")}
     </div>`;
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const maxSwipeDistance = 10; // pixels to consider as a tap rather than a swipe
-    const articleScroll =
-      customMiniNavContainer.querySelector(".article-scroll");
 
-    articleScroll.addEventListener(
-      "touchstart",
-      (e) => {
-        touchStartX = e.touches[0].clientX;
-      },
-      { passive: true }
-    );
+    // Detect if device supports touch events (mobile)
+    const isTouchDevice =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-    articleScroll.addEventListener("touchend", (e) => {
-      touchEndX = e.changedTouches[0].clientX;
-      const distance = Math.abs(touchEndX - touchStartX);
+    if (isTouchDevice) {
+      const articleScroll =
+        customMiniNavContainer.querySelector(".article-scroll");
+      let touchStartX = 0;
+      let touchEndX = 0;
+      let isSwiping = false;
+      const swipeThreshold = 10; // pixels to consider as a swipe
 
-      // If it's a tap (not a swipe), allow navigation
-      if (distance < maxSwipeDistance) {
-        const target = e.target.closest(".article-link");
-        if (target) {
-          window.location.href = target.getAttribute("data-href");
+      // Track touch start position
+      articleScroll.addEventListener(
+        "touchstart",
+        (e) => {
+          touchStartX = e.touches[0].clientX;
+          isSwiping = false;
+        },
+        { passive: true }
+      );
+
+      // Track touch movement
+      articleScroll.addEventListener(
+        "touchmove",
+        (e) => {
+          if (Math.abs(e.touches[0].clientX - touchStartX) > swipeThreshold) {
+            isSwiping = true;
+          }
+        },
+        { passive: true }
+      );
+
+      // Handle link clicks on touch end
+      articleScroll.addEventListener("touchend", (e) => {
+        touchEndX = e.changedTouches[0].clientX;
+
+        // Prevent navigation if it was a swipe
+        if (isSwiping) {
+          e.preventDefault();
+
+          // Find any links that might be triggered and prevent their default action
+          const links = articleScroll.querySelectorAll(".article-link");
+          links.forEach((link) => {
+            const rect = link.getBoundingClientRect();
+            if (touchEndX >= rect.left && touchEndX <= rect.right) {
+              // Temporarily disable this link to prevent navigation on this swipe
+              link.addEventListener("click", preventClickOnce);
+              setTimeout(() => {
+                link.removeEventListener("click", preventClickOnce);
+              }, 300);
+            }
+          });
         }
-      }
-    });
+      });
 
-    // Prevent default link behavior
-    articleScroll.addEventListener("click", (e) => {
-      if (e.target.closest(".article-link")) {
-        e.preventDefault();
-      }
-    });
+      // Handle links that might be triggered after a swipe
+      articleScroll.addEventListener(
+        "click",
+        (e) => {
+          if (isSwiping && e.target.closest(".article-link")) {
+            e.preventDefault();
+            isSwiping = false;
+          }
+        },
+        { capture: true }
+      );
+    }
+
+    // Helper function to prevent a single click
+    function preventClickOnce(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
     // top logo
     const innerLogoAnchor = document.createElement("a");

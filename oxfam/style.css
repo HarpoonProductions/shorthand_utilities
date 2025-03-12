@@ -3,7 +3,6 @@
   flex: 0 0 auto;
   margin-right: 15px;
   white-space: nowrap;
-  pointer-events: none; /* Disable direct link clicks */
 }
 
 .article-scroll {
