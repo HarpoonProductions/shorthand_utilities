@@ -232,6 +232,76 @@
     return buttonContainer;
   }
 
+  function setupMobileNavigation(mobileNav) {
+    const articleScroll = mobileNav.querySelector(".article-scroll");
+    let isScrolling = false;
+    let startX = 0;
+    let startY = 0;
+    let startTime = 0;
+    const scrollThreshold = 15; // pixels to consider a scroll
+    const timeThreshold = 300; // milliseconds to distinguish tap vs. scroll
+
+    // Handle clicks on mobile navigation items
+    articleScroll.addEventListener("click", (e) => {
+      const link = e.target.closest(".article-link");
+      if (link && !isScrolling) {
+        window.location.href = link.dataset.href;
+      }
+    });
+
+    // Track scroll start
+    articleScroll.addEventListener(
+      "touchstart",
+      (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+        isScrolling = false;
+      },
+      { passive: true }
+    );
+
+    // Detect scrolling
+    articleScroll.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!startX) return;
+
+        const diffX = Math.abs(e.touches[0].clientX - startX);
+        const diffY = Math.abs(e.touches[0].clientY - startY);
+
+        // If horizontal movement is greater than vertical and exceeds threshold
+        if (diffX > diffY && diffX > scrollThreshold) {
+          isScrolling = true;
+        }
+      },
+      { passive: true }
+    );
+
+    // Reset on touch end
+    articleScroll.addEventListener(
+      "touchend",
+      (e) => {
+        const endTime = Date.now();
+        const timeDiff = endTime - startTime;
+
+        // If it was a short interaction and we didn't detect scrolling
+        if (timeDiff < timeThreshold && !isScrolling) {
+          isScrolling = false;
+        } else {
+          // Keep isScrolling true for a short period to prevent accidental taps
+          setTimeout(() => {
+            isScrolling = false;
+          }, 100);
+        }
+
+        startX = 0;
+        startY = 0;
+      },
+      { passive: true }
+    );
+  }
+
   function renderCustomNavigation(links) {
     console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
@@ -296,97 +366,45 @@
     // Add custom nav box
     const customMiniNavContainer = document.createElement("div");
     customMiniNavContainer.classList.add("custom-min-nav-container");
-    customMiniNavContainer.innerHTML = `
-    <div class="article-scroll">
-      ${links
-        .map(
-          (link) => `
-        <span
-           data-href="${link.href}" 
-           class="article-link ${link.current ? "current" : ""}"
-        >${link.label}</span>
-      `
-        )
-        .join("")}
-    </div>`;
+    const desktopNav = document.createElement("div");
+    desktopNav.classList.add("desktop-nav");
+    desktopNav.innerHTML = `
+      <div class="article-scroll">
+        ${links
+          .map(
+            (link) => `
+          <a href="${link.href}" 
+             class="article-link ${link.current ? "current" : ""}"
+          >${link.label}</a>
+        `
+          )
+          .join("")}
+      </div>
+    `;
 
-    // Initialize scroll handling
-    const articleScroll =
-      customMiniNavContainer.querySelector(".article-scroll");
-    let startX = 0;
-    let startTime = 0;
-    let moved = false;
-    const swipeThreshold = 10; // pixels to consider as a swipe
-    const timeThreshold = 300; // milliseconds to distinguish between tap and swipe
+    // 2. Create mobile version (span elements with click handlers)
+    const mobileNav = document.createElement("div");
+    mobileNav.classList.add("mobile-nav");
+    mobileNav.innerHTML = `
+      <div class="article-scroll">
+        ${links
+          .map(
+            (link) => `
+          <span
+             data-href="${link.href}" 
+             class="article-link ${link.current ? "current" : ""}"
+          >${link.label}</span>
+        `
+          )
+          .join("")}
+      </div>
+    `;
 
-    // Handle touch/mouse start
-    articleScroll.addEventListener("mousedown", handleStart);
-    articleScroll.addEventListener(
-      "touchstart",
-      (e) => handleStart(e.touches[0]),
-      { passive: true }
-    );
+    // Add both versions to the container
+    navContainer.appendChild(desktopNav);
+    navContainer.appendChild(mobileNav);
 
-    // Handle touch/mouse move
-    articleScroll.addEventListener("mousemove", handleMove);
-    articleScroll.addEventListener(
-      "touchmove",
-      (e) => handleMove(e.touches[0]),
-      { passive: true }
-    );
-
-    // Handle touch/mouse end
-    articleScroll.addEventListener("mouseup", handleEnd);
-    articleScroll.addEventListener("touchend", (e) =>
-      handleEnd(e.changedTouches[0])
-    );
-    articleScroll.addEventListener("mouseleave", handleEnd);
-
-    // Delegate click events for links
-    articleScroll.addEventListener("click", (e) => {
-      const link = e.target.closest(".article-link");
-      if (link && !moved) {
-        window.location.href = link.dataset.href;
-      }
-    });
-
-    // Event handler functions
-    function handleStart(event) {
-      startX = event.clientX;
-      startTime = Date.now();
-      moved = false;
-    }
-
-    function handleMove(event) {
-      if (!startX) return;
-
-      const diffX = Math.abs(event.clientX - startX);
-      if (diffX > swipeThreshold) {
-        moved = true;
-      }
-    }
-
-    function handleEnd(event) {
-      if (!startX) return;
-
-      const endX = event.clientX;
-      const endTime = Date.now();
-      const diffTime = endTime - startTime;
-
-      // Reset start position
-      startX = 0;
-
-      // If it was a quick tap and didn't move much, consider it a click, not a swipe
-      if (diffTime < timeThreshold && !moved) {
-        moved = false;
-      } else {
-        // Prevent immediate click after swiping
-        moved = true;
-        setTimeout(() => {
-          moved = false;
-        }, 100);
-      }
-    }
+    setupMobileNavigation(mobileNav);
 
     // top logo
     const innerLogoAnchor = document.createElement("a");
