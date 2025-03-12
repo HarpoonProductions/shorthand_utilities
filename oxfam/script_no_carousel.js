@@ -232,76 +232,6 @@
     return buttonContainer;
   }
 
-  function setupMobileNavigation(mobileNav) {
-    const articleScroll = mobileNav.querySelector(".article-scroll");
-    let isScrolling = false;
-    let startX = 0;
-    let startY = 0;
-    let startTime = 0;
-    const scrollThreshold = 15; // pixels to consider a scroll
-    const timeThreshold = 300; // milliseconds to distinguish tap vs. scroll
-
-    // Handle clicks on mobile navigation items
-    articleScroll.addEventListener("click", (e) => {
-      const link = e.target.closest(".article-link");
-      if (link && !isScrolling) {
-        window.location.href = link.dataset.href;
-      }
-    });
-
-    // Track scroll start
-    articleScroll.addEventListener(
-      "touchstart",
-      (e) => {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        startTime = Date.now();
-        isScrolling = false;
-      },
-      { passive: true }
-    );
-
-    // Detect scrolling
-    articleScroll.addEventListener(
-      "touchmove",
-      (e) => {
-        if (!startX) return;
-
-        const diffX = Math.abs(e.touches[0].clientX - startX);
-        const diffY = Math.abs(e.touches[0].clientY - startY);
-
-        // If horizontal movement is greater than vertical and exceeds threshold
-        if (diffX > diffY && diffX > scrollThreshold) {
-          isScrolling = true;
-        }
-      },
-      { passive: true }
-    );
-
-    // Reset on touch end
-    articleScroll.addEventListener(
-      "touchend",
-      (e) => {
-        const endTime = Date.now();
-        const timeDiff = endTime - startTime;
-
-        // If it was a short interaction and we didn't detect scrolling
-        if (timeDiff < timeThreshold && !isScrolling) {
-          isScrolling = false;
-        } else {
-          // Keep isScrolling true for a short period to prevent accidental taps
-          setTimeout(() => {
-            isScrolling = false;
-          }, 100);
-        }
-
-        startX = 0;
-        startY = 0;
-      },
-      { passive: true }
-    );
-  }
-
   function renderCustomNavigation(links) {
     console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
@@ -366,45 +296,18 @@
     // Add custom nav box
     const customMiniNavContainer = document.createElement("div");
     customMiniNavContainer.classList.add("custom-min-nav-container");
-    const desktopNav = document.createElement("div");
-    desktopNav.classList.add("desktop-nav");
-    desktopNav.innerHTML = `
-      <div class="article-scroll">
-        ${links
-          .map(
-            (link) => `
-          <a href="${link.href}" 
-             class="article-link ${link.current ? "current" : ""}"
-          >${link.label}</a>
-        `
-          )
-          .join("")}
-      </div>
-    `;
-
-    // 2. Create mobile version (span elements with click handlers)
-    const mobileNav = document.createElement("div");
-    mobileNav.classList.add("mobile-nav");
-    mobileNav.innerHTML = `
-      <div class="article-scroll">
-        ${links
-          .map(
-            (link) => `
-          <span
-             data-href="${link.href}" 
-             class="article-link ${link.current ? "current" : ""}"
-          >${link.label}</span>
-        `
-          )
-          .join("")}
-      </div>
-    `;
-
-    // Add both versions to the container
-    navContainer.appendChild(desktopNav);
-    navContainer.appendChild(mobileNav);
-
-    setupMobileNavigation(mobileNav);
+    customMiniNavContainer.innerHTML = `
+    <div class="article-scroll">
+      ${links
+        .map(
+          (link) => `
+        <a href="${link.href}" 
+           class="article-link ${link.current ? "current" : ""}"
+        >${link.label}</a>
+      `
+        )
+        .join("")}
+    </div>`;
 
     // top logo
     const innerLogoAnchor = document.createElement("a");
