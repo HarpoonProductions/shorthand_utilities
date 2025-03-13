@@ -437,6 +437,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   .custom-min-nav-container {
     height: 52vh !important;
     max-height: none !important;
+    border-radius: 6px 6px 0 0;
   }
 
   .article-scroll {
