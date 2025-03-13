@@ -434,8 +434,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 @media only screen and (max-width: 799px) {
-  .custom-mini-nav-container {
-    height: 58vh !important;
+  .custom-min-nav-container {
+    height: 52vh !important;
+    max-height: none !important;
   }
 
   .article-scroll {
