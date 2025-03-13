@@ -433,6 +433,16 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   box-shadow: rgba(28, 43, 51, 0.1) 10px 10px 20px 10px !important;
 }
 
+@media only screen (max-width: 799px) {
+  .custom-mini-nav-container {
+    height: 58vh !important;
+  }
+
+  .article-scroll {
+    flex-direction: column;
+  }
+}
+
 .nav_container {
   position: fixed;
   bottom: 7px;
