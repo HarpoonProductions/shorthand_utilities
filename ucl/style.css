@@ -525,6 +525,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .inner-logo-container {
     height: 30px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .edition-logo-inner {
