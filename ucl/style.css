@@ -67,15 +67,21 @@ font-style: normal;
 }
 
 
-.contents-label {
+/* .contents-label {
   position: absolute;
   bottom: -7.6px;
   font-size: 11px;
   font-family: "Imperial Sans Text", sans-serif !important;
   color: #133844;
+} */
+
+.contents-label {
+  position: absolute;
+  bottom: 35px;
+  font-size: 17px;
+  font-family: "Imperial Sans Text", sans-serif !important;
+  color: #133844;
 }
-
-
 
 @media only screen and (max-width: 799px) {
     .glider-contain {
@@ -459,6 +465,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .edition-logo {
   height: 94%;
+  display: none;
 }
 
 .button_container.contents {
