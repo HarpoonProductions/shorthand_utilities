@@ -50,6 +50,8 @@
     );
     dfs(rootUl);
 
+    console.log(links);
+
     return links.map((link, i) => {
       if (link.current) {
         console.log("current link is", link.href);
@@ -539,6 +541,8 @@
         const navContainer = document.querySelector(
           ".custom-min-nav-container"
         );
+
+        console.log(relatedStoryCarousel, navContainer);
 
         if (
           relatedStoryCarousel &&
