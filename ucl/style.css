@@ -1,3 +1,9 @@
+.inner-logo-container:before {
+  content: '';
+  background: black;
+  width: 100%;
+}
+
 span[style="background-color: rgba(255, 255, 255, 0.114);"] {
   background-color: #007BFF !important;
 }
@@ -339,7 +345,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transform: translate(-50%, 100%);
   background: black;
   height: 344px;
-  width: 380px;
+  width: 339px;
   border-radius: 3px;
   position: fixed;
   bottom: 0;
@@ -348,6 +354,12 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   z-index: 100;
   transition-delay: 0.5s;
   border: 1px solid #d1f9f1;
+}
+
+@media only screen and (min-width: 400px) {
+  .custom-min-nav-container {
+    width: 380px;
+  }
 }
 
 .nav_container {
