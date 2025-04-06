@@ -1,5 +1,6 @@
 /* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
+  console.log('test THIS IS NEW')
   let currentPageIndex = null;
   var logoUrl = "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_icon.jpg";
   var logoUrlInner =
