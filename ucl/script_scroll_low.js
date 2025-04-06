@@ -1,6 +1,5 @@
 /* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
-  console.log('test THIS IS NEW')
   let currentPageIndex = null;
   var logoUrl = "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_icon.jpg";
   var logoUrlInner =
@@ -372,8 +371,7 @@
           document.body.classList.remove("tab_container");
           document.body.classList.remove("tab_options");
         }
-      } else if ((currentScrollTop + 50) < lastScrollTop) {
-        console.log('prev', lastScrollTop, 'current', currentScrollTop, (currentScrollTop + 100) < lastScrollTop)
+      } else if ((currentScrollTop + 20) < lastScrollTop) {
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
       }
