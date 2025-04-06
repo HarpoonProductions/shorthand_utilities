@@ -372,8 +372,8 @@
           document.body.classList.remove("tab_container");
           document.body.classList.remove("tab_options");
         }
-      } else {
-        console.log('prev', lastScrollTop, 'current', currentScrollTop, (currentScrollTop - 20) < lastScrollTop)
+      } else if ((currentScrollTop - 100) < lastScrollTop) {
+        console.log('prev', lastScrollTop, 'current', currentScrollTop, (currentScrollTop - 100) < lastScrollTop)
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
       }
