@@ -464,6 +464,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button_container.prev {
   margin-right: 20px;
   border: 1px solid #500778;
+  color: black;
+  background-color: #fff;
 }
 
 .edition-logo {
@@ -484,6 +486,8 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button_container.next {
   margin-left: 20px;
   border: 1px solid #500778;
+  color: black;
+  background-color: #fff;
 }
 
 .button_container.prev .image_div {
