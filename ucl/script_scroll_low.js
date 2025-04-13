@@ -91,6 +91,53 @@
       });
   }
 
+  const createSpinner = () => {
+    const div = document.createElement('div');
+    
+    // Set container styles
+    div.style.width = '100%';
+    div.style.height = '100%';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'center';
+    div.style.alignItems = 'center';
+    div.className = 'spinnerSVG';
+    
+    // Create SVG spinner
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", "40");
+    svg.setAttribute("height", "40");
+    svg.setAttribute("viewBox", "0 0 50 50");
+    
+    // Create circular path
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", "25");
+    circle.setAttribute("cy", "25");
+    circle.setAttribute("r", "20");
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#3498db");
+    circle.setAttribute("stroke-width", "5");
+    circle.setAttribute("stroke-linecap", "round");
+    circle.setAttribute("stroke-dasharray", "80, 200");
+    circle.setAttribute("stroke-dashoffset", "0");
+    
+    // Add animation
+    const animateTransform = document.createElementNS(svgNS, "animateTransform");
+    animateTransform.setAttribute("attributeName", "transform");
+    animateTransform.setAttribute("type", "rotate");
+    animateTransform.setAttribute("from", "0 25 25");
+    animateTransform.setAttribute("to", "360 25 25");
+    animateTransform.setAttribute("dur", "1s");
+    animateTransform.setAttribute("repeatCount", "indefinite");
+    
+    // Assemble elements
+    circle.appendChild(animateTransform);
+    svg.appendChild(circle);
+    div.appendChild(svg);
+    
+    return div;
+  };
+
   function createImageElement(srcset) {
     const imgDiv = document.createElement("div");
     imgDiv.classList.add("image_div");
@@ -299,6 +346,8 @@
     innerLogoContainer.appendChild(innerLogo);
     innerLogoAnchor.appendChild(innerLogoContainer);
     customMiniNavContainer.appendChild(innerLogoAnchor);
+    const spinner = createSpinner()
+    customMiniNavContainer.appendChild(spinner)
 
     customMiniNavContainer.addEventListener("click", () => {
       document.body.classList.remove("scroll-up");
@@ -421,6 +470,8 @@
                   const relatedStoryCarousel2 = document.querySelectorAll(
                     ".Theme-RelatedStoriesSection"
                   );
+
+                  navContainer.removeChild('.spinnerSVG')
 
                   navContainer.appendChild(
                     relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
