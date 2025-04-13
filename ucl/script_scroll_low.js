@@ -471,7 +471,7 @@
                     ".Theme-RelatedStoriesSection"
                   );
 
-                  navContainer.removeChild('.spinnerSVG')
+                  navContainer.querySelector('.spinnerSVG').remove()
 
                   navContainer.appendChild(
                     relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
