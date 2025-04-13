@@ -245,6 +245,9 @@ font-style: normal;
     border: unset !important;
 }
 
+.custom-min-nav-container {
+  background: #500778;
+}
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
  position: relative; 
