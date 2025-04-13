@@ -363,7 +363,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transition: transform 0.8s ease-in-out;
   z-index: 100;
   transition-delay: 0.5s;
-  border: 1px solid #500778;
+  border: 1px solid #fff;
 }
 
 @media only screen and (min-width: 400px) {
@@ -463,7 +463,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid #500778;
+  border: 1px solid #fff;
   color: black;
   background-color: #fff;
 }
@@ -476,7 +476,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button_container.contents {
   background: #500778;
   color: #fff;
-  border: 1px solid #500778;
+  border: 1px solid #fff;
   cursor: pointer;
   width: 105px;
   height: 126px;
@@ -485,7 +485,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid #500778;
+  border: 1px solid #fff;
   color: black;
   background-color: #fff;
 }
