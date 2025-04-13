@@ -72,7 +72,7 @@ font-style: normal;
   bottom: -7.6px;
   font-size: 11px;
   font-family: "Imperial Sans Text", sans-serif !important;
-  color: #133844;
+  color: #500778;
 } */
 
 .contents-label {
@@ -80,7 +80,7 @@ font-style: normal;
   bottom: 35px;
   font-size: 17px;
   font-family: "Imperial Sans Text", sans-serif !important;
-  color: #133844;
+  color: #500778;
 }
 
 @media only screen and (max-width: 799px) {
@@ -205,7 +205,7 @@ font-style: normal;
 .splide__pagination__page {
   margin: 3px 9px !important;
   padding: 4px !important;
-  background: #133844 !important;
+  background: #500778 !important;
 
 }
 
@@ -396,7 +396,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   justify-content: center;
   align-items: center;
   width: 142px;
-  color: #133844;
+  color: #500778;
   text-decoration: none;
   background: #d1f9f1;
 }
@@ -424,7 +424,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button {
   cursor: pointer;
   pointer-events: none;
-  font-family: "Imperial Sans Text", sans-serif !important;
+  font-family: "Helvetica Neue", sans-serif !important;
   z-index: 10;
   min-height: 43px;
   text-align: center;
@@ -460,7 +460,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
   margin-right: 20px;
-  border: 1px solid #133844;
+  border: 1px solid #500778;
 }
 
 .edition-logo {
@@ -469,8 +469,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .button_container.contents {
-  background: white;
-  border: 1px solid #133844;
+  background: #500778;
+  color: #fff;
+  border: 1px solid #500778;
   cursor: pointer;
   width: 105px;
   height: 126px;
@@ -479,7 +480,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
   margin-left: 20px;
-  border: 1px solid #133844;
+  border: 1px solid #500778;
 }
 
 .button_container.prev .image_div {
