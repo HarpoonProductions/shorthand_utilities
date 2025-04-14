@@ -547,6 +547,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .edition-logo-inner {
   height: 30px;
+  background: white;
 }
 
 /* Reset default anchor styling while keeping the cursor pointer */
