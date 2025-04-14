@@ -1,6 +1,6 @@
 .inner-logo-container:before {
   content: '';
-  background: black;
+  background: white;
   width: 100%;
 }
 

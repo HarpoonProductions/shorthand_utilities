@@ -3,7 +3,7 @@
   let currentPageIndex = null;
   var logoUrl = "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_icon.jpg";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_long.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl-logo-purple.png";
 
   function extractLinks() {
     const links = [];
@@ -477,7 +477,7 @@
                     relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
                   );
                 }
-              }, 250);
+              }, 150);
 
               setTimeout(() => {
                 clearInterval(poller);
