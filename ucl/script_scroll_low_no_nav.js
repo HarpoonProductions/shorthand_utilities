@@ -1,12 +1,12 @@
 /* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
-  const links = [];
   let currentPageIndex = null;
   var logoUrl = "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_icon.jpg";
   var logoUrlInner =
     "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl-logo-purple.png";
 
-  function extractLinks(ul) {
+  function extractLinks(list) {
+    const links = [];
     const currentUrl = window.location.href;
 
     function getLink(node) {
@@ -43,9 +43,11 @@
       }
     }
 
-    const cards = ul.querySelectorAll(".related-story-card");
+    const cards = list.querySelectorAll(
+      ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
+    );
 
-    console.log(cards, cards.length);
+    console.log(cards);
 
     cards.forEach(getLink);
 
@@ -375,29 +377,38 @@
         ".Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list='true']"
       );
       if ((list && list.length) || attempts >= maxAttempts) {
+        console.log("polling", attempts, list);
         clearInterval(pollingInterval);
         if (list && list.length) {
+          const linksNew = extractLinks(list[list.length - 1]);
+          renderCustomNavigation(linksNew);
           initializeCarousel(list[list.length - 1]);
 
           (function () {
             function startPollingCarousel() {
               let poller = setInterval(() => {
-                const relatedStoryCarousel = document.querySelector(
+                const relatedStoryCarousel = document.querySelectorAll(
                   '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
                 );
 
-                if (relatedStoryCarousel) {
+                const navContainer = document.querySelector(
+                  ".custom-min-nav-container"
+                );
+
+                console.log(relatedStoryCarousel, navContainer);
+
+                if (
+                  relatedStoryCarousel &&
+                  relatedStoryCarousel.length &&
+                  navContainer
+                ) {
                   clearInterval(poller);
-                  const linksNew = extractLinks(relatedStoryCarousel);
-                  renderCustomNavigation(linksNew);
-                  const navContainer = document.querySelector(
-                    ".custom-min-nav-container"
+                  const relatedStoryCarousel2 = document.querySelectorAll(
+                    ".Theme-RelatedStoriesSection:not(.sh-more)"
                   );
 
                   navContainer.querySelector(".spinnerSVG").remove();
-                  const relatedStoryCarousel2 = document.querySelectorAll(
-                    '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
-                  );
+
                   navContainer.appendChild(
                     relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
                   );
