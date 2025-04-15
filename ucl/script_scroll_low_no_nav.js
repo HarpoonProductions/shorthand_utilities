@@ -44,7 +44,7 @@
     }
 
     const cards = document.querySelectorAll(
-      ".Theme-RelatedStoriesSection .related-story-card"
+      ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
     );
 
     cards.forEach(getLink);
@@ -372,7 +372,7 @@
 
     const pollForElement = () => {
       const list = document.querySelectorAll(
-        ".Theme-RelatedStoriesSection ul[data-related-stories-list='true']"
+        ".Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list='true']"
       );
       if (
         (list && list.length && currentPageIndex !== null) ||
@@ -395,6 +395,7 @@
                 );
 
                 if (relatedStoryCarousel && relatedStoryCarousel.length) {
+                  clearInterval(poller);
                   const links = extractLinks();
                   renderCustomNavigation(links);
                 }
