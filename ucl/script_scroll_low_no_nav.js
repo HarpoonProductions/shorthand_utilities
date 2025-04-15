@@ -394,10 +394,14 @@
                   ".custom-min-nav-container"
                 );
 
-                if (relatedStoryCarousel && relatedStoryCarousel.length) {
+                if (
+                  relatedStoryCarousel &&
+                  relatedStoryCarousel.length &&
+                  links.length === 0
+                ) {
                   clearInterval(poller);
-                  const links = extractLinks();
-                  renderCustomNavigation(links);
+                  const linksNew = extractLinks();
+                  renderCustomNavigation(linksNew);
                 }
 
                 if (
