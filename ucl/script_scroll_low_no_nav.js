@@ -6,7 +6,7 @@
   var logoUrlInner =
     "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl-logo-purple.png";
 
-  function extractLinks() {
+  function extractLinks(ul) {
     const currentUrl = window.location.href;
 
     function getLink(node) {
@@ -43,9 +43,7 @@
       }
     }
 
-    const cards = document.querySelectorAll(
-      ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
-    );
+    const cards = ul.querySelectorAll(".related-story-card");
 
     console.log(cards, cards.length);
 
@@ -392,24 +390,18 @@
                   '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
                 );
 
-                const navContainer = document.querySelector(
-                  ".custom-min-nav-container"
-                );
-
                 if (relatedStoryCarousel && relatedStoryCarousel.length) {
                   clearInterval(poller);
                   clearInterval(poller);
-                  const linksNew = extractLinks();
+                  const linksNew = extractLinks(relatedStoryCarousel);
                   renderCustomNavigation(linksNew);
-                  const relatedStoryCarousel2 = document.querySelectorAll(
-                    ".Theme-RelatedStoriesSection:not(.sh-more)"
+                  const navContainer = document.querySelector(
+                    ".custom-min-nav-container"
                   );
 
                   navContainer.querySelector(".spinnerSVG").remove();
 
-                  navContainer.appendChild(
-                    relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
-                  );
+                  navContainer.appendChild(relatedStoryCarousel);
                 }
               }, 150);
 
