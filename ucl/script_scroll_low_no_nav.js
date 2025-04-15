@@ -374,23 +374,19 @@
       const list = document.querySelectorAll(
         ".Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list='true']"
       );
-      if (
-        (list && list.length && currentPageIndex !== null) ||
-        attempts >= maxAttempts
-      ) {
+      if ((list && list.length) || attempts >= maxAttempts) {
         clearInterval(pollingInterval);
         if (list && list.length) {
-          //list.forEach(function (list) {
           initializeCarousel(list[list.length - 1]);
 
           (function () {
             function startPollingCarousel() {
               let poller = setInterval(() => {
-                const relatedStoryCarousel = document.querySelectorAll(
+                const relatedStoryCarousel = document.querySelector(
                   '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
                 );
 
-                if (relatedStoryCarousel && relatedStoryCarousel.length) {
+                if (relatedStoryCarousel) {
                   clearInterval(poller);
                   clearInterval(poller);
                   const linksNew = extractLinks(relatedStoryCarousel);
@@ -400,8 +396,10 @@
                   );
 
                   navContainer.querySelector(".spinnerSVG").remove();
-
-                  navContainer.appendChild(relatedStoryCarousel);
+                  const relatedStoryCarousel2 = document.querySelector(
+                    '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
+                  );
+                  navContainer.appendChild(relatedStoryCarousel2);
                 }
               }, 150);
 
