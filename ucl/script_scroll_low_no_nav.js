@@ -47,6 +47,8 @@
       ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
     );
 
+    console.log(cards, cards.length);
+
     cards.forEach(getLink);
 
     console.log(links);
@@ -387,31 +389,20 @@
             function startPollingCarousel() {
               let poller = setInterval(() => {
                 const relatedStoryCarousel = document.querySelectorAll(
-                  '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
+                  '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
                 );
 
                 const navContainer = document.querySelector(
                   ".custom-min-nav-container"
                 );
 
-                if (
-                  relatedStoryCarousel &&
-                  relatedStoryCarousel.length &&
-                  links.length === 0
-                ) {
+                if (relatedStoryCarousel && relatedStoryCarousel.length) {
+                  clearInterval(poller);
                   clearInterval(poller);
                   const linksNew = extractLinks();
                   renderCustomNavigation(linksNew);
-                }
-
-                if (
-                  relatedStoryCarousel &&
-                  relatedStoryCarousel.length &&
-                  navContainer
-                ) {
-                  clearInterval(poller);
                   const relatedStoryCarousel2 = document.querySelectorAll(
-                    ".Theme-RelatedStoriesSection"
+                    ".Theme-RelatedStoriesSection:not(.sh-more)"
                   );
 
                   navContainer.querySelector(".spinnerSVG").remove();
