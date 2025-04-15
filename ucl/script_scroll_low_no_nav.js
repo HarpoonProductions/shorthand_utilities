@@ -7,10 +7,9 @@
 
   function extractLinks() {
     const links = [];
-
     const currentUrl = window.location.href;
 
-    function dfs(node) {
+    function getLink(node) {
       if (node.tagName === "A") {
         const href = node.getAttribute("href");
         const label = node.textContent.trim();
@@ -42,14 +41,13 @@
           current: isCurrent,
         });
       }
-
-      Array.from(node.children).forEach((child) => dfs(child));
     }
 
-    const rootUl = document.querySelector(
-      ".Project-HeaderContainer .Layout.Navigation__itemList.Theme-Navigation-ItemList"
+    const cards = document.querySelectorAll(
+      ".Theme-RelatedStoriesSection .related-story-card"
     );
-    dfs(rootUl);
+
+    cards.forEach(getLink);
 
     console.log(links);
 
@@ -65,31 +63,6 @@
         current: link.current,
       };
     });
-  }
-
-  function fetchSrcset(url) {
-    return fetch(url)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.text();
-      })
-      .then((html) => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const imageElement = doc.querySelector(
-          ".Theme-TitleSection .Theme-BackgroundMedia .Theme-Item-InstantImage source"
-        );
-        const srcset = imageElement
-          ? imageElement.getAttribute("srcset")
-          : null;
-        return srcset;
-      })
-      .catch((error) => {
-        console.error("Error fetching srcset:", error);
-        return null;
-      });
   }
 
   const createSpinner = () => {
@@ -141,21 +114,6 @@
 
     return div;
   };
-
-  function createImageElement(srcset) {
-    const imgDiv = document.createElement("div");
-    imgDiv.classList.add("image_div");
-
-    const img = new Image();
-    img.srcset = srcset;
-
-    img.onload = () => {
-      imgDiv.style.opacity = "1";
-    };
-
-    imgDiv.appendChild(img);
-    return imgDiv;
-  }
 
   function createButtonWithImage(text, url, isPrevious, hide) {
     const buttonContainer = document.createElement("a");
@@ -261,15 +219,6 @@
     buttonContainer.appendChild(arrow);
 
     if (url) buttonContainer.setAttribute("href", url);
-
-    if (url) {
-      fetchSrcset(url).then((srcset) => {
-        if (srcset) {
-          const imgDiv = createImageElement(srcset);
-          buttonContainer.appendChild(imgDiv);
-        }
-      });
-    }
 
     return buttonContainer;
   }
@@ -393,23 +342,6 @@
     });
   }
 
-  function startPollingExtractLinks() {
-    let poller = setInterval(() => {
-      const links = extractLinks();
-
-      if (links.length > 0) {
-        clearInterval(poller);
-        renderCustomNavigation(links);
-      }
-    }, 500); // Poll every 1000 milliseconds (1 second)
-
-    setTimeout(() => {
-      clearInterval(poller); // Stop polling after 30 seconds
-    }, 30000); // 30 seconds timeout
-  }
-
-  startPollingExtractLinks();
-
   let lastScrollTop = 0;
   window.addEventListener(
     "scroll",
@@ -446,7 +378,6 @@
         (list && list.length && currentPageIndex !== null) ||
         attempts >= maxAttempts
       ) {
-        console.log("polling", attempts, list);
         clearInterval(pollingInterval);
         if (list && list.length) {
           //list.forEach(function (list) {
@@ -463,7 +394,10 @@
                   ".custom-min-nav-container"
                 );
 
-                console.log(relatedStoryCarousel, navContainer);
+                if (relatedStoryCarousel && relatedStoryCarousel.length) {
+                  const links = extractLinks();
+                  renderCustomNavigation(links);
+                }
 
                 if (
                   relatedStoryCarousel &&
