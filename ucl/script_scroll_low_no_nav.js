@@ -388,7 +388,6 @@
 
                 if (relatedStoryCarousel) {
                   clearInterval(poller);
-                  clearInterval(poller);
                   const linksNew = extractLinks(relatedStoryCarousel);
                   renderCustomNavigation(linksNew);
                   const navContainer = document.querySelector(
@@ -396,10 +395,12 @@
                   );
 
                   navContainer.querySelector(".spinnerSVG").remove();
-                  const relatedStoryCarousel2 = document.querySelector(
+                  const relatedStoryCarousel2 = document.querySelectorAll(
                     '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
                   );
-                  navContainer.appendChild(relatedStoryCarousel2);
+                  navContainer.appendChild(
+                    relatedStoryCarousel2[relatedStoryCarousel2.length - 1]
+                  );
                 }
               }, 150);
 
