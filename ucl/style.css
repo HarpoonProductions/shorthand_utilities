@@ -79,7 +79,7 @@ font-style: normal;
   position: absolute;
   bottom: 35px;
   font-size: 17px;
-  font-family: "Helvetica Neue", sans-serif !important;
+  font-family: "Helvetica Neue Cond", sans-serif !important;
   color: #fff;
 }
 
@@ -427,7 +427,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button {
   cursor: pointer;
   pointer-events: none;
-  font-family: "Helvetica Neue", sans-serif !important;
+  font-family: "Helvetica Neue Cond", sans-serif !important;
   z-index: 10;
   min-height: 43px;
   text-align: center;
