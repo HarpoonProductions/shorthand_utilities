@@ -37,7 +37,7 @@
 
         if (!isCurrent) {
           const pathname = window.location.pathname;
-
+          console.log(href, pathname);
           if (href === "index.html" && pathname === undefined) isCurrent = true;
         }
 
