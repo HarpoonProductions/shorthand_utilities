@@ -35,6 +35,12 @@
           isCurrent = clean !== "/index.html" && check.test(href);
         }
 
+        if (!isCurrent) {
+          const pathname = window.location.pathname;
+
+          if (href === "index.html" && pathname === undefined) isCurrent = true;
+        }
+
         links.push({
           href,
           label,
