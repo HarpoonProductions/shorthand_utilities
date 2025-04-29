@@ -38,7 +38,11 @@
         if (!isCurrent) {
           const pathname = window.location.pathname;
           console.log(href, pathname);
-          if (href === "index.html" && pathname === undefined) isCurrent = true;
+          if (
+            href === "index.html" &&
+            (pathname === "/" || pathname === "/index.html")
+          )
+            isCurrent = true;
         }
 
         links.push({
