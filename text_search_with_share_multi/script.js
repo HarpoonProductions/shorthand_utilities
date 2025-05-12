@@ -122,9 +122,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })(document);
 
-  function scrollToAndHighlightText(text, nameIndex) {
+  function scrollToAndHighlightText(text, nameIndex, awardee = false) {
     const containers = document.querySelectorAll(
-      ".sh-names, .sh-prizewinnernames"
+      ".sh-names, .sh-prizewinnernames, .sh-awardee"
     );
     if (!containers.length) {
       console.error("Container .sh-names not found.");
@@ -178,11 +178,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (matches.length > 0) {
-      scrollToMatch(matches, nameIndex);
+      scrollToMatch(matches, nameIndex, awardee);
     }
   }
 
-  function scrollToMatch(matches, nameIndex, yOffset = -100) {
+  function scrollToMatch(matches, nameIndex, awardee, yOffset = -100) {
     let current = nameIndex ? parseInt(nameIndex, 10) : 0;
 
     const scroll = () => {
@@ -214,8 +214,8 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log(!nameIndex);
     console.log(matches.length > 1 && !nameIndex);
 
-    if (matches.length > 1 && !nameIndex) {
-      createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
+    if (matches.length > 1 && !nameIndex && !awardee) {
+      createResultButton(1, matches.length, awardee, scroll); // Start from 1 for user clarity
     } else {
       console.log("Only one match found, no need for result button.");
     }
@@ -227,6 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Get the 'student_name' query parameter
   const urlParams = new URLSearchParams(window.location.search);
   const studentName = urlParams.get("student_name");
+  const awardeeName = urlParams.get("awardee");
   const nameIndex = urlParams.get("name_index");
 
   console.log("NEW LOG", studentName, nameIndex);
@@ -235,6 +236,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Decode URI component in case the name is encoded
     scrollToAndHighlightText(
       decodeURIComponent(studentName),
+      nameIndex && decodeURIComponent(nameIndex)
+    );
+  }
+
+  if (awardeeName) {
+    // Decode URI component in case the name is encoded
+    scrollToAndHighlightText(
+      decodeURIComponent(awardeeName),
       nameIndex && decodeURIComponent(nameIndex)
     );
   }
