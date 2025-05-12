@@ -83,6 +83,8 @@ function addShareAwardeeButtons() {
   const names = {};
 
   paragraphs.forEach((p) => {
+    console.log(p);
+    if (!p.textContent) return;
     const awardeeName = p.textContent.trim();
 
     if (names[awardeeName]) {
