@@ -65,7 +65,7 @@ function addShareButtons() {
 function addShareAwardeeButtons() {
   // Select all p tags within the specified structure
   const headings = document.querySelectorAll(
-    ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall"
+    ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall, .sh-awardees p.Theme-TextSize-default.h-align-center"
   );
 
   // 2) for each one, remove the <span> label and then read the remaining text
