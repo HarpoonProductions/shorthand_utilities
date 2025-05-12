@@ -64,15 +64,20 @@ function addShareButtons() {
 // Function to add share buttons
 function addShareAwardeeButtons() {
   // Select all p tags within the specified structure
-  const headings = document.querySelectorAll(
-    ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall, .sh-awardees p.Theme-TextSize-default.h-align-center"
+  const awardees = document.querySelectorAll(
+    ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall, " +
+      ".sh-awardee p.Theme-TextSize-default.h-align-center"
   );
 
-  // 2) for each one, remove the <span> label and then read the remaining text
-  const paragraphs = Array.from(headings).map((h2) => {
-    const label = h2.querySelector("span");
-    if (label) label.remove(); // strip out the “HONORARY DEGREE” span
-    return h2.textContent.trim(); // what's left is “The Hon. Julia Gillard AC”
+  // 2) for each one, split on the line-break and take the *last* non-empty line
+  const paragraphs = Array.from(awardees).map((el) => {
+    // innerText preserves that <br> as a '\n'
+    const lines = el.innerText
+      .split("\n") // ["HONORARY DEGREE", "The Hon. Julia Gillard AC"]
+      .map((s) => s.trim()) // strip any stray spaces
+      .filter(Boolean); // drop any empty strings
+    // if for some reason there's only one line, fallback to it
+    return lines.length > 1 ? lines[lines.length - 1] : lines[0];
   });
 
   const names = {};
