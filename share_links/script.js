@@ -162,9 +162,14 @@ function addShareAwardeeButtons() {
 
   // If element exists, smooth scroll to it with padding
   if (element) {
+    let padding = 100; // Default for screens > 900px
+    if (window.innerWidth < 900) {
+      padding = 250; // For screens <= 900px
+    }
+
     const elementPosition =
       element.getBoundingClientRect().top + window.pageYOffset;
-    const offsetPosition = elementPosition - 100; // Subtract 30px for padding
+    const offsetPosition = elementPosition - padding;
 
     window.scrollTo({
       top: offsetPosition,
