@@ -150,7 +150,11 @@ function addShareAwardeeButtons() {
   }
 
   // Form the ID by concatenating the parameters
-  const elementId = awardee + nameIndex;
+  const encodedAwardee = encodeURIComponent(awardee);
+
+  const encodedIndex = encodeURIComponent(nameIndex);
+
+  const elementId = encodedAwardee + encodedIndex;
   console.log(elementId);
 
   // Look for the element with that ID
