@@ -162,9 +162,9 @@ function addShareAwardeeButtons() {
 
   // If element exists, smooth scroll to it with padding
   if (element) {
-    let padding = 100; // Default for screens > 900px
+    let padding = 120; // Default for screens > 900px
     if (window.innerWidth < 400) {
-      padding = 450; // For screens <= 900px
+      padding = 460; // For screens <= 900px
     } else if (window.innerWidth < 900) {
       padding = 350;
     }
