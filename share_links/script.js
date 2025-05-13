@@ -164,3 +164,33 @@ document.addEventListener("DOMContentLoaded", () => {
   addShareButtons();
   addShareAwardeeButtons();
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Get URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const awardee = urlParams.get("awardee");
+  const nameIndex = urlParams.get("name_index");
+
+  // If either parameter is missing, do nothing
+  if (!awardee || !nameIndex) {
+    return;
+  }
+
+  // Form the ID by concatenating the parameters
+  const elementId = awardee + nameIndex;
+
+  // Look for the element with that ID
+  const element = document.getElementById(elementId);
+
+  // If element exists, smooth scroll to it with padding
+  if (element) {
+    const elementPosition =
+      element.getBoundingClientRect().top + window.pageYOffset;
+    const offsetPosition = elementPosition - 30; // Subtract 30px for padding
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
+});
