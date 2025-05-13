@@ -164,7 +164,7 @@ function addShareAwardeeButtons() {
   if (element) {
     const elementPosition =
       element.getBoundingClientRect().top + window.pageYOffset;
-    const offsetPosition = elementPosition - 30; // Subtract 30px for padding
+    const offsetPosition = elementPosition - 100; // Subtract 30px for padding
 
     window.scrollTo({
       top: offsetPosition,
