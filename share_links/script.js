@@ -107,11 +107,15 @@ function addShareAwardeeButtons() {
             </svg>
         `;
 
+    const encodedAwardee = encodeURIComponent(awardeeName);
+
+    const encodedIndex = encodeURIComponent(index - 1);
+
+    p.setAttribute("id", encodedAwardee + encodedIndex);
+
     shareButton.addEventListener("click", () => {
       const currentURL = window.location.href.split("?")[0]; // Remove any existing query params
-      const shareURL = `${currentURL}?awardee=${encodeURIComponent(
-        awardeeName
-      )}&name_index=${encodeURIComponent(index - 1)}`;
+      const shareURL = `${currentURL}?awardee=${encodedAwardee}&name_index=${encodedIndex}`;
 
       if (navigator.share) {
         let hasResponded = false;

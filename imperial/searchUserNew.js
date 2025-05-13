@@ -87,6 +87,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const projectInput = document.querySelector(".Theme-ProjectInput");
   if (projectInput) projectInput.setAttribute("placeholder", "Search Name");
 
+  const togglePanel = document.querySelector(".sh-chapter + .sh-toggle");
+
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
   accordions.forEach((accordion, index) => {
