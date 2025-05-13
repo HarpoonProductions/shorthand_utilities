@@ -164,7 +164,7 @@ function addShareAwardeeButtons() {
   if (element) {
     let padding = 120; // Default for screens > 900px
     if (window.innerWidth < 620) {
-      padding = 460; // For screens <= 900px
+      padding = 400 + (window.innerWidth - 620); // For screens <= 900px
     } else if (window.innerWidth < 900) {
       padding = 350;
     }
