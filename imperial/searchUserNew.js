@@ -195,6 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (textContent.toLowerCase().includes(text.toLowerCase())) {
           const frag = document.createDocumentFragment();
           const parts = textContent.split(text);
+          console.log("TESTING NEW", parts, textContent, text);
           const endIndex = parts.length - 1;
 
           parts.forEach((part, index) => {
