@@ -33,6 +33,18 @@ function createResultButton(current, total, callback) {
   document.body.appendChild(button);
 }
 
+function extractMatch(baseString, matchString) {
+  // Escape special regex characters in the match string
+  const escaped = matchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // Create case-insensitive regex with word boundaries
+  const regex = new RegExp(`\\b${escaped}\\b`, "i");
+
+  // Find and return the match (preserving original case from base string)
+  const match = baseString.match(regex);
+  return match ? match[0] : "";
+}
+
 // Function to modify the href of .project-image-link within the li elements
 function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
@@ -194,8 +206,9 @@ document.addEventListener("DOMContentLoaded", function () {
         let textContent = node.nodeValue;
         if (textContent.toLowerCase().includes(text.toLowerCase())) {
           const frag = document.createDocumentFragment();
-          const parts = textContent.split(text);
-          console.log("TESTING NEW", parts, textContent, text);
+          const match = extractMatch(textContent, text);
+          const parts = textContent.split(match);
+
           const endIndex = parts.length - 1;
 
           parts.forEach((part, index) => {
@@ -204,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
               const span = document.createElement("span");
               span.style.backgroundColor = "#ffffff1d";
               span.classList.add("found-text-piece");
-              span.textContent = text;
+              span.textContent = match;
               frag.appendChild(span);
               matches.push(span);
             }
