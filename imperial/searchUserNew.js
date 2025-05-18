@@ -167,7 +167,9 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function scrollToAndHighlightText(t) {
+    console.log(t);
     const text = toTitleCase(t);
+    console.log(text);
     const containers = document.querySelectorAll(
       ".sh-names, .sh-prizewinnernames"
     );
@@ -190,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let node;
       while ((node = walker.nextNode())) {
         let textContent = node.nodeValue;
-        if (textContent.includes(text)) {
+        if (textContent.toLowerCase().includes(text.toLowerCase())) {
           const frag = document.createDocumentFragment();
           const parts = textContent.split(text);
           const endIndex = parts.length - 1;
