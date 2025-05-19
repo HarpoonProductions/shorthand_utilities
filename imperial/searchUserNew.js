@@ -260,6 +260,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         container.classList.add("show");
+        const id = container.getAttribute("id");
+        const day = id.match(/^[^-]+-\d{4}/);
+
+        console.log("testing new", id, day);
+
+        if (day && day[0]) {
+          const daySection = document.querySelector("[id^=" + day + "]");
+          console.log("testing new", day, day[0]);
+          if (daySection) {
+            daySection.classList.add("showing");
+            console.log("testing new", daySection);
+          }
+        }
       });
     });
 
