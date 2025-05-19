@@ -51,11 +51,12 @@ function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
-    console.log("NEW TEST", link);
     const result = document.querySelector(".project-search-results");
     result.style.display = "none";
-    console.log("NEW TEST", link.href);
-    if (link.href === "index.html") {
+    if (
+      link.href ===
+      "https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html"
+    ) {
       const input = document.querySelector(".project-search-input");
       const name = input ? input.value : "";
       const studentName = encodeURIComponent(name);
