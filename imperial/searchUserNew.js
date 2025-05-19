@@ -271,6 +271,10 @@ document.addEventListener("DOMContentLoaded", function () {
           if (daySection) {
             daySection.classList.add("showing");
             console.log("testing new", daySection);
+
+            const dayBar = daySection.querySelector(".floating-day-bar");
+
+            console.log("testing new", dayBar);
           }
         }
       });
