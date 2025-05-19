@@ -272,6 +272,14 @@ document.addEventListener("DOMContentLoaded", function () {
             daySection.classList.add("showing");
             console.log("testing new", daySection);
 
+            const section = daySection.querySelector(
+              'section[class^="Theme-Section-Position"]'
+            );
+
+            if (section) {
+              section.style.display = "block";
+            }
+
             const dayBar = daySection.querySelector(".floating-day-bar");
 
             console.log("testing new", dayBar);
