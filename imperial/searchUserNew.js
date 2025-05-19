@@ -47,17 +47,21 @@ function extractMatch(baseString, matchString) {
 
 // Function to modify the href of .project-image-link within the li elements
 function processListItem(li) {
+  console.log(li);
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
-  if (highlightSpan && link && link.href === "index.html") {
+  if (highlightSpan && link) {
+    console.log(link);
     const result = document.querySelector(".project-search-results");
     result.style.display = "none";
-    const input = document.querySelector(".project-search-input");
-    const name = input ? input.value : "";
-    const studentName = encodeURIComponent(name);
-    const url = new URL(link.href);
-    url.searchParams.set("student_name", studentName);
-    window.location.replace(url.href);
+    if (link.href === "index.html") {
+      const input = document.querySelector(".project-search-input");
+      const name = input ? input.value : "";
+      const studentName = encodeURIComponent(name);
+      const url = new URL(link.href);
+      url.searchParams.set("student_name", studentName);
+      window.location.replace(url.href);
+    }
   }
 }
 
