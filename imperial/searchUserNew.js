@@ -243,6 +243,12 @@ document.addEventListener("DOMContentLoaded", function () {
         let currentElement = update.oldNode.parentElement;
         while (currentElement && !currentElement.classList.contains("panel")) {
           console.log("TESTING", currentElement);
+          if (
+            currentElement.classList.contains("order-tab-content") &&
+            !currentElement.classList.contains("active")
+          ) {
+            currentElement.classList.add("active");
+          }
           currentElement = currentElement.parentElement;
         }
         update.oldNode.parentNode.replaceChild(update.frag, update.oldNode);
