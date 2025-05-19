@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (textContent.toLowerCase().includes(text.toLowerCase())) {
           const frag = document.createDocumentFragment();
           const match = extractMatch(textContent, text);
-          const parts = textContent.split(text);
+          const parts = textContent.split(match.length ? match : text);
 
           const endIndex = parts.length - 1;
 
@@ -222,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
               const span = document.createElement("span");
               span.style.backgroundColor = "#ffffff1d";
               span.classList.add("found-text-piece");
-              span.textContent = text;
+              span.textContent = match.length ? match : text;
               frag.appendChild(span);
               matches.push(span);
             }
