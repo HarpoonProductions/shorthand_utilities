@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
               section.style.display = "block";
             }
 
-            const dayBar = daySection.querySelector(".floating-day-bar");
+            const dayBar = daySection[0].querySelector(".floating-day-bar");
 
             console.log("testing new", dayBar);
           }
