@@ -54,6 +54,7 @@ function processListItem(li) {
     console.log("NEW TEST", link);
     const result = document.querySelector(".project-search-results");
     result.style.display = "none";
+    console.log("NEW TEST", link.href);
     if (link.href === "index.html") {
       const input = document.querySelector(".project-search-input");
       const name = input ? input.value : "";
