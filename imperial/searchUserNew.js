@@ -47,11 +47,11 @@ function extractMatch(baseString, matchString) {
 
 // Function to modify the href of .project-image-link within the li elements
 function processListItem(li) {
-  console.log(li);
+  console.log("NEW TEST", li);
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
-    console.log(link);
+    console.log("NEW TEST", link);
     const result = document.querySelector(".project-search-results");
     result.style.display = "none";
     if (link.href === "index.html") {
@@ -73,6 +73,7 @@ const callback = function (mutationsList, observer) {
         // Check if the added node is a ul with class '.project-search-results'
         if (node.nodeType === 1 && node.matches(".project-search-results")) {
           const listItems = node.querySelectorAll(".project-story-list-item");
+          console.log("NEW TEST", "finding nodes", listItems);
           listItems.forEach(processListItem);
         }
       }
