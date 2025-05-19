@@ -75,7 +75,6 @@ const callback = function (mutationsList, observer) {
         // Check if the added node is a ul with class '.project-search-results'
         if (node.nodeType === 1 && node.matches(".project-search-results")) {
           const listItems = node.querySelectorAll(".project-story-list-item");
-          console.log("NEW TEST", "finding nodes", listItems);
           listItems.forEach(processListItem);
         }
       }
@@ -136,7 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       openAccordions.forEach((accordion, index) => {
         const step = accordion.className.replace(/[^\d]/g, "");
-        console.log(step);
         const associatedDropdown = innerDropdowns[step];
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
@@ -214,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (textContent.toLowerCase().includes(text.toLowerCase())) {
           const frag = document.createDocumentFragment();
           const match = extractMatch(textContent, text);
-          const parts = textContent.split(match);
+          const parts = textContent.split(text);
 
           const endIndex = parts.length - 1;
 
@@ -224,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
               const span = document.createElement("span");
               span.style.backgroundColor = "#ffffff1d";
               span.classList.add("found-text-piece");
-              span.textContent = match;
+              span.textContent = text;
               frag.appendChild(span);
               matches.push(span);
             }
@@ -239,10 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Apply all collected updates
       updates.forEach((update) => {
-        console.log("TESTING OUTER", update);
         let currentElement = update.oldNode.parentElement;
         while (currentElement && !currentElement.classList.contains("panel")) {
-          console.log("TESTING", currentElement);
           if (
             currentElement.classList.contains("order-tab-content") &&
             !currentElement.classList.contains("active")
@@ -256,11 +252,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Find the nearest ancestor with class 'panel' and set its display to inline
         if (currentElement) {
           currentElement.style.display = "inline";
-          console.log(currentElement);
           const parent = currentElement.parentElement;
-          console.log(parent);
           const accordion = parent.querySelector(".accordion");
-          console.log(accordion);
           if (accordion) {
             searchedAccordions.push(accordion);
           }
