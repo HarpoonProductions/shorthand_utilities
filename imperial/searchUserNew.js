@@ -272,13 +272,11 @@ document.addEventListener("DOMContentLoaded", function () {
             daySection.forEach((section) => section.classList.add("showing"));
             console.log("testing new", daySection);
 
-            const section = daySection[0].querySelector(
-              'section[class^="Theme-Section-Position"]'
+            const section = daySection.forEach((section) =>
+              section
+                .querySelector('section[class^="Theme-Section-Position"]')
+                .classList.add("showing")
             );
-
-            if (section) {
-              section.style.display = "block";
-            }
 
             const dayBar = daySection[0].querySelector(".floating-day-bar");
 
