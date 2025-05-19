@@ -266,13 +266,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("testing new", id, day);
 
         if (day && day[0]) {
-          const daySection = document.querySelector("[id^=" + day + "]");
+          const daySection = document.querySelectorAll("[id^=" + day + "]");
           console.log("testing new", day, day[0]);
-          if (daySection) {
-            daySection.classList.add("showing");
+          if (daySection && daySection.length) {
+            daySection.forEach((section) => section.classList.add("showing"));
             console.log("testing new", daySection);
 
-            const section = daySection.querySelector(
+            const section = daySection[0].querySelector(
               'section[class^="Theme-Section-Position"]'
             );
 
