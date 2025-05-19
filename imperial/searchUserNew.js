@@ -9,13 +9,75 @@ function updateResultButtonText(current, total) {
 }
 
 function createResultButton(current, total, callback) {
+  // Create and append CSS styles
+  var style = document.createElement("style");
+  style.id = "resultButtonStyles";
+  style.textContent = `
+    #closeResultButton:hover {
+      background-color: #c82333;
+    }
+
+    #resultButton:hover {
+      background-color: #0056b3;
+    }
+
+    body.close-results #resultButton,
+    body.close-results #closeResultButton {
+      display: none !important;
+    }
+
+    body.close-results .found-text-piece {
+      background-color: transparent !important;
+    }
+  `;
+
+  // Only append if styles don't already exist
+  if (!document.getElementById("resultButtonStyles")) {
+    document.head.appendChild(style);
+  }
+  // Create container div to hold both buttons
+  var container = document.createElement("div");
+  container.id = "resultButtonContainer";
+  container.style.position = "fixed";
+  container.style.bottom = "20px";
+  container.style.right = "20px";
+  container.style.zIndex = "1000";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.alignItems = "flex-end";
+  container.style.gap = "5px";
+
+  // Create close button
+  var closeButton = document.createElement("button");
+  closeButton.id = "closeResultButton";
+  closeButton.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+  closeButton.style.width = "30px";
+  closeButton.style.height = "30px";
+  closeButton.style.borderRadius = "50%";
+  closeButton.style.border = "none";
+  closeButton.style.backgroundColor = "#dc3545";
+  closeButton.style.color = "white";
+  closeButton.style.cursor = "pointer";
+  closeButton.style.fontSize = "18px";
+  closeButton.style.fontWeight = "bold";
+  closeButton.style.display = "flex";
+  closeButton.style.alignItems = "center";
+  closeButton.style.justifyContent = "center";
+  closeButton.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+
+  // Add click event to close button
+  closeButton.addEventListener("click", function () {
+    document.body.classList.add("close-results");
+  });
+
+  // Create main result button
   var button = document.createElement("button");
-  button.id = "resultButton"; // Added an ID for easy targeting
+  button.id = "resultButton";
   button.textContent = `Result ${current} of ${total}`;
-  button.style.position = "fixed";
-  button.style.bottom = "20px";
-  button.style.right = "20px";
-  button.style.zIndex = "1000";
   button.style.padding = "10px 20px";
   button.style.borderRadius = "5px";
   button.style.border = "none";
@@ -30,7 +92,12 @@ function createResultButton(current, total, callback) {
     }
   });
 
-  document.body.appendChild(button);
+  // Append buttons to container
+  container.appendChild(closeButton);
+  container.appendChild(button);
+
+  // Append container to body
+  document.body.appendChild(container);
 }
 
 function extractMatch(baseString, matchString) {
