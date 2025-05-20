@@ -394,6 +394,10 @@ document.addEventListener("DOMContentLoaded", function () {
       createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
     } else {
       console.log("Only one match found, no need for result button.");
+
+      document.addEventListener("click", function () {
+        document.body.classList.add("close-results");
+      });
     }
 
     // Initial scroll to the first match
