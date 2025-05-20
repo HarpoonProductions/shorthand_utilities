@@ -395,6 +395,18 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       console.log("Only one match found, no need for result button.");
 
+      var style = document.createElement("style");
+      style.id = "closeResults";
+      style.textContent = `
+        body.close-results .found-text-piece {
+          background-color: transparent !important;
+        }
+      `;
+
+      if (!document.getElementById("closeResults")) {
+        document.head.appendChild(style);
+      }
+
       document.addEventListener("click", function () {
         document.body.classList.add("close-results");
       });
