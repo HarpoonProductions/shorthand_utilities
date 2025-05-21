@@ -168,6 +168,20 @@ if (targetNode) {
 // Optionally, disconnect the observer at some point using observer.disconnect();
 
 document.addEventListener("DOMContentLoaded", function () {
+  var style = document.createElement("style");
+  style.id = "searchTitle";
+  style.textContent = `
+    @media (min-width: 900px) {
+      .project-search-button::after {
+          content: "Search name:" !important;
+      }
+    }
+  `;
+
+  if (!document.getElementById("searchTitle")) {
+    document.head.appendChild(style);
+  }
+
   // Update Search Placeholder
   const projectInput = document.querySelector(".Theme-ProjectInput");
   if (projectInput) projectInput.setAttribute("placeholder", "Search Name");
@@ -400,12 +414,6 @@ document.addEventListener("DOMContentLoaded", function () {
       style.textContent = `
         body.close-results .found-text-piece {
           background-color: transparent !important;
-        }
-
-        @media (min-width: 900px) {
-          .project-search-button::after {
-              content: "Search name:" !important;
-          }
         }
       `;
 
