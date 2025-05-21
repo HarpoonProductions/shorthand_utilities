@@ -401,6 +401,12 @@ document.addEventListener("DOMContentLoaded", function () {
         body.close-results .found-text-piece {
           background-color: transparent !important;
         }
+
+        @media (min-width: 900px) {
+          .project-search-button::after {
+              content: "Search name:" !important;
+          }
+        }
       `;
 
       if (!document.getElementById("closeResults")) {
