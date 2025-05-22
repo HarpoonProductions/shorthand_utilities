@@ -83,7 +83,7 @@ function createResultButton(current, total, callback) {
       <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `;
-  button.style.padding = "10px 20px";
+  button.style.padding = "10px 7px";
   button.style.borderRadius = "5px";
   button.style.border = "none";
   button.style.backgroundColor = "#007BFF";
@@ -193,8 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const projectInput = document.querySelector(".Theme-ProjectInput");
   if (projectInput) projectInput.setAttribute("placeholder", "Search Name");
 
-  const togglePanel = document.querySelector(".sh-chapter + .sh-toggle");
-
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
   accordions.forEach((accordion, index) => {
@@ -206,7 +204,72 @@ document.addEventListener("DOMContentLoaded", function () {
   const consolidatedDropdown = document.createElement("div");
   consolidatedDropdown.className = "consolidated-dropdown";
   consolidatedDropdown.style.display = "none";
+  consolidatedDropdown.style.transition =
+    "opacity 0.3s ease, pointer-events 0.3s ease";
+  consolidatedDropdown.style.opacity = "1";
+  consolidatedDropdown.style.pointerEvents = "auto";
   document.body.appendChild(consolidatedDropdown);
+
+  // Intersection Observer for dropdown visibility
+  const allowedSectionPrefixes = [
+    "section-1430",
+    "section-1100",
+    "section-1030",
+    "section-1345",
+  ];
+
+  function setupDropdownVisibilityObserver() {
+    // Get all sections on the page
+    const sections = document.querySelectorAll(".Theme-Section");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Check if any currently intersecting section has an allowed ID prefix
+        const hasAllowedSection = entries.some((entry) => {
+          if (entry.isIntersecting && entry.target.id) {
+            return allowedSectionPrefixes.some((prefix) =>
+              entry.target.id.startsWith(prefix)
+            );
+          }
+          return false;
+        });
+
+        // Update dropdown visibility based on current sections
+        if (hasAllowedSection) {
+          // Show dropdown - over an allowed section
+          consolidatedDropdown.style.opacity = "1";
+          consolidatedDropdown.style.pointerEvents = "auto";
+        } else {
+          // Check if any allowed sections are currently in viewport
+          const allowedSectionsInView = Array.from(sections).some((section) => {
+            if (!section.id) return false;
+            const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
+              section.id.startsWith(prefix)
+            );
+            if (!hasAllowedId) return false;
+
+            const rect = section.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
+          });
+
+          if (!allowedSectionsInView) {
+            // Hide dropdown - not over any allowed section
+            consolidatedDropdown.style.opacity = "0";
+            consolidatedDropdown.style.pointerEvents = "none";
+          }
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the section is visible
+        rootMargin: "0px 0px -50px 0px", // Adjust trigger point
+      }
+    );
+
+    // Observe all sections
+    sections.forEach((section) => {
+      observer.observe(section);
+    });
+  }
 
   function updateConsolidatedDropdown() {
     const openAccordions = Array.from(accordions).filter(
@@ -215,9 +278,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (openAccordions.length > 0) {
       consolidatedDropdown.innerHTML = `
-          <button class="dropbtn">Find a course:</button>
-          <div class="dropdown-content"></div>
-        `;
+        <button class="dropbtn">Find a course:</button>
+        <div class="dropdown-content"></div>
+      `;
       const dropdownContent =
         consolidatedDropdown.querySelector(".dropdown-content");
 
@@ -234,6 +297,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       consolidatedDropdown.style.display = "flex";
+
+      // Initialize the observer after the dropdown is shown
+      setupDropdownVisibilityObserver();
     } else {
       consolidatedDropdown.style.display = "none";
     }
