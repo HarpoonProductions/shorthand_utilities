@@ -1,5 +1,5 @@
 function updateResultButtonText(current, total) {
-  var button = document.getElementById("resultButton");
+  var button = document.getElementById("result-inner");
   if (button) {
     // Check if the button exists
     button.textContent = `Result ${current} of ${total}`; // Update the button text
@@ -78,7 +78,7 @@ function createResultButton(current, total, callback) {
   var button = document.createElement("button");
   button.id = "resultButton";
   button.innerHTML = `
-    <span>Result ${current} of ${total}</span>
+    <span id="result-inner">Result ${current} of ${total}</span>
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 8px;">
       <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
