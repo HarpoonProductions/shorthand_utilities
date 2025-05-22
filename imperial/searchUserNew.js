@@ -77,7 +77,12 @@ function createResultButton(current, total, callback) {
   // Create main result button
   var button = document.createElement("button");
   button.id = "resultButton";
-  button.textContent = `Result ${current} of ${total}`;
+  button.innerHTML = `
+    <span>Result ${current} of ${total}</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 8px;">
+      <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
   button.style.padding = "10px 20px";
   button.style.borderRadius = "5px";
   button.style.border = "none";
@@ -85,6 +90,9 @@ function createResultButton(current, total, callback) {
   button.style.color = "white";
   button.style.cursor = "pointer";
   button.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+  button.style.display = "flex";
+  button.style.alignItems = "center";
+  button.style.justifyContent = "center";
 
   button.addEventListener("click", function () {
     if (typeof callback === "function") {
@@ -99,7 +107,6 @@ function createResultButton(current, total, callback) {
   // Append container to body
   document.body.appendChild(container);
 }
-
 function extractMatch(baseString, matchString) {
   // Escape special regex characters in the match string
   const escaped = matchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
