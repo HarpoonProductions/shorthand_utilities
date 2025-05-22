@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       {
         threshold: 0.1, // Trigger when 10% of the section is visible
-        rootMargin: "0px 0px -50px 0px", // Adjust trigger point
+        rootMargin: "-100px 0px -50px 0px",
       }
     );
 
