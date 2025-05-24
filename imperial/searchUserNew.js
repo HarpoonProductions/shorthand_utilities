@@ -228,8 +228,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Check if any currently intersecting section has an allowed ID prefix
         const hasAllowedSection = entries.some((entry) => {
           if (entry.isIntersecting && entry.target.id) {
-            return allowedSectionPrefixes.some((prefix) =>
-              entry.target.id.startsWith(prefix)
+            return allowedSectionPrefixes.some(
+              (prefix) =>
+                entry.target.id.startsWith(prefix) &&
+                !entry.target.id.includes("Imperial")
             );
           }
           return false;
