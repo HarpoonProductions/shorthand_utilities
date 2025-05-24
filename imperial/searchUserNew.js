@@ -252,13 +252,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const observer = new IntersectionObserver(
       (entries) => {
         // Check if any currently intersecting section has an allowed ID prefix
+        let triggeringSection = null;
         const hasAllowedSection = entries.some((entry) => {
           if (entry.isIntersecting && entry.target.id) {
-            return allowedSectionPrefixes.some(
+            const isAllowed = allowedSectionPrefixes.some(
               (prefix) =>
                 entry.target.id.startsWith(prefix) &&
                 !entry.target.id.includes("Imperial")
             );
+            if (isAllowed) {
+              triggeringSection = entry.target.id;
+            }
+            return isAllowed;
           }
           return false;
         });
@@ -266,6 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Update dropdown visibility based on current sections
         if (hasAllowedSection) {
           // Show dropdown - over an allowed section
+          console.log(`🟢 Dropdown triggered by section: ${triggeringSection}`);
           consolidatedDropdown.style.opacity = "1";
           consolidatedDropdown.style.pointerEvents = "auto";
         } else {
