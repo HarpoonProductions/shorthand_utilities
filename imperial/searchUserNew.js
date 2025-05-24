@@ -251,6 +251,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // Check if the fade-out section is in view
+        const fadeOutSection = entries.find(
+          (entry) =>
+            entry.isIntersecting && entry.target.id === "section-aIviY23ApG"
+        );
+
+        if (fadeOutSection) {
+          // Hide dropdown - fade-out section is in view
+          console.log(
+            `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`
+          );
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
+          return; // Exit early, don't check for allowed sections
+        }
+
         // Check if any currently intersecting section has an allowed ID prefix
         let triggeringSection = null;
         const hasAllowedSection = entries.some((entry) => {
