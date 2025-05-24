@@ -210,6 +210,32 @@ document.addEventListener("DOMContentLoaded", function () {
   consolidatedDropdown.style.pointerEvents = "auto";
   document.body.appendChild(consolidatedDropdown);
 
+  // Create and insert sentry section before the target element
+  function createSentrySection() {
+    const targetElement = document.getElementById("section-tVbkG6IJAz");
+
+    if (targetElement) {
+      const sentrySection = document.createElement("div");
+      sentrySection.id = "section-1430-sentry"; // Uses allowed prefix
+      sentrySection.className = "Theme-Section"; // Matches observer selector
+      sentrySection.style.height = "0px";
+      sentrySection.style.width = "0px";
+      sentrySection.style.overflow = "hidden";
+      sentrySection.style.visibility = "hidden"; // Completely invisible
+      sentrySection.style.position = "relative"; // Doesn't affect layout
+
+      // Insert before the target element
+      targetElement.parentNode.insertBefore(sentrySection, targetElement);
+
+      console.log("Sentry section created and inserted");
+    } else {
+      console.warn("Target element section-tVbkG6IJAz not found");
+    }
+  }
+
+  // Call this function to create the sentry section
+  createSentrySection();
+
   // Intersection Observer for dropdown visibility
   const allowedSectionPrefixes = [
     "section-1430",
@@ -268,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     );
 
-    // Observe all sections
+    // Observe all sections (including the new sentry section)
     sections.forEach((section) => {
       observer.observe(section);
     });
