@@ -216,6 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "section-1100",
     "section-1030",
     "section-1345",
+    "section-1645",
   ];
 
   function setupDropdownVisibilityObserver() {
