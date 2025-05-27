@@ -600,7 +600,7 @@ class TabOrderManager {
       }
        
       *:focus-visible {
-        box-shadow: 0 0 0 2px #aedeff inset, 0 0 0 4px #0262B1 inset !important;
+        box-shadow: 0 0 0 2px #b90072 inset !important;
         outline: none !important;
         border-radius: 4px;
       }
@@ -612,7 +612,7 @@ class TabOrderManager {
       select:focus-visible,
       textarea:focus-visible,
       [tabindex]:focus-visible {
-        box-shadow: 0 0 0 2px #aedeff inset, 0 0 0 4px #0262B1 inset !important;
+        box-shadow: 0 0 0 2px #b90072 inset !important;
         outline: none !important;
       }
     `;
