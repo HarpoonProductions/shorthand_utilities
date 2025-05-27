@@ -564,7 +564,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Debug version - Tab Order Manager for Imperial Graduation Page
+// Tab Order Manager for Imperial Graduation Page - Fixed Version
 class TabOrderManager {
   constructor() {
     this.init();
@@ -617,78 +617,120 @@ class TabOrderManager {
     const logo = document.querySelector(".Theme-Logo a");
     if (logo) {
       logo.setAttribute("tabindex", tabIndex++);
-      console.log("Logo found and set to tabindex:", tabIndex - 1);
-    } else {
-      console.log("Logo NOT found");
+      console.log("Logo set to tabindex:", tabIndex - 1);
     }
 
-    // 2. Try different selectors for nav items
-    console.log("Looking for nav items...");
-
-    // Method 1: Direct nav links
-    const navLinks = document.querySelectorAll(
-      ".Navigation a.Theme-NavigationLink"
-    );
-    console.log("Found nav links (method 1):", navLinks.length);
-    navLinks.forEach((link, i) => {
-      link.setAttribute("tabindex", tabIndex++);
-      console.log(
-        `Nav link ${i}: "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+    // 2. Navigation items - Fixed selector
+    const navContainer = document.querySelector(".Navigation__itemList");
+    if (navContainer) {
+      // Get all direct navigation items
+      const navItems = navContainer.querySelectorAll(
+        ":scope > .Navigation__item"
       );
-    });
 
-    // Method 2: Look for the specific nav structure
-    const navigation = document.querySelector(".Navigation");
-    if (navigation) {
-      console.log("Navigation element found");
-
-      // Also try the Explore more span
-      const exploreMoreSpan = Array.from(
-        navigation.querySelectorAll("span.Theme-NavigationLink")
-      ).find((span) => span.textContent.trim() === "Explore more");
-      if (exploreMoreSpan) {
-        exploreMoreSpan.setAttribute("tabindex", tabIndex++);
-        console.log("Explore more span found - tabindex:", tabIndex - 1);
-
-        // And its button
-        const exploreButton = exploreMoreSpan.parentElement.querySelector(
-          ".Navigation__button"
+      navItems.forEach((item) => {
+        // Get the main link or span
+        const mainElement = item.querySelector(
+          "a.Theme-NavigationLink, span.Theme-NavigationLink"
         );
-        if (exploreButton) {
-          exploreButton.setAttribute("tabindex", tabIndex++);
-          console.log("Explore more button found - tabindex:", tabIndex - 1);
+        if (mainElement) {
+          mainElement.setAttribute("tabindex", tabIndex++);
+          console.log(
+            `Nav item "${mainElement.textContent.trim()}" - tabindex ${
+              tabIndex - 1
+            }`
+          );
         }
-      }
+
+        // If it's the "Explore more" item with a button
+        const menuButton = item.querySelector(".Navigation__button");
+        if (menuButton) {
+          menuButton.setAttribute("tabindex", tabIndex++);
+          console.log("Explore more button - tabindex:", tabIndex - 1);
+        }
+
+        // Check for visible submenus
+        const subMenu = item.querySelector(".Navigation__subMenu");
+        if (subMenu && this.isVisible(subMenu)) {
+          const subLinks = subMenu.querySelectorAll("a");
+          subLinks.forEach((link) => {
+            link.setAttribute("tabindex", tabIndex++);
+            console.log(
+              `  Submenu: "${link.textContent.trim()}" - tabindex ${
+                tabIndex - 1
+              }`
+            );
+          });
+        }
+
+        // Check for visible custom dropdown
+        const customDropdown = item.querySelector(".custom-dropdown");
+        if (customDropdown && this.isVisible(customDropdown)) {
+          const dropdownDivs = customDropdown.querySelectorAll("div");
+          dropdownDivs.forEach((div) => {
+            div.setAttribute("tabindex", tabIndex++);
+            console.log(
+              `  Dropdown: "${div.textContent.trim()}" - tabindex ${
+                tabIndex - 1
+              }`
+            );
+          });
+        }
+      });
     }
 
     // 3. Ceremony buttons
-    console.log("Looking for ceremony buttons...");
     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
-    console.log("Found ceremony buttons:", ceremonyButtons.length);
     ceremonyButtons.forEach((button, i) => {
       button.setAttribute("tabindex", tabIndex++);
-      console.log(`Ceremony button ${i}: tabindex ${tabIndex - 1}`);
+      console.log(`Ceremony button ${i} - tabindex ${tabIndex - 1}`);
     });
 
-    // Log all tabbable elements
-    const allTabbable = document.querySelectorAll(
+    // 4. Content in expanded ceremony sections
+    const showingSections = document.querySelectorAll(".showing");
+    showingSections.forEach((section) => {
+      const interactiveElements = section.querySelectorAll(
+        "a, button, input, select, textarea"
+      );
+      interactiveElements.forEach((el) => {
+        if (this.isVisible(el) && !el.hasAttribute("tabindex")) {
+          el.setAttribute("tabindex", tabIndex++);
+          console.log(
+            `Ceremony content: "${
+              el.textContent?.trim() || el.type
+            }" - tabindex ${tabIndex - 1}`
+          );
+        }
+      });
+    });
+
+    const totalTabbable = document.querySelectorAll(
       '[tabindex]:not([tabindex="-1"])'
+    ).length;
+    console.log("Total tabbable elements:", totalTabbable);
+  }
+
+  isVisible(element) {
+    if (!element) return false;
+    const style = window.getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      element.offsetWidth > 0 &&
+      element.offsetHeight > 0
     );
-    console.log("Total tabbable elements:", allTabbable.length);
   }
 
   handleTab(e) {
     if (e.key !== "Tab") return;
 
-    // Get all tabbable elements
     const tabbables = Array.from(
       document.querySelectorAll('[tabindex]:not([tabindex="-1"])')
-    ).sort((a, b) => {
-      return (
+    ).sort(
+      (a, b) =>
         parseInt(a.getAttribute("tabindex")) -
         parseInt(b.getAttribute("tabindex"))
-      );
-    });
+    );
 
     if (tabbables.length === 0) return;
 
@@ -697,27 +739,24 @@ class TabOrderManager {
     const currentFocus = document.activeElement;
     let currentIndex = tabbables.indexOf(currentFocus);
 
-    console.log(
-      "Current focus index:",
-      currentIndex,
-      "Total tabbables:",
-      tabbables.length
-    );
-
-    // Determine next index
-    let nextIndex;
-    if (e.shiftKey) {
-      nextIndex = currentIndex > 0 ? currentIndex - 1 : tabbables.length - 1;
-    } else {
-      nextIndex = currentIndex < tabbables.length - 1 ? currentIndex + 1 : 0;
+    // If nothing is focused, start at -1 so next will be 0
+    if (currentIndex === -1 && !e.shiftKey) {
+      currentIndex = -1;
+    } else if (currentIndex === -1 && e.shiftKey) {
+      currentIndex = tabbables.length;
     }
 
-    console.log("Moving to index:", nextIndex);
+    // Calculate next index
+    const nextIndex = e.shiftKey
+      ? (currentIndex - 1 + tabbables.length) % tabbables.length
+      : (currentIndex + 1) % tabbables.length;
+
+    console.log(`Tab: current ${currentIndex} → next ${nextIndex}`);
 
     // Focus next element
     tabbables[nextIndex].focus();
 
-    // Scroll into view if needed
+    // Ensure it's visible
     tabbables[nextIndex].scrollIntoView({
       behavior: "smooth",
       block: "nearest",
@@ -734,3 +773,32 @@ if (document.readyState === "loading") {
 } else {
   window.tabOrderManager = new TabOrderManager();
 }
+
+// ESC key handling for dropdowns
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    // Close custom dropdowns
+    const customDropdowns = document.querySelectorAll(
+      '.custom-dropdown[style*="display: block"]'
+    );
+    customDropdowns.forEach((dropdown) => {
+      dropdown.style.display = "none";
+      // Focus the parent link
+      const parentLink = dropdown.previousElementSibling;
+      if (parentLink) parentLink.focus();
+    });
+
+    // Close navigation submenus
+    const openButtons = document.querySelectorAll(
+      '.Navigation__button[aria-expanded="true"]'
+    );
+    openButtons.forEach((button) => {
+      button.setAttribute("aria-expanded", "false");
+      const subMenu = button.nextElementSibling;
+      if (subMenu) subMenu.style.display = "none";
+      // Focus the span before the button
+      const span = button.previousElementSibling;
+      if (span) span.focus();
+    });
+  }
+});
