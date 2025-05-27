@@ -657,8 +657,6 @@ class TabOrderManager {
       }
     });
 
-    newNavs.push(memory);
-
     newNavs.forEach((link) => {
       link.setAttribute("tabindex", String(tabIndex++));
       console.log(
@@ -681,6 +679,8 @@ class TabOrderManager {
         console.log(`Explore more button - tabindex ${tabIndex - 1}`);
       }
     }
+
+    memory.setAttribute("tabindex", String(tabIndex++));
 
     // 4. Ceremony buttons
     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
