@@ -600,7 +600,19 @@ class TabOrderManager {
       }
        
       *:focus-visible {
-        box-shadow: 0 0 0 2px #aedeff inset, 0 0 0 4px #0262B1 inset;
+        box-shadow: 0 0 0 2px #aedeff inset, 0 0 0 4px #0262B1 inset !important;
+        outline: none !important;
+        border-radius: 4px;
+      }
+      
+      /* More specific selectors to ensure our styles win */
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      [tabindex]:focus-visible {
+        box-shadow: 0 0 0 2px #aedeff inset, 0 0 0 4px #0262B1 inset !important;
         outline: none !important;
       }
     `;
@@ -630,6 +642,7 @@ class TabOrderManager {
     const allNavLinks = document.querySelectorAll(
       "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
     );
+
     console.log(`Found ${allNavLinks.length} nav links`);
     allNavLinks.forEach((link) => {
       link.setAttribute("tabindex", String(tabIndex++));
