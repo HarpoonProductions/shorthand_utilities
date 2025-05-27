@@ -563,7 +563,6 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollToAndHighlightText(decodeURIComponent(studentName));
   }
 });
-
 // Simplified Tab Order Manager - Let browser handle tabbing
 class TabOrderManager {
   constructor() {
@@ -638,20 +637,45 @@ class TabOrderManager {
       console.log("Logo set to tabindex: 1");
     }
 
-    // 2. Try to find ALL navigation links directly
-    const allNavLinks = document.querySelectorAll(
-      "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
+    // 2. Navigation items in specific order
+    // First: Graduation Days 2025
+    const gradLink = document.querySelector(
+      '#navigation a[href="index.html"], nav a[href="index.html"]'
     );
-
-    console.log(`Found ${allNavLinks.length} nav links`);
-    allNavLinks.forEach((link) => {
-      link.setAttribute("tabindex", String(tabIndex++));
+    if (gradLink) {
+      gradLink.setAttribute("tabindex", String(tabIndex++));
       console.log(
-        `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+        `Nav link "${gradLink.textContent.trim()}" - tabindex ${tabIndex - 1}`
       );
-    });
+    }
 
-    // 3. Find Explore more span separately
+    // Second: Ceremony guides
+    const ceremonyLink = document.querySelector(
+      '#navigation a[href*="ceremony-guides"], #navigation a[href*="#ceremonies"], nav a[href*="ceremony-guides"], nav a[href*="#ceremonies"]'
+    );
+    if (ceremonyLink) {
+      ceremonyLink.setAttribute("tabindex", String(tabIndex++));
+      console.log(
+        `Nav link "${ceremonyLink.textContent.trim()}" - tabindex ${
+          tabIndex - 1
+        }`
+      );
+    }
+
+    // Third: Memories of Graduation Days 2025
+    const memoriesLink = document.querySelector(
+      '#navigation a[href*="memories-of-graduation-days-2025"], nav a[href*="memories-of-graduation-days-2025"]'
+    );
+    if (memoriesLink) {
+      memoriesLink.setAttribute("tabindex", String(tabIndex++));
+      console.log(
+        `Nav link "${memoriesLink.textContent.trim()}" - tabindex ${
+          tabIndex - 1
+        }`
+      );
+    }
+
+    // Fourth: Explore more span and button
     const exploreSpan = document.querySelector(
       "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
     );
@@ -667,7 +691,7 @@ class TabOrderManager {
       }
     }
 
-    // 4. Ceremony buttons
+    // 3. Ceremony buttons
     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
     console.log(`Found ${ceremonyButtons.length} ceremony buttons`);
     ceremonyButtons.forEach((button, i) => {
@@ -675,7 +699,7 @@ class TabOrderManager {
       console.log(`Ceremony button ${i} - tabindex ${tabIndex - 1}`);
     });
 
-    // 5. Content in expanded ceremony sections
+    // 4. Content in expanded ceremony sections
     const showingSections = document.querySelectorAll(".showing");
     showingSections.forEach((section) => {
       const links = section.querySelectorAll("a[href]");
