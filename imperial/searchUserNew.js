@@ -996,3 +996,195 @@ document.addEventListener("click", (e) => {
     }, 300);
   }
 });
+
+// Simplified Tab Order Manager for Imperial Graduation Page
+class TabOrderManager {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    // Add Imperial focus styles
+    this.addFocusStyles();
+
+    // Set up custom tab handling
+    document.addEventListener("keydown", this.handleTab.bind(this));
+
+    // Refresh tab order when ceremony sections are toggled
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".time-toggle")) {
+        setTimeout(() => this.updateTabOrder(), 350);
+      }
+    });
+
+    // Initial tab order setup
+    this.updateTabOrder();
+  }
+
+  addFocusStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
+      *:focus {
+        outline: none !important;
+      }
+       
+      *:focus-visible {
+        box-shadow: 0 0 0 2px #aedeff inset, 0 0 0 4px #0262B1 inset;
+        outline: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  updateTabOrder() {
+    // Remove all tabindex attributes
+    document.querySelectorAll("[tabindex]").forEach((el) => {
+      el.removeAttribute("tabindex");
+    });
+
+    let tabIndex = 0;
+
+    // 1. Imperial Logo
+    const logo = document.querySelector(".Theme-Logo a");
+    if (logo) {
+      logo.setAttribute("tabindex", tabIndex++);
+    }
+
+    // 2. Navigation items
+    const navItems = document.querySelectorAll(
+      ".Navigation__itemList > .Navigation__item"
+    );
+    navItems.forEach((item) => {
+      // Main nav link/span
+      const mainLink = item.querySelector("a, span.Theme-NavigationLink");
+      if (mainLink) {
+        mainLink.setAttribute("tabindex", tabIndex++);
+      }
+
+      // Dropdown button (for Explore more)
+      const dropdownBtn = item.querySelector(".Navigation__button");
+      if (dropdownBtn) {
+        dropdownBtn.setAttribute("tabindex", tabIndex++);
+      }
+
+      // Submenu items if visible
+      const subMenu = item.querySelector(".Navigation__subMenu");
+      if (subMenu && this.isVisible(subMenu)) {
+        const subLinks = subMenu.querySelectorAll("a");
+        subLinks.forEach((link) => {
+          link.setAttribute("tabindex", tabIndex++);
+        });
+      }
+
+      // Custom dropdown items if visible
+      const customDropdown = item.querySelector(".custom-dropdown");
+      if (customDropdown && this.isVisible(customDropdown)) {
+        const dropdownItems = customDropdown.querySelectorAll("div");
+        dropdownItems.forEach((div) => {
+          div.setAttribute("tabindex", tabIndex++);
+        });
+      }
+    });
+
+    // 3. Ceremony buttons
+    const ceremonyButtons = document.querySelectorAll(".time-toggle button");
+    ceremonyButtons.forEach((button) => {
+      button.setAttribute("tabindex", tabIndex++);
+    });
+
+    // 4. Content in expanded ceremony sections
+    const showingSections = document.querySelectorAll(".showing");
+    showingSections.forEach((section) => {
+      // Find all interactive elements within the showing section
+      const interactiveElements = section.querySelectorAll(
+        "a, button, input, select, textarea"
+      );
+      interactiveElements.forEach((el) => {
+        if (this.isVisible(el)) {
+          el.setAttribute("tabindex", tabIndex++);
+        }
+      });
+    });
+  }
+
+  isVisible(element) {
+    if (!element) return false;
+    const style = window.getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      element.offsetWidth > 0 &&
+      element.offsetHeight > 0
+    );
+  }
+
+  handleTab(e) {
+    if (e.key !== "Tab") return;
+
+    // Get all tabbable elements
+    const tabbables = Array.from(document.querySelectorAll("[tabindex]"))
+      .filter((el) => el.getAttribute("tabindex") !== "-1")
+      .sort((a, b) => {
+        return (
+          parseInt(a.getAttribute("tabindex")) -
+          parseInt(b.getAttribute("tabindex"))
+        );
+      });
+
+    if (tabbables.length === 0) return;
+
+    e.preventDefault();
+
+    const currentFocus = document.activeElement;
+    let currentIndex = tabbables.indexOf(currentFocus);
+
+    // Determine next index
+    let nextIndex;
+    if (e.shiftKey) {
+      nextIndex = currentIndex > 0 ? currentIndex - 1 : tabbables.length - 1;
+    } else {
+      nextIndex = currentIndex < tabbables.length - 1 ? currentIndex + 1 : 0;
+    }
+
+    // Focus next element
+    tabbables[nextIndex].focus();
+
+    // Scroll into view if needed
+    tabbables[nextIndex].scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.tabOrderManager = new TabOrderManager();
+  });
+} else {
+  window.tabOrderManager = new TabOrderManager();
+}
+
+// Add ESC key handling for dropdowns
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    // Close custom dropdowns
+    const customDropdowns = document.querySelectorAll(
+      '.custom-dropdown[style*="display: block"]'
+    );
+    customDropdowns.forEach((dropdown) => {
+      dropdown.style.display = "none";
+    });
+
+    // Close navigation submenus
+    const openButtons = document.querySelectorAll(
+      '.Navigation__button[aria-expanded="true"]'
+    );
+    openButtons.forEach((button) => {
+      button.setAttribute("aria-expanded", "false");
+      button.click(); // Trigger any existing click handlers
+    });
+  }
+});
