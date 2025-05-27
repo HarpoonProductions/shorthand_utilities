@@ -643,8 +643,23 @@ class TabOrderManager {
       "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
     );
 
-    console.log(`Found ${allNavLinks.length} nav links`);
+    const newNavs = [];
+
+    let memory;
+
     allNavLinks.forEach((link) => {
+      if (
+        !link.getAttribute("href").includes("memories-of-graduation-days-2025")
+      ) {
+        newNavs.push(link);
+      } else {
+        memory = link;
+      }
+    });
+
+    newNavs.push(memory);
+
+    newNavs.forEach((link) => {
       link.setAttribute("tabindex", String(tabIndex++));
       console.log(
         `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
