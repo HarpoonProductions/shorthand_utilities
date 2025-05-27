@@ -564,7 +564,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Simplified Tab Order Manager for Imperial Graduation Page
+// Debug version - Tab Order Manager for Imperial Graduation Page
 class TabOrderManager {
   constructor() {
     this.init();
@@ -577,15 +577,15 @@ class TabOrderManager {
     // Set up custom tab handling
     document.addEventListener("keydown", this.handleTab.bind(this));
 
-    // Refresh tab order when ceremony sections are toggled
+    // Initial tab order setup
+    this.updateTabOrder();
+
+    // Refresh when ceremony sections are toggled
     document.addEventListener("click", (e) => {
       if (e.target.closest(".time-toggle")) {
         setTimeout(() => this.updateTabOrder(), 350);
       }
     });
-
-    // Initial tab order setup
-    this.updateTabOrder();
   }
 
   addFocusStyles() {
@@ -604,6 +604,8 @@ class TabOrderManager {
   }
 
   updateTabOrder() {
+    console.log("=== Updating tab order ===");
+
     // Remove all tabindex attributes
     document.querySelectorAll("[tabindex]").forEach((el) => {
       el.removeAttribute("tabindex");
@@ -615,88 +617,78 @@ class TabOrderManager {
     const logo = document.querySelector(".Theme-Logo a");
     if (logo) {
       logo.setAttribute("tabindex", tabIndex++);
+      console.log("Logo found and set to tabindex:", tabIndex - 1);
+    } else {
+      console.log("Logo NOT found");
     }
 
-    // 2. Navigation items
-    const navItems = document.querySelectorAll(
-      ".Navigation__itemList > .Navigation__item"
+    // 2. Try different selectors for nav items
+    console.log("Looking for nav items...");
+
+    // Method 1: Direct nav links
+    const navLinks = document.querySelectorAll(
+      ".Navigation a.Theme-NavigationLink"
     );
-    navItems.forEach((item) => {
-      // Main nav link/span
-      const mainLink = item.querySelector("a, span.Theme-NavigationLink");
-      if (mainLink) {
-        mainLink.setAttribute("tabindex", tabIndex++);
-      }
-
-      // Dropdown button (for Explore more)
-      const dropdownBtn = item.querySelector(".Navigation__button");
-      if (dropdownBtn) {
-        dropdownBtn.setAttribute("tabindex", tabIndex++);
-      }
-
-      // Submenu items if visible
-      const subMenu = item.querySelector(".Navigation__subMenu");
-      if (subMenu && this.isVisible(subMenu)) {
-        const subLinks = subMenu.querySelectorAll("a");
-        subLinks.forEach((link) => {
-          link.setAttribute("tabindex", tabIndex++);
-        });
-      }
-
-      // Custom dropdown items if visible
-      const customDropdown = item.querySelector(".custom-dropdown");
-      if (customDropdown && this.isVisible(customDropdown)) {
-        const dropdownItems = customDropdown.querySelectorAll("div");
-        dropdownItems.forEach((div) => {
-          div.setAttribute("tabindex", tabIndex++);
-        });
-      }
+    console.log("Found nav links (method 1):", navLinks.length);
+    navLinks.forEach((link, i) => {
+      link.setAttribute("tabindex", tabIndex++);
+      console.log(
+        `Nav link ${i}: "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+      );
     });
+
+    // Method 2: Look for the specific nav structure
+    const navigation = document.querySelector(".Navigation");
+    if (navigation) {
+      console.log("Navigation element found");
+
+      // Also try the Explore more span
+      const exploreMoreSpan = Array.from(
+        navigation.querySelectorAll("span.Theme-NavigationLink")
+      ).find((span) => span.textContent.trim() === "Explore more");
+      if (exploreMoreSpan) {
+        exploreMoreSpan.setAttribute("tabindex", tabIndex++);
+        console.log("Explore more span found - tabindex:", tabIndex - 1);
+
+        // And its button
+        const exploreButton = exploreMoreSpan.parentElement.querySelector(
+          ".Navigation__button"
+        );
+        if (exploreButton) {
+          exploreButton.setAttribute("tabindex", tabIndex++);
+          console.log("Explore more button found - tabindex:", tabIndex - 1);
+        }
+      }
+    }
 
     // 3. Ceremony buttons
+    console.log("Looking for ceremony buttons...");
     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
-    ceremonyButtons.forEach((button) => {
+    console.log("Found ceremony buttons:", ceremonyButtons.length);
+    ceremonyButtons.forEach((button, i) => {
       button.setAttribute("tabindex", tabIndex++);
+      console.log(`Ceremony button ${i}: tabindex ${tabIndex - 1}`);
     });
 
-    // 4. Content in expanded ceremony sections
-    const showingSections = document.querySelectorAll(".showing");
-    showingSections.forEach((section) => {
-      // Find all interactive elements within the showing section
-      const interactiveElements = section.querySelectorAll(
-        "a, button, input, select, textarea"
-      );
-      interactiveElements.forEach((el) => {
-        if (this.isVisible(el)) {
-          el.setAttribute("tabindex", tabIndex++);
-        }
-      });
-    });
-  }
-
-  isVisible(element) {
-    if (!element) return false;
-    const style = window.getComputedStyle(element);
-    return (
-      style.display !== "none" &&
-      style.visibility !== "hidden" &&
-      element.offsetWidth > 0 &&
-      element.offsetHeight > 0
+    // Log all tabbable elements
+    const allTabbable = document.querySelectorAll(
+      '[tabindex]:not([tabindex="-1"])'
     );
+    console.log("Total tabbable elements:", allTabbable.length);
   }
 
   handleTab(e) {
     if (e.key !== "Tab") return;
 
     // Get all tabbable elements
-    const tabbables = Array.from(document.querySelectorAll("[tabindex]"))
-      .filter((el) => el.getAttribute("tabindex") !== "-1")
-      .sort((a, b) => {
-        return (
-          parseInt(a.getAttribute("tabindex")) -
-          parseInt(b.getAttribute("tabindex"))
-        );
-      });
+    const tabbables = Array.from(
+      document.querySelectorAll('[tabindex]:not([tabindex="-1"])')
+    ).sort((a, b) => {
+      return (
+        parseInt(a.getAttribute("tabindex")) -
+        parseInt(b.getAttribute("tabindex"))
+      );
+    });
 
     if (tabbables.length === 0) return;
 
@@ -705,6 +697,13 @@ class TabOrderManager {
     const currentFocus = document.activeElement;
     let currentIndex = tabbables.indexOf(currentFocus);
 
+    console.log(
+      "Current focus index:",
+      currentIndex,
+      "Total tabbables:",
+      tabbables.length
+    );
+
     // Determine next index
     let nextIndex;
     if (e.shiftKey) {
@@ -712,6 +711,8 @@ class TabOrderManager {
     } else {
       nextIndex = currentIndex < tabbables.length - 1 ? currentIndex + 1 : 0;
     }
+
+    console.log("Moving to index:", nextIndex);
 
     // Focus next element
     tabbables[nextIndex].focus();
@@ -733,25 +734,3 @@ if (document.readyState === "loading") {
 } else {
   window.tabOrderManager = new TabOrderManager();
 }
-
-// Add ESC key handling for dropdowns
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    // Close custom dropdowns
-    const customDropdowns = document.querySelectorAll(
-      '.custom-dropdown[style*="display: block"]'
-    );
-    customDropdowns.forEach((dropdown) => {
-      dropdown.style.display = "none";
-    });
-
-    // Close navigation submenus
-    const openButtons = document.querySelectorAll(
-      '.Navigation__button[aria-expanded="true"]'
-    );
-    openButtons.forEach((button) => {
-      button.setAttribute("aria-expanded", "false");
-      button.click(); // Trigger any existing click handlers
-    });
-  }
-});
