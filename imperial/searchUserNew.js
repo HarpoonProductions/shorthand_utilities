@@ -262,22 +262,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const ceremonyMappings = [
     {
       dropdownIndex: 0,
-      allowedPrefixes: ["section-1030"],
-      fadeOutSections: ["section-aIviY23ApG"], // Add specific fade-out sections if needed
-    },
-    {
-      dropdownIndex: 1,
       allowedPrefixes: ["section-1100"],
       fadeOutSections: ["section-aIviY23ApG"],
     },
     {
-      dropdownIndex: 2,
-      allowedPrefixes: ["section-1345"],
+      dropdownIndex: 1,
+      allowedPrefixes: ["section-1430"],
       fadeOutSections: ["section-aIviY23ApG"],
     },
     {
+      dropdownIndex: 2,
+      allowedPrefixes: ["section-1030"],
+      fadeOutSections: ["section-aIviY23ApG"], // Add specific fade-out sections if needed
+    },
+    {
       dropdownIndex: 3,
-      allowedPrefixes: ["section-1430"],
+      allowedPrefixes: ["section-1345"],
       fadeOutSections: ["section-aIviY23ApG"],
     },
     {
