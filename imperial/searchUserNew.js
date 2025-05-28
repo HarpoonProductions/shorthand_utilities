@@ -194,22 +194,22 @@ document.addEventListener("DOMContentLoaded", function () {
   var dropbtnStyle = document.createElement("style");
   dropbtnStyle.id = "dropbtnStyles";
   dropbtnStyle.textContent = `
-    .dropbtn {
+    .inner-dropdown .dropbtn {
       width: 100% !important;
       padding: 11px 21px !important;
       top: 111px !important;
     }
     
-    .dropdown-content {
+    .inner-dropdown .dropdown-content {
       top: 147px !important;
     }
     
     @media (max-width: 1099px) {
-      .dropbtn {
+      .inner-dropdown .dropbtn {
         top: 85px !important;
       }
       
-      .dropdown-content {
+      .inner-dropdown .dropdown-content {
         top: 130px !important;
       }
     }
