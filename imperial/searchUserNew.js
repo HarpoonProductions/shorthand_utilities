@@ -565,6 +565,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Simplified Tab Order Manager - Let browser handle tabbing
+/*
 class TabOrderManager {
   constructor() {
     this.init();
@@ -605,7 +606,6 @@ class TabOrderManager {
         border-radius: 4px;
       }
       
-      /* More specific selectors to ensure our styles win */
       a:focus-visible,
       button:focus-visible,
       input:focus-visible,
@@ -765,3 +765,4 @@ window.testFocus = function () {
     console.log("Active element after focus:", document.activeElement);
   }
 };
+*/
