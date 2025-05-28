@@ -176,8 +176,6 @@ if (targetNode) {
 // Optionally, disconnect the observer at some point using observer.disconnect();
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🚀 DOM Content Loaded - Starting script initialization");
-
   var style = document.createElement("style");
   style.id = "searchTitle";
   style.textContent = `
@@ -223,21 +221,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update Search Placeholder
   const projectInput = document.querySelector(".Theme-ProjectInput");
-  if (projectInput) {
-    projectInput.setAttribute("placeholder", "Search Name");
-    console.log("✅ Search placeholder updated");
-  } else {
-    console.warn("⚠️ Project input not found");
-  }
+  if (projectInput) projectInput.setAttribute("placeholder", "Search Name");
 
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
-  console.log(`📋 Found ${accordions.length} accordions`);
-
   accordions.forEach((accordion, index) => {
     accordion.classList.add("step-" + index);
     accordion.style.scrollMarginTop = "150px";
   });
+
+  const innerDropdowns = document.querySelectorAll(".inner-dropdown");
 
   // Create and insert sentry section before the target element
   function createSentrySection() {
@@ -256,9 +249,9 @@ document.addEventListener("DOMContentLoaded", function () {
       // Insert before the target element
       targetElement.parentNode.insertBefore(sentrySection, targetElement);
 
-      console.log("✅ Sentry section created and inserted");
+      console.log("Sentry section created and inserted");
     } else {
-      console.warn("⚠️ Target element section-tVbkG6IJAz not found");
+      console.warn("Target element section-tVbkG6IJAz not found");
     }
   }
 
@@ -294,111 +287,84 @@ document.addEventListener("DOMContentLoaded", function () {
     },
   ];
 
-  console.log("🎯 Ceremony mappings configured:", ceremonyMappings);
-
-  // FIXED: Setup individual intersection observers for each inner dropdown
+  // Setup individual intersection observers for each inner dropdown
   function setupIndividualDropdownObservers() {
-    console.log("🔧 Setting up dropdown observers...");
+    const sections = document.querySelectorAll(".Theme-Section");
 
-    // Wait a bit for all elements to be in the DOM
-    setTimeout(() => {
-      const innerDropdowns = document.querySelectorAll(".inner-dropdown");
-      const sections = document.querySelectorAll(".Theme-Section");
+    ceremonyMappings.forEach((ceremony) => {
+      const dropdown = innerDropdowns[ceremony.dropdownIndex];
+      if (!dropdown) return;
 
-      console.log(
-        `📊 Found ${innerDropdowns.length} dropdowns and ${sections.length} sections`
-      );
+      // Style the dropdown for fixed positioning
+      dropdown.style.position = "fixed";
+      dropdown.style.top = "20px";
+      dropdown.style.right = "20px";
+      dropdown.style.zIndex = "1000";
+      dropdown.style.transition = "opacity 0.3s ease, pointer-events 0.3s ease";
+      dropdown.style.opacity = "0";
+      dropdown.style.pointerEvents = "none";
+      dropdown.style.display = "flex";
 
-      // Debug: log all dropdown elements
-      innerDropdowns.forEach((dropdown, index) => {
-        console.log(`🔻 Dropdown ${index}:`, dropdown);
-      });
-
-      if (innerDropdowns.length < 5) {
-        console.error(
-          `❌ Expected 5 dropdowns, found ${innerDropdowns.length}`
-        );
-        // Let's debug what dropdowns we have
-        console.log(
-          "🔍 All elements with 'dropdown' in class:",
-          document.querySelectorAll('[class*="dropdown"]')
-        );
-        return;
-      }
-
-      // Style all dropdowns initially
-      innerDropdowns.forEach((dropdown, index) => {
-        dropdown.style.position = "fixed";
-        dropdown.style.top = "20px";
-        dropdown.style.right = "20px";
-        dropdown.style.zIndex = "1000";
-        dropdown.style.transition =
-          "opacity 0.3s ease, pointer-events 0.3s ease";
-        dropdown.style.opacity = "0";
-        dropdown.style.pointerEvents = "none";
-        dropdown.style.display = "flex";
-        console.log(`✅ Styled dropdown ${index}`);
-      });
-
-      // Create a single observer that handles all dropdowns
       const observer = new IntersectionObserver(
         (entries) => {
-          // Get all currently intersecting sections
-          const intersectingSections = entries
-            .filter((entry) => entry.isIntersecting)
-            .map((entry) => entry.target.id)
-            .filter((id) => id); // Remove empty IDs
+          // Check if any fade-out section is in view
+          const fadeOutSection = entries.find(
+            (entry) =>
+              entry.isIntersecting &&
+              ceremony.fadeOutSections.includes(entry.target.id)
+          );
 
-          if (intersectingSections.length > 0) {
-            console.log("👁️ Intersecting sections:", intersectingSections);
+          if (fadeOutSection) {
+            console.log(
+              `🔴 Dropdown ${ceremony.dropdownIndex} hidden by section: ${fadeOutSection.target.id}`
+            );
+            dropdown.style.opacity = "0";
+            dropdown.style.pointerEvents = "none";
+            return;
           }
 
-          // Update each dropdown based on current intersecting sections
-          ceremonyMappings.forEach((ceremony) => {
-            const dropdown = innerDropdowns[ceremony.dropdownIndex];
-            if (!dropdown) {
-              console.warn(`⚠️ Dropdown ${ceremony.dropdownIndex} not found`);
-              return;
-            }
-
-            // Check if fade-out section is visible
-            const shouldFadeOut = intersectingSections.some((sectionId) =>
-              ceremony.fadeOutSections.includes(sectionId)
-            );
-
-            if (shouldFadeOut) {
-              console.log(
-                `🔴 Dropdown ${ceremony.dropdownIndex} hidden by fade-out section`
+          // Check if any currently intersecting section has an allowed ID prefix
+          let triggeringSection = null;
+          const hasAllowedSection = entries.some((entry) => {
+            if (entry.isIntersecting && entry.target.id) {
+              const isAllowed = ceremony.allowedPrefixes.some((prefix) =>
+                entry.target.id.startsWith(prefix)
               );
-              dropdown.style.opacity = "0";
-              dropdown.style.pointerEvents = "none";
-              return;
+              if (isAllowed) {
+                triggeringSection = entry.target.id;
+              }
+              return isAllowed;
             }
-
-            // Check if any allowed section is visible
-            const shouldShow = intersectingSections.some((sectionId) =>
-              ceremony.allowedPrefixes.some((prefix) =>
-                sectionId.startsWith(prefix)
-              )
-            );
-
-            if (shouldShow) {
-              const triggeringSection = intersectingSections.find((sectionId) =>
-                ceremony.allowedPrefixes.some((prefix) =>
-                  sectionId.startsWith(prefix)
-                )
-              );
-              console.log(
-                `🟢 Dropdown ${ceremony.dropdownIndex} triggered by section: ${triggeringSection}`
-              );
-              dropdown.style.opacity = "1";
-              dropdown.style.pointerEvents = "auto";
-            } else {
-              // If no allowed sections are intersecting, hide dropdown
-              dropdown.style.opacity = "0";
-              dropdown.style.pointerEvents = "none";
-            }
+            return false;
           });
+
+          // Update dropdown visibility based on current sections
+          if (hasAllowedSection) {
+            console.log(
+              `🟢 Dropdown ${ceremony.dropdownIndex} triggered by section: ${triggeringSection}`
+            );
+            dropdown.style.opacity = "1";
+            dropdown.style.pointerEvents = "auto";
+          } else {
+            // Check if any allowed sections are currently in viewport
+            const allowedSectionsInView = Array.from(sections).some(
+              (section) => {
+                if (!section.id) return false;
+                const hasAllowedId = ceremony.allowedPrefixes.some((prefix) =>
+                  section.id.startsWith(prefix)
+                );
+                if (!hasAllowedId) return false;
+
+                const rect = section.getBoundingClientRect();
+                return rect.top < window.innerHeight && rect.bottom > 0;
+              }
+            );
+
+            if (!allowedSectionsInView) {
+              dropdown.style.opacity = "0";
+              dropdown.style.pointerEvents = "none";
+            }
+          }
         },
         {
           threshold: 0.1,
@@ -406,62 +372,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       );
 
-      // Observe all sections with the single observer
+      // Observe all sections
       sections.forEach((section) => {
         observer.observe(section);
       });
-
-      console.log("✅ Dropdown observers setup complete");
-    }, 500); // Wait 500ms for DOM to settle
+    });
   }
 
-  // Alternative: If the timing issue persists, you can also try this more robust approach:
-  function setupDropdownObserversWithRetry() {
-    console.log("🔄 Starting dropdown observer setup with retry mechanism");
-    let attempts = 0;
-    const maxAttempts = 10;
-
-    function trySetup() {
-      const innerDropdowns = document.querySelectorAll(".inner-dropdown");
-
-      console.log(
-        `🔍 Attempt ${attempts + 1}: Found ${innerDropdowns.length} dropdowns`
-      );
-
-      if (innerDropdowns.length >= 5) {
-        console.log("✅ All dropdowns found, setting up observers");
-        setupIndividualDropdownObservers();
-      } else if (attempts < maxAttempts) {
-        attempts++;
-        console.log(
-          `⏳ Only found ${innerDropdowns.length} dropdowns, retrying in 200ms...`
-        );
-        setTimeout(trySetup, 200);
-      } else {
-        console.error("❌ Failed to find all dropdowns after maximum attempts");
-        console.log(
-          "🔍 Available dropdowns:",
-          document.querySelectorAll('[class*="dropdown"]')
-        );
-      }
-    }
-
-    trySetup();
-  }
-
-  // Debug: Let's see what dropdowns are available right now
-  setTimeout(() => {
-    const allDropdowns = document.querySelectorAll('[class*="dropdown"]');
-    const innerDropdowns = document.querySelectorAll(".inner-dropdown");
-    console.log("🔍 DEBUG - All dropdown elements:", allDropdowns);
-    console.log("🔍 DEBUG - Inner dropdown elements:", innerDropdowns);
-    allDropdowns.forEach((el, i) =>
-      console.log(`🔍 Dropdown ${i} classes:`, el.className)
-    );
-  }, 100);
-
-  // Initialize dropdown observers with retry mechanism
-  setupDropdownObserversWithRetry();
+  // Initialize individual dropdown observers
+  setupIndividualDropdownObservers();
 
   function toggleAccordion(clickedAccordion) {
     const content = clickedAccordion.nextElementSibling;
@@ -495,22 +414,20 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function scrollToAndHighlightText(t) {
-    console.log("🔍 Searching for:", t);
+    console.log(t);
     const text = toTitleCase(t);
-    console.log("🔍 Converted to title case:", text);
+    console.log(text);
     const containers = document.querySelectorAll(
       ".sh-names, .sh-prizewinnernames"
     );
     if (!containers.length) {
-      console.error("❌ Container .sh-names not found.");
+      console.error("Container .sh-names not found.");
       return;
     }
 
-    console.log(`📋 Found ${containers.length} containers to search`);
     let matches = [];
 
-    containers.forEach((container, containerIndex) => {
-      console.log(`🔍 Searching container ${containerIndex}:`, container);
+    containers.forEach((container) => {
       let updates = []; // To store updates for later application
       const walker = document.createTreeWalker(
         container,
@@ -523,7 +440,6 @@ document.addEventListener("DOMContentLoaded", function () {
       while ((node = walker.nextNode())) {
         let textContent = node.nodeValue;
         if (textContent.toLowerCase().includes(text.toLowerCase())) {
-          console.log("✅ Found match in text:", textContent);
           const frag = document.createDocumentFragment();
           const match = extractMatch(textContent, text);
           const parts = textContent.split(match.length ? match : text);
@@ -547,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      console.log("📝 Updates for container:", updates.length);
+      console.log("TESTING UPDATES", updates);
 
       // Apply all collected updates
       updates.forEach((update) => {
@@ -577,13 +493,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const id = container.getAttribute("id");
         const day = id.match(/^[^-]+-\d{4}/);
 
-        console.log("🗓️ Processing day section:", id, day);
+        console.log("testing new", id, day);
 
         if (day && day[0]) {
           const daySection = document.querySelectorAll("[id^=" + day + "]");
-          console.log("📅 Found day sections:", daySection.length);
+          console.log("testing new", day, day[0]);
           if (daySection && daySection.length) {
             daySection.forEach((section) => section.classList.add("showing"));
+            console.log("testing new", daySection);
 
             daySection.forEach((section) => {
               const sec = section.querySelector(
@@ -593,20 +510,20 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const dayBar = daySection[0].querySelector(".floating-day-bar");
-            console.log("📊 Day bar found:", !!dayBar);
+
+            console.log("testing new", dayBar);
           }
         }
       });
     });
 
-    console.log(`🎯 Total matches found: ${matches.length}`);
     if (matches.length > 0) {
       scrollToMatch(matches);
     }
   }
 
   function scrollToMatch(matches, yOffset = -300) {
-    console.log("📜 Starting scroll to matches:", matches.length);
+    console.log("scrolling", matches);
     let current = 0;
 
     const scroll = () => {
@@ -617,15 +534,11 @@ document.addEventListener("DOMContentLoaded", function () {
           yOffset;
         if (window.pageYOffset > 0 || yPosition > 0) {
           // Check if the page has likely scrolled or can scroll
-          console.log(
-            `📜 Scrolling to match ${current + 1} of ${matches.length}`
-          );
           window.scrollTo({ top: yPosition, behavior: "smooth" });
           current = (current + 1) % matches.length;
           matches.length > 1 &&
             updateResultButtonText(current || matches.length, matches.length);
         } else {
-          console.log("⏳ Waiting for page to be ready for scroll...");
           setTimeout(attemptScroll, 120); // Wait a bit more if page offset is still 0
         }
       };
@@ -636,10 +549,9 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     if (matches.length > 1) {
-      console.log("🔘 Creating result button for multiple matches");
       createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
     } else {
-      console.log("✅ Only one match found, no need for result button.");
+      console.log("Only one match found, no need for result button.");
 
       var style = document.createElement("style");
       style.id = "closeResults";
@@ -667,17 +579,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const studentName = urlParams.get("student_name");
 
   if (studentName) {
-    console.log("🎯 Student name found in URL:", studentName);
     // Decode URI component in case the name is encoded
     scrollToAndHighlightText(decodeURIComponent(studentName));
-  } else {
-    console.log("ℹ️ No student name in URL parameters");
   }
-
-  console.log("🎉 Script initialization complete");
 });
-
-// -------- above
 
 function scrollToElementWithOffset(id) {
   console.log("scrolling");
