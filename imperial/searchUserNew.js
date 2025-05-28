@@ -322,15 +322,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Create mapping between accordion steps and section prefixes
-  const sectionMapping = {
-    0: "section-1100",
-    1: "section-1430",
-    2: "section-1030",
-    3: "section-1345",
-    4: "section-1645",
-  };
-
   function updateConsolidatedDropdown() {
     const openAccordions = Array.from(accordions).filter(
       (accordion) => accordion.nextElementSibling.style.display === "inline"
@@ -353,10 +344,22 @@ document.addEventListener("DOMContentLoaded", function () {
           links.forEach((link) => {
             const newLink = link.cloneNode(true);
 
+            // Extract the prefix from the onclick function
+            const onclickAttr = newLink.getAttribute("onclick");
+            let ceremonyPrefix = "default";
+
+            if (onclickAttr) {
+              // Extract the ID from scrollToElementWithOffset('1430dept1course1', 250)
+              const match = onclickAttr.match(
+                /scrollToElementWithOffset\('(\d+)/
+              );
+              if (match && match[1]) {
+                ceremonyPrefix = match[1]; // e.g., "1430"
+              }
+            }
+
             // Add class to associate link with its ceremony section
-            const sectionClass = `ceremony-${
-              sectionMapping[step] || "default"
-            }`.replace("section-", "");
+            const sectionClass = `ceremony-${ceremonyPrefix}`;
             newLink.classList.add("ceremony-link", sectionClass);
 
             // Initially hide all links
