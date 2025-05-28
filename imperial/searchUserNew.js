@@ -586,6 +586,51 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+function scrollToElementWithOffset(id) {
+  console.log("scrolling");
+  const element = document.getElementById(id);
+  console.log(element);
+
+  if (!element) {
+    console.error("Element not found:", id);
+    return;
+  }
+
+  // Find the closest panel ancestor
+  const panel = element.closest(".panel");
+  if (panel) {
+    // Check if the panel is hidden and show it if needed
+    if (panel.style.display !== "inline") {
+      console.log("Panel was hidden, showing it:", panel.id);
+      panel.style.display = "inline";
+    }
+  }
+
+  const elementPosition =
+    element.getBoundingClientRect().top + window.pageYOffset;
+  // Determine the offset based on screen width
+  let offset;
+  const screenWidth = window.innerWidth;
+  if (screenWidth <= 899) {
+    offset = 200;
+  } else if (screenWidth >= 900 && screenWidth <= 1099) {
+    offset = 200;
+  } else {
+    offset = 250;
+  }
+  console.log("Screen width:", screenWidth, "Offset:", offset);
+  const offsetPosition = elementPosition - offset;
+  console.log("Offset position:", offsetPosition);
+  window.scrollTo({
+    top: offsetPosition,
+    behavior: "smooth",
+  });
+}
+
+setTimeout(() => {
+  window.scrollToElementWithOffset = scrollToElementWithOffset;
+}, 500);
+
 // Simplified Tab Order Manager - Let browser handle tabbing
 class TabOrderManager {
   constructor() {
