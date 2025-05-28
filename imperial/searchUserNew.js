@@ -338,9 +338,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (openAccordions.length > 0) {
       consolidatedDropdown.innerHTML = `
-      <button class="dropbtn">Find a course:</button>
-      <div class="dropdown-content"></div>
-    `;
+        <button class="dropbtn">Find a course:</button>
+        <div class="dropdown-content"></div>
+      `;
       const dropdownContent =
         consolidatedDropdown.querySelector(".dropdown-content");
 
@@ -385,6 +385,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // Check if the fade-out section is in view first
+        const fadeOutSection = Array.from(sections).find((section) => {
+          if (section.id === "section-aIviY23ApG") {
+            const rect = section.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
+          }
+          return false;
+        });
+
+        if (fadeOutSection) {
+          // Hide entire dropdown when fade-out section is in view
+          console.log(`🔴 Dropdown hidden by fade-out section`);
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
+          return;
+        }
+
+        // Check ALL sections currently in viewport for each prefix
+        const visiblePrefixes = new Set();
+
+        // For each allowed prefix, check if ANY section with that prefix is visible
+        allowedSectionPrefixes.forEach((prefix) => {
+          const hasVisibleSection = Array.from(sections).some((section) => {
+            if (
+              !section.id ||
+              !section.id.startsWith(prefix) ||
+              section.id.includes("Imperial")
+            ) {
+              return false;
+            }
+
+            const rect = section.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+            return isVisible;
+          });
+
+          if (hasVisibleSection) {
+            visiblePrefixes.add(prefix);
+          }
+        });
+
         // Hide all ceremony links first
         const ceremonyLinks =
           consolidatedDropdown.querySelectorAll(".ceremony-link");
@@ -392,45 +434,13 @@ document.addEventListener("DOMContentLoaded", function () {
           link.style.display = "none";
         });
 
-        // Check if the fade-out section is in view
-        const fadeOutSection = entries.find(
-          (entry) =>
-            entry.isIntersecting && entry.target.id === "section-aIviY23ApG"
-        );
-
-        if (fadeOutSection) {
-          // Hide entire dropdown when fade-out section is in view
-          console.log(
-            `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`
-          );
-          consolidatedDropdown.style.opacity = "0";
-          consolidatedDropdown.style.pointerEvents = "none";
-          return;
-        }
-
-        // Check which allowed sections are currently intersecting
-        let currentSections = [];
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.target.id) {
-            const sectionId = entry.target.id;
-            allowedSectionPrefixes.forEach((prefix) => {
-              if (
-                sectionId.startsWith(prefix) &&
-                !sectionId.includes("Imperial")
-              ) {
-                currentSections.push(prefix);
-              }
-            });
-          }
-        });
-
-        if (currentSections.length > 0) {
+        if (visiblePrefixes.size > 0) {
           // Show dropdown and relevant links
           consolidatedDropdown.style.opacity = "1";
           consolidatedDropdown.style.pointerEvents = "auto";
 
-          // Show links for current sections
-          currentSections.forEach((sectionPrefix) => {
+          // Show links for visible section prefixes
+          visiblePrefixes.forEach((sectionPrefix) => {
             const sectionClass = `ceremony-${sectionPrefix.replace(
               "section-",
               ""
@@ -444,28 +454,14 @@ document.addEventListener("DOMContentLoaded", function () {
           });
 
           console.log(
-            `🟢 Dropdown showing links for sections: ${currentSections.join(
-              ", "
-            )}`
+            `🟢 Dropdown showing links for sections: ${Array.from(
+              visiblePrefixes
+            ).join(", ")}`
           );
         } else {
-          // Check if any allowed sections are currently in viewport
-          const allowedSectionsInView = Array.from(sections).some((section) => {
-            if (!section.id) return false;
-            const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
-              section.id.startsWith(prefix)
-            );
-            if (!hasAllowedId) return false;
-
-            const rect = section.getBoundingClientRect();
-            return rect.top < window.innerHeight && rect.bottom > 0;
-          });
-
-          if (!allowedSectionsInView) {
-            // Hide dropdown when not over any allowed section
-            consolidatedDropdown.style.opacity = "0";
-            consolidatedDropdown.style.pointerEvents = "none";
-          }
+          // Hide dropdown when not over any allowed section
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
         }
       },
       {
