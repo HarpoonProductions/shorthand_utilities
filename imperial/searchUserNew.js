@@ -258,7 +258,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Call this function to create the sentry section
   createSentrySection();
 
-  // Define ceremony time mappings - you'll need to adjust these based on your actual section IDs
+  // Define ceremony time mappings with correct dropdown indices
   const ceremonyMappings = [
     {
       dropdownIndex: 0,
@@ -273,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
     {
       dropdownIndex: 2,
       allowedPrefixes: ["section-1030"],
-      fadeOutSections: ["section-aIviY23ApG"], // Add specific fade-out sections if needed
+      fadeOutSections: ["section-aIviY23ApG"],
     },
     {
       dropdownIndex: 3,
@@ -292,89 +292,92 @@ document.addEventListener("DOMContentLoaded", function () {
     const sections = document.querySelectorAll(".Theme-Section");
 
     ceremonyMappings.forEach((ceremony) => {
-      const dropdown = innerDropdowns[ceremony.dropdownIndex];
-      if (!dropdown) return;
+      ceremony.dropdownIndices.forEach((dropdownIndex) => {
+        const dropdown = innerDropdowns[dropdownIndex];
+        if (!dropdown) return;
 
-      // Style the dropdown for fixed positioning
-      dropdown.style.position = "fixed";
-      dropdown.style.top = "20px";
-      dropdown.style.right = "20px";
-      dropdown.style.zIndex = "1000";
-      dropdown.style.transition = "opacity 0.3s ease, pointer-events 0.3s ease";
-      dropdown.style.opacity = "0";
-      dropdown.style.pointerEvents = "none";
-      dropdown.style.display = "flex";
+        // Style the dropdown for fixed positioning
+        dropdown.style.position = "fixed";
+        dropdown.style.top = "20px";
+        dropdown.style.right = "20px";
+        dropdown.style.zIndex = "1000";
+        dropdown.style.transition =
+          "opacity 0.3s ease, pointer-events 0.3s ease";
+        dropdown.style.opacity = "0";
+        dropdown.style.pointerEvents = "none";
+        dropdown.style.display = "flex";
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          // Check if any fade-out section is in view
-          const fadeOutSection = entries.find(
-            (entry) =>
-              entry.isIntersecting &&
-              ceremony.fadeOutSections.includes(entry.target.id)
-          );
-
-          if (fadeOutSection) {
-            console.log(
-              `🔴 Dropdown ${ceremony.dropdownIndex} hidden by section: ${fadeOutSection.target.id}`
+        const observer = new IntersectionObserver(
+          (entries) => {
+            // Check if any fade-out section is in view
+            const fadeOutSection = entries.find(
+              (entry) =>
+                entry.isIntersecting &&
+                ceremony.fadeOutSections.includes(entry.target.id)
             );
-            dropdown.style.opacity = "0";
-            dropdown.style.pointerEvents = "none";
-            return;
-          }
 
-          // Check if any currently intersecting section has an allowed ID prefix
-          let triggeringSection = null;
-          const hasAllowedSection = entries.some((entry) => {
-            if (entry.isIntersecting && entry.target.id) {
-              const isAllowed = ceremony.allowedPrefixes.some((prefix) =>
-                entry.target.id.startsWith(prefix)
+            if (fadeOutSection) {
+              console.log(
+                `🔴 Dropdown ${dropdownIndex} (${ceremony.ceremonyTime}) hidden by section: ${fadeOutSection.target.id}`
               );
-              if (isAllowed) {
-                triggeringSection = entry.target.id;
-              }
-              return isAllowed;
-            }
-            return false;
-          });
-
-          // Update dropdown visibility based on current sections
-          if (hasAllowedSection) {
-            console.log(
-              `🟢 Dropdown ${ceremony.dropdownIndex} triggered by section: ${triggeringSection}`
-            );
-            dropdown.style.opacity = "1";
-            dropdown.style.pointerEvents = "auto";
-          } else {
-            // Check if any allowed sections are currently in viewport
-            const allowedSectionsInView = Array.from(sections).some(
-              (section) => {
-                if (!section.id) return false;
-                const hasAllowedId = ceremony.allowedPrefixes.some((prefix) =>
-                  section.id.startsWith(prefix)
-                );
-                if (!hasAllowedId) return false;
-
-                const rect = section.getBoundingClientRect();
-                return rect.top < window.innerHeight && rect.bottom > 0;
-              }
-            );
-
-            if (!allowedSectionsInView) {
               dropdown.style.opacity = "0";
               dropdown.style.pointerEvents = "none";
+              return;
             }
-          }
-        },
-        {
-          threshold: 0.1,
-          rootMargin: "-100px 0px -50px 0px",
-        }
-      );
 
-      // Observe all sections
-      sections.forEach((section) => {
-        observer.observe(section);
+            // Check if any currently intersecting section has an allowed ID prefix
+            let triggeringSection = null;
+            const hasAllowedSection = entries.some((entry) => {
+              if (entry.isIntersecting && entry.target.id) {
+                const isAllowed = ceremony.allowedPrefixes.some((prefix) =>
+                  entry.target.id.startsWith(prefix)
+                );
+                if (isAllowed) {
+                  triggeringSection = entry.target.id;
+                }
+                return isAllowed;
+              }
+              return false;
+            });
+
+            // Update dropdown visibility based on current sections
+            if (hasAllowedSection) {
+              console.log(
+                `🟢 Dropdown ${dropdownIndex} (${ceremony.ceremonyTime}) triggered by section: ${triggeringSection}`
+              );
+              dropdown.style.opacity = "1";
+              dropdown.style.pointerEvents = "auto";
+            } else {
+              // Check if any allowed sections are currently in viewport
+              const allowedSectionsInView = Array.from(sections).some(
+                (section) => {
+                  if (!section.id) return false;
+                  const hasAllowedId = ceremony.allowedPrefixes.some((prefix) =>
+                    section.id.startsWith(prefix)
+                  );
+                  if (!hasAllowedId) return false;
+
+                  const rect = section.getBoundingClientRect();
+                  return rect.top < window.innerHeight && rect.bottom > 0;
+                }
+              );
+
+              if (!allowedSectionsInView) {
+                dropdown.style.opacity = "0";
+                dropdown.style.pointerEvents = "none";
+              }
+            }
+          },
+          {
+            threshold: 0.1,
+            rootMargin: "-100px 0px -50px 0px",
+          }
+        );
+
+        // Observe all sections
+        sections.forEach((section) => {
+          observer.observe(section);
+        });
       });
     });
   }
