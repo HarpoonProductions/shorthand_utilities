@@ -322,6 +322,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Create mapping between accordion steps and section prefixes
+  const sectionMapping = {
+    0: "section-1100",
+    1: "section-1430",
+    2: "section-1030",
+    3: "section-1345",
+    4: "section-1645",
+  };
+
   function updateConsolidatedDropdown() {
     const openAccordions = Array.from(accordions).filter(
       (accordion) => accordion.nextElementSibling.style.display === "inline"
@@ -329,31 +338,146 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (openAccordions.length > 0) {
       consolidatedDropdown.innerHTML = `
-        <button class="dropbtn">Find a course:</button>
-        <div class="dropdown-content"></div>
-      `;
+      <button class="dropbtn">Find a course:</button>
+      <div class="dropdown-content"></div>
+    `;
       const dropdownContent =
         consolidatedDropdown.querySelector(".dropdown-content");
 
       openAccordions.forEach((accordion, index) => {
         const step = accordion.className.replace(/[^\d]/g, "");
         const associatedDropdown = innerDropdowns[step];
+
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
           links.forEach((link) => {
             const newLink = link.cloneNode(true);
+
+            // Add class to associate link with its ceremony section
+            const sectionClass = `ceremony-${
+              sectionMapping[step] || "default"
+            }`.replace("section-", "");
+            newLink.classList.add("ceremony-link", sectionClass);
+
+            // Initially hide all links
+            newLink.style.display = "none";
+
             dropdownContent.appendChild(newLink);
           });
         }
       });
 
+      // Always show the dropdown when there are open accordions
       consolidatedDropdown.style.display = "flex";
+      consolidatedDropdown.style.opacity = "1";
+      consolidatedDropdown.style.pointerEvents = "auto";
 
       // Initialize the observer after the dropdown is shown
       setupDropdownVisibilityObserver();
     } else {
       consolidatedDropdown.style.display = "none";
     }
+  }
+
+  function setupDropdownVisibilityObserver() {
+    // Get all sections on the page
+    const sections = document.querySelectorAll(".Theme-Section");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Hide all ceremony links first
+        const ceremonyLinks =
+          consolidatedDropdown.querySelectorAll(".ceremony-link");
+        ceremonyLinks.forEach((link) => {
+          link.style.display = "none";
+        });
+
+        // Check if the fade-out section is in view
+        const fadeOutSection = entries.find(
+          (entry) =>
+            entry.isIntersecting && entry.target.id === "section-aIviY23ApG"
+        );
+
+        if (fadeOutSection) {
+          // Hide entire dropdown when fade-out section is in view
+          console.log(
+            `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`
+          );
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
+          return;
+        }
+
+        // Check which allowed sections are currently intersecting
+        let currentSections = [];
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.target.id) {
+            const sectionId = entry.target.id;
+            allowedSectionPrefixes.forEach((prefix) => {
+              if (
+                sectionId.startsWith(prefix) &&
+                !sectionId.includes("Imperial")
+              ) {
+                currentSections.push(prefix);
+              }
+            });
+          }
+        });
+
+        if (currentSections.length > 0) {
+          // Show dropdown and relevant links
+          consolidatedDropdown.style.opacity = "1";
+          consolidatedDropdown.style.pointerEvents = "auto";
+
+          // Show links for current sections
+          currentSections.forEach((sectionPrefix) => {
+            const sectionClass = `ceremony-${sectionPrefix.replace(
+              "section-",
+              ""
+            )}`;
+            const relevantLinks = consolidatedDropdown.querySelectorAll(
+              `.${sectionClass}`
+            );
+            relevantLinks.forEach((link) => {
+              link.style.display = "block";
+            });
+          });
+
+          console.log(
+            `🟢 Dropdown showing links for sections: ${currentSections.join(
+              ", "
+            )}`
+          );
+        } else {
+          // Check if any allowed sections are currently in viewport
+          const allowedSectionsInView = Array.from(sections).some((section) => {
+            if (!section.id) return false;
+            const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
+              section.id.startsWith(prefix)
+            );
+            if (!hasAllowedId) return false;
+
+            const rect = section.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
+          });
+
+          if (!allowedSectionsInView) {
+            // Hide dropdown when not over any allowed section
+            consolidatedDropdown.style.opacity = "0";
+            consolidatedDropdown.style.pointerEvents = "none";
+          }
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the section is visible
+        rootMargin: "-100px 0px -50px 0px",
+      }
+    );
+
+    // Observe all sections (including the new sentry section)
+    sections.forEach((section) => {
+      observer.observe(section);
+    });
   }
 
   function toggleAccordion(clickedAccordion) {
