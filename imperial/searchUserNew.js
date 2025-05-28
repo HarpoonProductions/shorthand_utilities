@@ -327,10 +327,8 @@ document.addEventListener("DOMContentLoaded", function () {
           let triggeringSection = null;
           const hasAllowedSection = entries.some((entry) => {
             if (entry.isIntersecting && entry.target.id) {
-              const isAllowed = ceremony.allowedPrefixes.some(
-                (prefix) =>
-                  entry.target.id.startsWith(prefix) &&
-                  !entry.target.id.includes("Imperial")
+              const isAllowed = ceremony.allowedPrefixes.some((prefix) =>
+                entry.target.id.startsWith(prefix)
               );
               if (isAllowed) {
                 triggeringSection = entry.target.id;
