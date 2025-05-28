@@ -291,6 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function setupIndividualDropdownObservers() {
     const sections = document.querySelectorAll(".Theme-Section");
 
+    console.log(ceremonyMappings, innerDropdowns);
     ceremonyMappings.forEach((ceremony) => {
       const dropdown = innerDropdowns[ceremony.dropdownIndex];
       if (!dropdown) return;
