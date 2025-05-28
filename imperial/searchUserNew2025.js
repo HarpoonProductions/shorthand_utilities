@@ -107,7 +107,6 @@ function createResultButton(current, total, callback) {
   // Append container to body
   document.body.appendChild(container);
 }
-
 function extractMatch(baseString, matchString) {
   // Escape special regex characters in the match string
   const escaped = matchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -200,8 +199,16 @@ document.addEventListener("DOMContentLoaded", function () {
     accordion.classList.add("step-" + index);
     accordion.style.scrollMarginTop = "150px";
   });
-
   const innerDropdowns = document.querySelectorAll(".inner-dropdown");
+
+  const consolidatedDropdown = document.createElement("div");
+  consolidatedDropdown.className = "consolidated-dropdown";
+  consolidatedDropdown.style.display = "none";
+  consolidatedDropdown.style.transition =
+    "opacity 0.3s ease, pointer-events 0.3s ease";
+  consolidatedDropdown.style.opacity = "1";
+  consolidatedDropdown.style.pointerEvents = "auto";
+  document.body.appendChild(consolidatedDropdown);
 
   // Create and insert sentry section before the target element
   function createSentrySection() {
@@ -229,131 +236,125 @@ document.addEventListener("DOMContentLoaded", function () {
   // Call this function to create the sentry section
   createSentrySection();
 
-  // Define ceremony time mappings - you'll need to adjust these based on your actual section IDs
-  const ceremonyMappings = [
-    {
-      dropdownIndex: 0,
-      allowedPrefixes: ["section-1030"],
-      fadeOutSections: ["section-aIviY23ApG"], // Add specific fade-out sections if needed
-    },
-    {
-      dropdownIndex: 1,
-      allowedPrefixes: ["section-1100"],
-      fadeOutSections: ["section-aIviY23ApG"],
-    },
-    {
-      dropdownIndex: 2,
-      allowedPrefixes: ["section-1345"],
-      fadeOutSections: ["section-aIviY23ApG"],
-    },
-    {
-      dropdownIndex: 3,
-      allowedPrefixes: ["section-1430"],
-      fadeOutSections: ["section-aIviY23ApG"],
-    },
-    {
-      dropdownIndex: 4,
-      allowedPrefixes: ["section-1645"],
-      fadeOutSections: ["section-aIviY23ApG"],
-    },
+  // Intersection Observer for dropdown visibility
+  const allowedSectionPrefixes = [
+    "section-1430",
+    "section-1100",
+    "section-1030",
+    "section-1345",
+    "section-1645",
   ];
 
-  // Setup individual intersection observers for each inner dropdown
-  function setupIndividualDropdownObservers() {
+  function setupDropdownVisibilityObserver() {
+    // Get all sections on the page
     const sections = document.querySelectorAll(".Theme-Section");
 
-    ceremonyMappings.forEach((ceremony) => {
-      const dropdown = innerDropdowns[ceremony.dropdownIndex];
-      if (!dropdown) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Check if the fade-out section is in view
+        const fadeOutSection = entries.find(
+          (entry) =>
+            entry.isIntersecting && entry.target.id === "section-aIviY23ApG"
+        );
 
-      // Style the dropdown for fixed positioning
-      dropdown.style.position = "fixed";
-      dropdown.style.top = "20px";
-      dropdown.style.right = "20px";
-      dropdown.style.zIndex = "1000";
-      dropdown.style.transition = "opacity 0.3s ease, pointer-events 0.3s ease";
-      dropdown.style.opacity = "0";
-      dropdown.style.pointerEvents = "none";
-      dropdown.style.display = "flex";
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          // Check if any fade-out section is in view
-          const fadeOutSection = entries.find(
-            (entry) =>
-              entry.isIntersecting &&
-              ceremony.fadeOutSections.includes(entry.target.id)
+        if (fadeOutSection) {
+          // Hide dropdown - fade-out section is in view
+          console.log(
+            `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`
           );
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
+          return; // Exit early, don't check for allowed sections
+        }
 
-          if (fadeOutSection) {
-            console.log(
-              `🔴 Dropdown ${ceremony.dropdownIndex} hidden by section: ${fadeOutSection.target.id}`
+        // Check if any currently intersecting section has an allowed ID prefix
+        let triggeringSection = null;
+        const hasAllowedSection = entries.some((entry) => {
+          if (entry.isIntersecting && entry.target.id) {
+            const isAllowed = allowedSectionPrefixes.some(
+              (prefix) =>
+                entry.target.id.startsWith(prefix) &&
+                !entry.target.id.includes("Imperial")
             );
-            dropdown.style.opacity = "0";
-            dropdown.style.pointerEvents = "none";
-            return;
-          }
-
-          // Check if any currently intersecting section has an allowed ID prefix
-          let triggeringSection = null;
-          const hasAllowedSection = entries.some((entry) => {
-            if (entry.isIntersecting && entry.target.id) {
-              const isAllowed = ceremony.allowedPrefixes.some(
-                (prefix) =>
-                  entry.target.id.startsWith(prefix) &&
-                  !entry.target.id.includes("Imperial")
-              );
-              if (isAllowed) {
-                triggeringSection = entry.target.id;
-              }
-              return isAllowed;
+            if (isAllowed) {
+              triggeringSection = entry.target.id;
             }
-            return false;
+            return isAllowed;
+          }
+          return false;
+        });
+
+        // Update dropdown visibility based on current sections
+        if (hasAllowedSection) {
+          // Show dropdown - over an allowed section
+          console.log(`🟢 Dropdown triggered by section: ${triggeringSection}`);
+          consolidatedDropdown.style.opacity = "1";
+          consolidatedDropdown.style.pointerEvents = "auto";
+        } else {
+          // Check if any allowed sections are currently in viewport
+          const allowedSectionsInView = Array.from(sections).some((section) => {
+            if (!section.id) return false;
+            const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
+              section.id.startsWith(prefix)
+            );
+            if (!hasAllowedId) return false;
+
+            const rect = section.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
           });
 
-          // Update dropdown visibility based on current sections
-          if (hasAllowedSection) {
-            console.log(
-              `🟢 Dropdown ${ceremony.dropdownIndex} triggered by section: ${triggeringSection}`
-            );
-            dropdown.style.opacity = "1";
-            dropdown.style.pointerEvents = "auto";
-          } else {
-            // Check if any allowed sections are currently in viewport
-            const allowedSectionsInView = Array.from(sections).some(
-              (section) => {
-                if (!section.id) return false;
-                const hasAllowedId = ceremony.allowedPrefixes.some((prefix) =>
-                  section.id.startsWith(prefix)
-                );
-                if (!hasAllowedId) return false;
-
-                const rect = section.getBoundingClientRect();
-                return rect.top < window.innerHeight && rect.bottom > 0;
-              }
-            );
-
-            if (!allowedSectionsInView) {
-              dropdown.style.opacity = "0";
-              dropdown.style.pointerEvents = "none";
-            }
+          if (!allowedSectionsInView) {
+            // Hide dropdown - not over any allowed section
+            consolidatedDropdown.style.opacity = "0";
+            consolidatedDropdown.style.pointerEvents = "none";
           }
-        },
-        {
-          threshold: 0.1,
-          rootMargin: "-100px 0px -50px 0px",
         }
-      );
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the section is visible
+        rootMargin: "-100px 0px -50px 0px",
+      }
+    );
 
-      // Observe all sections
-      sections.forEach((section) => {
-        observer.observe(section);
-      });
+    // Observe all sections (including the new sentry section)
+    sections.forEach((section) => {
+      observer.observe(section);
     });
   }
 
-  // Initialize individual dropdown observers
-  setupIndividualDropdownObservers();
+  function updateConsolidatedDropdown() {
+    const openAccordions = Array.from(accordions).filter(
+      (accordion) => accordion.nextElementSibling.style.display === "inline"
+    );
+
+    if (openAccordions.length > 0) {
+      consolidatedDropdown.innerHTML = `
+        <button class="dropbtn">Find a course:</button>
+        <div class="dropdown-content"></div>
+      `;
+      const dropdownContent =
+        consolidatedDropdown.querySelector(".dropdown-content");
+
+      openAccordions.forEach((accordion, index) => {
+        const step = accordion.className.replace(/[^\d]/g, "");
+        const associatedDropdown = innerDropdowns[step];
+        if (associatedDropdown) {
+          const links = associatedDropdown.querySelectorAll("a");
+          links.forEach((link) => {
+            const newLink = link.cloneNode(true);
+            dropdownContent.appendChild(newLink);
+          });
+        }
+      });
+
+      consolidatedDropdown.style.display = "flex";
+
+      // Initialize the observer after the dropdown is shown
+      setupDropdownVisibilityObserver();
+    } else {
+      consolidatedDropdown.style.display = "none";
+    }
+  }
 
   function toggleAccordion(clickedAccordion) {
     const content = clickedAccordion.nextElementSibling;
@@ -367,6 +368,7 @@ document.addEventListener("DOMContentLoaded", function () {
         inline: "start",
       });
     }
+    updateConsolidatedDropdown();
   }
 
   accordions.forEach((accordion) => {
@@ -489,6 +491,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
     });
+
+    if (accordions.length > 0) {
+      console.log("multi");
+      updateConsolidatedDropdown();
+    }
 
     if (matches.length > 0) {
       scrollToMatch(matches);
