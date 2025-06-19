@@ -2,9 +2,9 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag33/cavmag_logo_edition33.jpg";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_logo_2.jpg";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag33/cavmag_wide_edition33.jpg";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_wide.jpg";
 
   function extractLinks() {
     const links = [];

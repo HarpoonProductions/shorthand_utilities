@@ -1,10 +1,9 @@
-/* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag33/cavmag_logo_edition33.jpg";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_logo_2.jpg";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag33/cavmag_wide_edition33.jpg";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag_wide.jpg";
 
   function extractLinks() {
     const links = [];
@@ -25,15 +24,8 @@
           isCurrent = true;
         } else {
           const page = window.location.href.split("/")[4];
-          const hrefTest = "../../" + page + "/index.html";
+          const hrefTest = "../" + page + "/index.html";
           isCurrent = href === hrefTest;
-        }
-
-        if (!isCurrent) {
-          const pathname = window.location.pathname;
-          const clean = pathname.replace("/issue-32", "");
-          const check = new RegExp(clean, "gi");
-          isCurrent = clean !== "/index.html" && check.test(href);
         }
 
         links.push({
@@ -52,14 +44,11 @@
     dfs(rootUl);
 
     return links.map((link, i) => {
-      if (link.current) {
-        console.log("current link is", link.href);
-        currentPageIndex = i < links.length - 1 ? i : 0;
-      }
+      if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
       if (i !== 0) return link;
       return {
         href: link.href,
-        label: link.label,
+        label: "Cover",
         current: link.current,
       };
     });
@@ -223,9 +212,8 @@
   }
 
   function renderCustomNavigation(links) {
-    console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
-    document.body.classList.add("custom-nav-hidden");
+    if (currentIndex === 0) document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");
     navContainer.classList.add("nav_container");
@@ -273,6 +261,7 @@
     // const nextText =
     //   currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
     const nextText = currentIndex < links.length - 1 ? "Next" : null;
+
     const nextButton = createButtonWithImage(
       nextText,
       nextUrl,
@@ -364,13 +353,14 @@
         window.pageYOffset || document.documentElement.scrollTop;
 
       if (currentScrollTop > lastScrollTop) {
-        if (currentScrollTop > 150) {
-          document.body.classList.add("custom-nav-hidden");
-          document.body.classList.remove("show-custom-mini-nav");
-          document.body.classList.remove("tab_container");
-          document.body.classList.remove("tab_options");
-        }
+        // should be 300 on cover, 0 on others
+        // Scrolling down
+        document.body.classList.add("custom-nav-hidden");
+        document.body.classList.remove("show-custom-mini-nav");
+        document.body.classList.remove("tab_container");
+        document.body.classList.remove("tab_options");
       } else {
+        // Scrolling up
         document.body.classList.remove("custom-nav-hidden");
         document.body.classList.add("scroll-up");
       }
@@ -392,7 +382,6 @@
         (list && list.length && currentPageIndex !== null) ||
         attempts >= maxAttempts
       ) {
-        console.log("polling", attempts, list);
         clearInterval(pollingInterval);
         if (list && list.length) {
           //list.forEach(function (list) {

@@ -1,4 +1,3 @@
-/* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
   let currentPageIndex = null;
   var logoUrl =
@@ -25,15 +24,8 @@
           isCurrent = true;
         } else {
           const page = window.location.href.split("/")[4];
-          const hrefTest = "../../" + page + "/index.html";
+          const hrefTest = "../" + page + "/index.html";
           isCurrent = href === hrefTest;
-        }
-
-        if (!isCurrent) {
-          const pathname = window.location.pathname;
-          const clean = pathname.replace("/issue-32", "");
-          const check = new RegExp(clean, "gi");
-          isCurrent = clean !== "/index.html" && check.test(href);
         }
 
         links.push({
@@ -52,14 +44,11 @@
     dfs(rootUl);
 
     return links.map((link, i) => {
-      if (link.current) {
-        console.log("current link is", link.href);
-        currentPageIndex = i < links.length - 1 ? i : 0;
-      }
+      if (link.current) currentPageIndex = i < links.length - 1 ? i : 0;
       if (i !== 0) return link;
       return {
         href: link.href,
-        label: link.label,
+        label: "Cover",
         current: link.current,
       };
     });
@@ -223,9 +212,8 @@
   }
 
   function renderCustomNavigation(links) {
-    console.log("completed list", links);
     const currentIndex = links.findIndex((link) => link.current);
-    document.body.classList.add("custom-nav-hidden");
+    if (currentIndex === 0) document.body.classList.add("custom-nav-hidden");
 
     const navContainer = document.createElement("div");
     navContainer.classList.add("nav_container");
@@ -273,6 +261,7 @@
     // const nextText =
     //   currentIndex < links.length - 1 ? links[currentIndex + 1].label : null;
     const nextText = currentIndex < links.length - 1 ? "Next" : null;
+
     const nextButton = createButtonWithImage(
       nextText,
       nextUrl,
@@ -356,29 +345,64 @@
 
   startPollingExtractLinks();
 
-  let lastScrollTop = 0;
-  window.addEventListener(
-    "scroll",
-    () => {
-      const currentScrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
+  document.addEventListener("DOMContentLoaded", () => {
+    let lastPosition = 1; // Track the last observed position
 
-      if (currentScrollTop > lastScrollTop) {
-        if (currentScrollTop > 150) {
-          document.body.classList.add("custom-nav-hidden");
-          document.body.classList.remove("show-custom-mini-nav");
-          document.body.classList.remove("tab_container");
-          document.body.classList.remove("tab_options");
-        }
-      } else {
-        document.body.classList.remove("custom-nav-hidden");
-        document.body.classList.add("scroll-up");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Extract position from the class name
+
+            const currentPosition = parseInt(
+              entry.target.className.match(/Theme-Section-Position-(\d+)/)[1],
+              10
+            );
+
+            if (currentPageIndex === 0 && currentPosition === 1) {
+              document.body.classList.add("custom-nav-hidden");
+              document.body.classList.remove("show-custom-mini-nav");
+              document.body.classList.remove("tab_container");
+              document.body.classList.remove("tab_options");
+            } else if (/Final-ABCDEFGHI/.test(entry.target.className)) {
+              document.body.classList.remove("custom-nav-hidden");
+              document.body.classList.add("scroll-up");
+            } else if (currentPosition > lastPosition) {
+              // Scrolling down
+              document.body.classList.add("custom-nav-hidden");
+              document.body.classList.remove("show-custom-mini-nav");
+              document.body.classList.remove("tab_container");
+              document.body.classList.remove("tab_options");
+            } else if (currentPosition <= lastPosition) {
+              // Scrolling up
+              document.body.classList.remove("custom-nav-hidden");
+              document.body.classList.add("scroll-up");
+            }
+
+            // Update lastPosition for the next intersection
+            lastPosition = currentPosition;
+          }
+        });
+      },
+      {
+        root: null, // observing intersections relative to the viewport
+        rootMargin: "-50px 0px -50px 0px",
+        threshold: 0.1, // Trigger when 50% of the element is in the viewport
       }
+    );
 
-      lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
-    },
-    false
-  );
+    // Observe all sections
+    const sections = document.querySelectorAll(
+      ".Theme-Section:not(.Theme-RelatedStoriesSection), .Project-FooterContainer"
+    );
+    sections.forEach((section, i) => {
+      if (i === sections.length - 1) {
+        section.classList.add("Theme-Section-Position-" + (i + 1));
+        section.classList.add("Final-ABCDEFGHI");
+      }
+      observer.observe(section);
+    });
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     const maxAttempts = 50;
@@ -536,6 +560,8 @@
         const relatedStoryCarousel = document.querySelectorAll(
           '.Theme-RelatedStoriesSection ul[data-related-stories-list="true"]'
         );
+
+        console.log(relatedStoryCarousel);
 
         const navContainer = document.querySelector(
           ".custom-min-nav-container"
