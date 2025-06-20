@@ -620,8 +620,27 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-text:hover {
   opacity: 1;
 }
-}}
 
-.related-story-image img
+
+/** amended colors from gpt **/
+
+.button_container.prev,
+.button_container.next {
+  background-color: #151C31 !important;
+  border: 1px solid white !important;
+  color: white !important;
 }
+
+.button_container.prev .button,
+.button_container.next .button {
+  color: white !important;
 }
+
+.button_container .arrow {
+  color: white !important;
+}
+.button_container.prev:hover,
+.button_container.next:hover {
+  background-color: #1e2744 !important;
+}
+
