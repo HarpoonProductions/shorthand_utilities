@@ -1,3 +1,7 @@
+.js .shorthand-embed-body #outerWrap {
+  overflow-x: visible !important;
+}
+
 @media only screen and (min-width: 900px) {
   .horizontal-scroll {
     position: relative;
