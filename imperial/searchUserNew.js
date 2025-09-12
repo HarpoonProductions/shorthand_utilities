@@ -984,30 +984,46 @@ window.testFocus = function () {
     attributeFilter: ["value"],
   });
 
-  // Also listen for input events (more reliable for user input)
+  // Listen for input events (handles user typing)
   input.addEventListener("input", () => {
     updateButtonVisibility();
     console.log("Input event fired");
   });
 
-  // Handle programmatic value changes
-  const originalValueSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value"
-  ).set;
-
-  Object.defineProperty(input, "value", {
-    set: function (value) {
-      originalValueSetter.call(this, value);
-      updateButtonVisibility();
-      console.log("Value set programmatically");
-    },
-    get: function () {
-      return originalValueSetter.call(this);
-    },
+  // Listen for change events (handles some programmatic changes)
+  input.addEventListener("change", () => {
+    updateButtonVisibility();
+    console.log("Change event fired");
   });
 
-  // Optional: Clear button functionality
+  // Watch for programmatic value changes using a different approach
+  // Store the original descriptor
+  const descriptor = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    "value"
+  );
+  const originalSet = descriptor.set;
+
+  // Only override if we haven't already
+  if (originalSet && !input.hasAttribute("data-observer-attached")) {
+    input.setAttribute("data-observer-attached", "true");
+
+    // Create a new setter that calls our update function
+    Object.defineProperty(input, "value", {
+      get: descriptor.get,
+      set: function (newValue) {
+        // Call the original setter with the input element as context
+        originalSet.call(this, newValue);
+        // Then update visibility
+        updateButtonVisibility();
+        console.log("Value set programmatically:", newValue);
+      },
+      enumerable: descriptor.enumerable,
+      configurable: descriptor.configurable,
+    });
+  }
+
+  // Clear button functionality
   button.addEventListener("click", () => {
     input.value = "";
     updateButtonVisibility();
@@ -1015,10 +1031,4 @@ window.testFocus = function () {
   });
 
   console.log("MutationObserver script initialized successfully");
-
-  // Demo: Programmatic value change after 3 seconds
-  setTimeout(() => {
-    input.value = "Test value (set programmatically)";
-    updateButtonVisibility();
-  }, 3000);
 })();
