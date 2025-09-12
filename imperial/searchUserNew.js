@@ -933,3 +933,92 @@ window.testFocus = function () {
     console.log("Active element after focus:", document.activeElement);
   }
 };
+
+(function () {
+  "use strict";
+
+  // Get the elements
+  const input = document.querySelector(
+    ".Theme-ProjectInput.project-search-input"
+  );
+  const button = document.querySelector(".project-search-delete-btn");
+  const statusText = document.getElementById("status-text");
+
+  if (!input || !button) {
+    console.error("Required elements not found");
+    if (statusText) statusText.textContent = "Error: Elements not found";
+    return;
+  }
+
+  // Function to update button visibility
+  function updateButtonVisibility() {
+    if (input.value.trim() === "") {
+      button.classList.add("force-hide");
+      if (statusText) statusText.textContent = "Input empty - button hidden";
+    } else {
+      button.classList.remove("force-hide");
+      if (statusText)
+        statusText.textContent = "Input has content - button visible";
+    }
+  }
+
+  // Set initial state
+  updateButtonVisibility();
+
+  // Create MutationObserver to watch for attribute changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (
+        mutation.type === "attributes" &&
+        mutation.attributeName === "value"
+      ) {
+        updateButtonVisibility();
+        console.log("Value attribute changed via mutation");
+      }
+    });
+  });
+
+  // Configure and start observing
+  observer.observe(input, {
+    attributes: true,
+    attributeFilter: ["value"],
+  });
+
+  // Also listen for input events (more reliable for user input)
+  input.addEventListener("input", () => {
+    updateButtonVisibility();
+    console.log("Input event fired");
+  });
+
+  // Handle programmatic value changes
+  const originalValueSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    "value"
+  ).set;
+
+  Object.defineProperty(input, "value", {
+    set: function (value) {
+      originalValueSetter.call(this, value);
+      updateButtonVisibility();
+      console.log("Value set programmatically");
+    },
+    get: function () {
+      return originalValueSetter.call(this);
+    },
+  });
+
+  // Optional: Clear button functionality
+  button.addEventListener("click", () => {
+    input.value = "";
+    updateButtonVisibility();
+    input.focus();
+  });
+
+  console.log("MutationObserver script initialized successfully");
+
+  // Demo: Programmatic value change after 3 seconds
+  setTimeout(() => {
+    input.value = "Test value (set programmatically)";
+    updateButtonVisibility();
+  }, 3000);
+})();
