@@ -1130,6 +1130,8 @@ class TabOrderManager {
       }
     });
 
+    console.log("NEWNEW", allNavLinks);
+
     newNavs.forEach((link) => {
       link.setAttribute("tabindex", String(tabIndex++));
       console.log(
