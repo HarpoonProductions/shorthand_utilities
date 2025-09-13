@@ -1119,7 +1119,7 @@ class TabOrderManager {
 
     allNavLinks.forEach((link) => {
       if (
-        !link.getAttribute("href").includes("memories-of-graduation-days-2025")
+        !link.textContent.trim().includes("Memories of Commemoration Day 2025")
       ) {
         newNavs.push(link);
       } else {
@@ -1132,9 +1132,16 @@ class TabOrderManager {
       "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
     );
 
+    newNavs.forEach((link) => {
+      link.setAttribute("tabindex", String(tabIndex++));
+      console.log(
+        `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+      );
+    });
+
     if (
       dropdownSpans[0] &&
-      dropdownSpans[0].textContent.trim() === "Explore more"
+      dropdownSpans[0].textContent.trim() === "Ceremony guides"
     ) {
       dropdownSpans[0].setAttribute("tabindex", String(tabIndex++));
       console.log(`Custom dropdown 0 - tabindex ${tabIndex - 1}`);
@@ -1161,13 +1168,6 @@ class TabOrderManager {
         console.log(`custom dropdown 1 button - tabindex ${tabIndex - 1}`);
       }
     }
-
-    newNavs.forEach((link) => {
-      link.setAttribute("tabindex", String(tabIndex++));
-      console.log(
-        `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
-      );
-    });
 
     memory.setAttribute("tabindex", String(tabIndex++));
 
