@@ -770,72 +770,78 @@ window.testFocus = function () {
 
 // new
 
-// Accessible Tab Order Manager for new nav structure (2 dropdowns)
+// Accessible Tab Order Manager for new nav structure (2 dropdowns)// Accessible Tab Order Manager — explicit order + two dropdowns
 class TabOrderManager {
   constructor() {
     this.nav = {
-      ceremony: null,
-      explore: null,
       logo: null,
+      commem: null, // <a> Commemoration Day
+      ceremony: null, // {root, trigger:<a>, button:<button>, menu:<div.custom-dropdown>, items:[<div>], type:"custom"}
+      explore: null, // {root, trigger:<span>, button:<button>, menu:<ul>, items:[<a>], type:"ul"}
+      memories: null, // <a> Memories
     };
     this.boundOutsideClick = this.onDocumentClick.bind(this);
     this.init();
   }
 
   init() {
-    // Focus styles
     this.addFocusStyles();
-
-    // Setup nav accessibility & listeners
     this.setupNavAccessibility();
-
-    // Initial tab order
     setTimeout(() => this.updateTabOrder(), 100);
 
-    // Refresh when ceremony sections are toggled
     document.addEventListener("click", (e) => {
       if (e.target.closest(".time-toggle")) {
         setTimeout(() => this.updateTabOrder(), 350);
       }
     });
 
-    // Log tab presses
     document.addEventListener("keydown", (e) => {
       if (e.key === "Tab") {
         console.log("Tab pressed. Current focus:", document.activeElement);
       }
     });
+
+    window.addEventListener("resize", () => this.updateTabOrder(), {
+      passive: true,
+    });
   }
 
-  // ---------- NAV DISCOVERY & A11Y WIRING ----------
+  // ---------- discovery ----------
 
   setupNavAccessibility() {
-    // Logo
     this.nav.logo = document.querySelector(".Theme-Logo a") || null;
 
-    // Find the top-level nav list
     const topList = document.querySelector(".Theme-Navigation-ItemList");
     if (!topList) return;
 
-    // Find the two dropdowns by their internal structures
-    const hasMenus = Array.from(
-      topList.querySelectorAll(":scope > li.Navigation__item.hasMenu")
+    const lis = Array.from(
+      topList.querySelectorAll(":scope > li.Navigation__item")
     );
 
-    // Ceremony dropdown = has .custom-dropdown
+    // Identify dropdowns
     const ceremonyLi =
-      hasMenus.find((li) => li.querySelector(".custom-dropdown")) || null;
+      lis.find(
+        (li) =>
+          li.classList.contains("hasMenu") &&
+          li.querySelector(".custom-dropdown")
+      ) || null;
+    const exploreLi =
+      lis.find(
+        (li) =>
+          li.classList.contains("hasMenu") &&
+          li.querySelector(".Navigation__subMenu")
+      ) || null;
+
     if (ceremonyLi) {
       const trigger =
-        ceremonyLi.querySelector(":scope > a.Theme-NavigationLink") || null; // anchor labelled "Ceremony guides"
+        ceremonyLi.querySelector(":scope > a.Theme-NavigationLink") || null;
       const button =
-        ceremonyLi.querySelector(":scope > .Navigation__button") || null; // caret (has pointer-events: none in your DOM)
+        ceremonyLi.querySelector(":scope > .Navigation__button") || null;
       const menu =
-        ceremonyLi.querySelector(":scope > .custom-dropdown") || null; // custom <div> menu
+        ceremonyLi.querySelector(":scope > .custom-dropdown") || null;
       const items = menu
         ? Array.from(menu.querySelectorAll(":scope > div"))
         : [];
-
       this.nav.ceremony = {
         root: ceremonyLi,
         trigger,
@@ -847,20 +853,16 @@ class TabOrderManager {
       this.wireMenu(this.nav.ceremony);
     }
 
-    // Explore dropdown = has <ul.Navigation__subMenu>
-    const exploreLi =
-      hasMenus.find((li) => li.querySelector(".Navigation__subMenu")) || null;
     if (exploreLi) {
       const trigger =
-        exploreLi.querySelector(":scope > span.Theme-NavigationLink") || null; // span labelled "Explore more"
+        exploreLi.querySelector(":scope > span.Theme-NavigationLink") || null;
       const button =
         exploreLi.querySelector(":scope > .Navigation__button") || null;
       const menu =
-        exploreLi.querySelector(":scope > .Navigation__subMenu") || null; // <ul>
+        exploreLi.querySelector(":scope > .Navigation__subMenu") || null;
       const items = menu
         ? Array.from(menu.querySelectorAll("a.Theme-NavigationLink"))
         : [];
-
       this.nav.explore = {
         root: exploreLi,
         trigger,
@@ -872,394 +874,347 @@ class TabOrderManager {
       this.wireMenu(this.nav.explore);
     }
 
-    // Recalculate on resize (layout can hide/show menus responsively)
-    window.addEventListener("resize", () => this.updateTabOrder(), {
-      passive: true,
-    });
+    // Identify simple links (Commemoration + Memories). In your DOM they’re the two non-hasMenu <li>s.
+    const simpleLinks = lis
+      .filter((li) => !li.classList.contains("hasMenu"))
+      .map((li) => li.querySelector(":scope > a.Theme-NavigationLink"))
+      .filter(Boolean);
 
-    // Observe attribute changes like aria-expanded to keep tabindex in sync
+    // If there are two, assume order: [Commemoration Day, Memories].
+    if (simpleLinks.length >= 1) this.nav.commem = simpleLinks[0];
+    if (simpleLinks.length >= 2) this.nav.memories = simpleLinks[1];
+
+    // Observe aria-expanded changes so we can renumber when menus open/close externally
     const observer = new MutationObserver(() => this.updateTabOrder());
-    [this.nav.ceremony?.button, this.nav.explore?.button]
+    [
+      this.nav.ceremony?.button,
+      this.nav.ceremony?.trigger,
+      this.nav.explore?.button,
+      this.nav.explore?.trigger,
+    ]
       .filter(Boolean)
-      .forEach((btn) =>
-        observer.observe(btn, {
+      .forEach((el) =>
+        observer.observe(el, {
           attributes: true,
           attributeFilter: ["aria-expanded"],
         })
       );
-  }
-
-  wireMenu(menuSpec) {
-    const { trigger, button, menu, items, type } = menuSpec;
-    if (!menu) return;
-
-    // Menu roles
-    if (type === "custom") {
-      // custom <div> menu — make it behave like a menu
-      menu.setAttribute("role", "menu");
-      items.forEach((div) => {
-        div.setAttribute("role", "menuitem");
-        div.setAttribute("tabindex", "-1"); // only focusable when open
-      });
-    } else {
-      // <ul> menu — ensure roles on container (items are links)
-      menu.setAttribute("role", "menu");
-      Array.from(menu.children).forEach((li) =>
-        li.setAttribute("role", "none")
-      );
-      items.forEach((a) => a.setAttribute("role", "menuitem"));
-    }
-
-    // Trigger roles
-    if (trigger) {
-      trigger.setAttribute("aria-haspopup", "true");
-      trigger.setAttribute(
-        "aria-expanded",
-        this.isMenuOpen(menuSpec) ? "true" : "false"
-      );
-      trigger.setAttribute("role", "button");
-
-      trigger.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.toggleMenu(menuSpec, !this.isMenuOpen(menuSpec));
-      });
-
-      trigger.addEventListener("keydown", (e) => {
-        const openKeys = ["Enter", " ", "ArrowDown", "ArrowUp"];
-        if (openKeys.includes(e.key)) {
-          e.preventDefault();
-          if (!this.isMenuOpen(menuSpec)) this.toggleMenu(menuSpec, true);
-          // Focus first/last item based on key
-          const targetItem =
-            e.key === "ArrowUp"
-              ? this.getLastItem(menuSpec)
-              : this.getFirstItem(menuSpec);
-          targetItem?.focus();
-        }
-        if (e.key === "Escape") {
-          this.toggleMenu(menuSpec, false);
-          trigger.focus();
-        }
-      });
-    }
-
-    // Some themes use the caret button; allow it if it’s clickable
-    if (button) {
-      button.setAttribute("aria-haspopup", "true");
-      button.setAttribute(
-        "aria-expanded",
-        this.isMenuOpen(menuSpec) ? "true" : "false"
-      );
-      button.addEventListener("click", (e) => {
-        // Some markup had pointer-events: none; this will no-op if not clickable
-        e.preventDefault();
-        this.toggleMenu(menuSpec, !this.isMenuOpen(menuSpec));
-      });
-      button.addEventListener("keydown", (e) => {
-        if (["Enter", " "].includes(e.key)) {
-          e.preventDefault();
-          this.toggleMenu(menuSpec, !this.isMenuOpen(menuSpec));
-        }
-      });
-    }
-
-    // Menu keyboard nav
-    menu.addEventListener("keydown", (e) => {
-      const enabledItems = this.getEnabledItems(menuSpec);
-      if (!enabledItems.length) return;
-
-      const currentIndex = enabledItems.indexOf(document.activeElement);
-      let nextIndex = currentIndex;
-
-      switch (e.key) {
-        case "ArrowDown":
-          e.preventDefault();
-          nextIndex =
-            (currentIndex + 1 + enabledItems.length) % enabledItems.length;
-          enabledItems[nextIndex].focus();
-          break;
-        case "ArrowUp":
-          e.preventDefault();
-          nextIndex =
-            (currentIndex - 1 + enabledItems.length) % enabledItems.length;
-          enabledItems[nextIndex].focus();
-          break;
-        case "Home":
-          e.preventDefault();
-          enabledItems[0].focus();
-          break;
-        case "End":
-          e.preventDefault();
-          enabledItems[enabledItems.length - 1].focus();
-          break;
-        case "Escape":
-          e.preventDefault();
-          this.toggleMenu(menuSpec, false);
-          (menuSpec.trigger || menuSpec.button)?.focus();
-          break;
-        case "Enter":
-        case " ":
-          // Activate item
-          if (document.activeElement && menu.contains(document.activeElement)) {
-            e.preventDefault();
-            if (menuSpec.type === "custom") {
-              // dispatch a click on the div menu item
-              document.activeElement.dispatchEvent(
-                new MouseEvent("click", { bubbles: true })
-              );
-              this.toggleMenu(menuSpec, false);
-              (menuSpec.trigger || menuSpec.button)?.focus();
-            } else {
-              // anchors just click through
-              document.activeElement.click();
-            }
-          }
-          break;
-        default:
-          break;
-      }
-    });
 
     // Close on outside click
     document.addEventListener("click", this.boundOutsideClick);
   }
 
-  onDocumentClick(e) {
-    // Close any open menu if clicking outside
-    ["ceremony", "explore"].forEach((key) => {
-      const spec = this.nav[key];
-      if (!spec) return;
-      const { root, menu, trigger, button } = spec;
-      const target = e.target;
-      if (this.isMenuOpen(spec) && root && !root.contains(target)) {
-        this.toggleMenu(spec, false);
-        // Do not steal focus here
+  wireMenu(spec) {
+    const { trigger, button, menu, items, type } = spec;
+    if (!menu) return;
+
+    // roles & baseline tabbability
+    menu.setAttribute("role", "menu");
+    if (type === "custom") {
+      items.forEach((div) => {
+        div.setAttribute("role", "menuitem");
+        div.setAttribute("tabindex", "-1"); // only when open we’ll number them
+      });
+    } else {
+      Array.from(menu.children).forEach((li) =>
+        li.setAttribute("role", "none")
+      );
+      items.forEach((a) => {
+        a.setAttribute("role", "menuitem");
+        a.setAttribute("tabindex", "-1");
+      });
+    }
+
+    // triggers
+    const prepTrigger = (el) => {
+      if (!el) return;
+      el.setAttribute("role", "button");
+      el.setAttribute("aria-haspopup", "true");
+      el.setAttribute(
+        "aria-expanded",
+        this.isMenuOpen(spec) ? "true" : "false"
+      );
+
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.toggleMenu(spec, !this.isMenuOpen(spec));
+      });
+
+      el.addEventListener("keydown", (e) => {
+        const openKeys = ["Enter", " ", "ArrowDown", "ArrowUp"];
+        if (openKeys.includes(e.key)) {
+          e.preventDefault();
+          if (!this.isMenuOpen(spec)) this.toggleMenu(spec, true);
+          (e.key === "ArrowUp"
+            ? this.getLastItem(spec)
+            : this.getFirstItem(spec)
+          )?.focus();
+        }
+        if (e.key === "Escape") {
+          this.toggleMenu(spec, false);
+          el.focus();
+        }
+      });
+    };
+
+    const prepButton = (el) => {
+      if (!el) return;
+      el.setAttribute("aria-haspopup", "true");
+      el.setAttribute(
+        "aria-expanded",
+        this.isMenuOpen(spec) ? "true" : "false"
+      );
+
+      el.addEventListener("click", (e) => {
+        // If pointer-events:none in CSS, ignore
+        if (window.getComputedStyle(el).pointerEvents === "none") return;
+        e.preventDefault();
+        this.toggleMenu(spec, !this.isMenuOpen(spec));
+      });
+      el.addEventListener("keydown", (e) => {
+        if (["Enter", " "].includes(e.key)) {
+          if (window.getComputedStyle(el).pointerEvents === "none") return;
+          e.preventDefault();
+          this.toggleMenu(spec, !this.isMenuOpen(spec));
+        }
+      });
+    };
+
+    prepTrigger(trigger);
+    prepButton(button);
+
+    // Menu keyboard nav
+    menu.addEventListener("keydown", (e) => {
+      const enabled = this.getEnabledItems(spec);
+      if (!enabled.length) return;
+
+      const i = enabled.indexOf(document.activeElement);
+      let next = i;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          next = (i + 1 + enabled.length) % enabled.length;
+          enabled[next].focus();
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          next = (i - 1 + enabled.length) % enabled.length;
+          enabled[next].focus();
+          break;
+        case "Home":
+          e.preventDefault();
+          enabled[0].focus();
+          break;
+        case "End":
+          e.preventDefault();
+          enabled[enabled.length - 1].focus();
+          break;
+        case "Escape":
+          e.preventDefault();
+          this.toggleMenu(spec, false);
+          (spec.trigger || spec.button)?.focus();
+          break;
+        case "Enter":
+        case " ":
+          if (menu.contains(document.activeElement)) {
+            e.preventDefault();
+            if (spec.type === "custom") {
+              document.activeElement.dispatchEvent(
+                new MouseEvent("click", { bubbles: true })
+              );
+              this.toggleMenu(spec, false);
+              (spec.trigger || spec.button)?.focus();
+            } else {
+              document.activeElement.click();
+            }
+          }
+          break;
       }
     });
   }
 
-  isMenuOpen(menuSpec) {
-    if (!menuSpec || !menuSpec.menu) return false;
-    // Prefer aria-expanded if available
-    const expandedFromBtn = menuSpec.button?.getAttribute("aria-expanded");
-    const expandedFromTrigger = menuSpec.trigger?.getAttribute("aria-expanded");
-    const aria = expandedFromBtn ?? expandedFromTrigger;
-    if (aria != null) return aria === "true";
+  // ---------- state helpers ----------
 
-    // Fallback to display/style check for custom menu
-    if (menuSpec.type === "custom") {
-      const cs = window.getComputedStyle(menuSpec.menu);
-      return cs.display !== "none" && cs.visibility !== "hidden";
-    }
-
-    // As a fallback assume closed
-    return false;
+  onDocumentClick(e) {
+    ["ceremony", "explore"].forEach((key) => {
+      const spec = this.nav[key];
+      if (!spec) return;
+      if (this.isMenuOpen(spec) && !spec.root.contains(e.target)) {
+        this.toggleMenu(spec, false);
+      }
+    });
   }
 
-  toggleMenu(menuSpec, open) {
-    if (!menuSpec || !menuSpec.menu) return;
+  isMenuOpen(spec) {
+    if (!spec?.menu) return false;
 
-    // Update visual state
-    if (menuSpec.type === "custom") {
-      // Explicitly control the custom <div> menu
-      menuSpec.menu.style.display = open ? "block" : "none";
+    // 1) aria-expanded on trigger or button
+    const aria =
+      spec.button?.getAttribute("aria-expanded") ??
+      spec.trigger?.getAttribute("aria-expanded");
+    if (aria != null) return aria === "true";
+
+    // 2) visibility fallback — handles hover/CSS-driven menus
+    const cs = window.getComputedStyle(spec.menu);
+    const visible =
+      cs.display !== "none" &&
+      cs.visibility !== "hidden" &&
+      spec.menu.getBoundingClientRect().height > 0;
+    return visible;
+  }
+
+  toggleMenu(spec, open) {
+    if (!spec?.menu) return;
+
+    // Visual for custom div menu
+    if (spec.type === "custom") {
+      spec.menu.style.display = open ? "block" : "none";
     }
-    // Update ARIA
-    if (menuSpec.button)
-      menuSpec.button.setAttribute("aria-expanded", open ? "true" : "false");
-    if (menuSpec.trigger)
-      menuSpec.trigger.setAttribute("aria-expanded", open ? "true" : "false");
+    // ARIA
+    if (spec.button)
+      spec.button.setAttribute("aria-expanded", open ? "true" : "false");
+    if (spec.trigger)
+      spec.trigger.setAttribute("aria-expanded", open ? "true" : "false");
 
-    // Update items' tabindex based on open state
-    this.setMenuItemsTabbability(menuSpec, open);
+    // Items baseline tabbability: closed = -1, open = remove so we can number explicitly
+    if (spec.items) {
+      spec.items.forEach((el) => {
+        if (open) el.removeAttribute("tabindex");
+        else el.setAttribute("tabindex", "-1");
+      });
+    }
 
-    // Re-sequence numeric tabindexes so tab order remains sane
+    // Renumber in our explicit sequence
     setTimeout(() => this.updateTabOrder(), 0);
   }
 
-  getEnabledItems(menuSpec) {
-    if (!menuSpec?.items) return [];
-    return menuSpec.items.filter(
+  getEnabledItems(spec) {
+    if (!spec?.items) return [];
+    return spec.items.filter(
       (el) => this.isVisible(el) && el.getAttribute("tabindex") !== "-1"
     );
   }
-
-  getFirstItem(menuSpec) {
-    const enabled = this.getEnabledItems(menuSpec);
-    return enabled[0] || null;
+  getFirstItem(spec) {
+    return this.getEnabledItems(spec)[0] || null;
+  }
+  getLastItem(spec) {
+    const a = this.getEnabledItems(spec);
+    return a[a.length - 1] || null;
   }
 
-  getLastItem(menuSpec) {
-    const enabled = this.getEnabledItems(menuSpec);
-    return enabled[enabled.length - 1] || null;
+  canFocus(el) {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    if (cs.pointerEvents === "none") return false;
+    if (el.hasAttribute("disabled")) return false;
+    return true;
   }
 
-  setMenuItemsTabbability(menuSpec, open) {
-    if (!menuSpec?.items) return;
-    if (menuSpec.type === "custom") {
-      menuSpec.items.forEach((div) =>
-        div.setAttribute("tabindex", open ? "0" : "-1")
-      );
-    } else {
-      // anchors: when closed, remove tabindex so they’re skipped; when open, allow sequential numbering later
-      menuSpec.items.forEach((a) => {
-        if (open) {
-          a.removeAttribute("tabindex");
-        } else {
-          a.setAttribute("tabindex", "-1");
-        }
-      });
-    }
-  }
-
-  // ---------- TAB ORDERING ----------
+  // ---------- ordering ----------
 
   updateTabOrder() {
     console.log("=== Updating tab order ===");
 
-    // 0) Remove all positive tabindex (keep -1)
+    // Remove all positive tabindex (keep -1)
     document
       .querySelectorAll('[tabindex]:not([tabindex="-1"])')
       .forEach((el) => el.removeAttribute("tabindex"));
 
-    let tabIndex = 1;
+    let i = 1;
 
-    // 1) Logo
-    if (this.nav.logo) {
-      this.nav.logo.setAttribute("tabindex", String(tabIndex++));
-      console.log("Logo set to tabindex: 1");
+    // 0) Logo (optional)
+    if (this.nav.logo) this.nav.logo.setAttribute("tabindex", String(i++)); // 1
+
+    // 1) Commemoration Day
+    if (this.nav.commem) {
+      this.nav.commem.setAttribute("tabindex", String(i++));
+      console.log(`Commemoration Day - tabindex ${i - 1}`);
     }
 
-    // 2) Top-level items in DOM order
-    const topList = document.querySelector(".Theme-Navigation-ItemList");
-    if (topList) {
-      const topLis = Array.from(
-        topList.querySelectorAll(":scope > li.Navigation__item")
+    // 2) Ceremony Guides trigger (+ caret if focusable)
+    if (this.nav.ceremony?.trigger) {
+      this.nav.ceremony.trigger.setAttribute("tabindex", String(i++));
+      console.log(`Ceremony Guides (trigger) - tabindex ${i - 1}`);
+    }
+    if (this.nav.ceremony?.button && this.canFocus(this.nav.ceremony.button)) {
+      this.nav.ceremony.button.setAttribute("tabindex", String(i++));
+      console.log(`Ceremony Guides (caret) - tabindex ${i - 1}`);
+    }
+
+    // 2a) Ceremony items IF OPEN
+    if (this.nav.ceremony && this.isMenuOpen(this.nav.ceremony)) {
+      this.nav.ceremony.items.forEach((el, idx) => {
+        if (this.isVisible(el)) {
+          el.setAttribute("tabindex", String(i++));
+          console.log(`Ceremony item ${idx} - tabindex ${i - 1}`);
+        } else {
+          el.setAttribute("tabindex", "-1");
+        }
+      });
+    } else if (this.nav.ceremony?.items) {
+      this.nav.ceremony.items.forEach((el) =>
+        el.setAttribute("tabindex", "-1")
       );
-
-      topLis.forEach((li) => {
-        // a) Simple links: li > a
-        const link = li.querySelector(":scope > a.Theme-NavigationLink");
-        // b) Explore: li > span + button
-        const explore = li === this.nav.explore?.root ? this.nav.explore : null;
-        // c) Ceremony: li > a (trigger) + (non-clickable) button + custom menu
-        const ceremony =
-          li === this.nav.ceremony?.root ? this.nav.ceremony : null;
-
-        if (ceremony) {
-          // Ceremony trigger first
-          if (ceremony.trigger) {
-            ceremony.trigger.setAttribute("tabindex", String(tabIndex++));
-            console.log(`Ceremony guides (trigger) - tabindex ${tabIndex - 1}`);
-          }
-          // Button next (if focusable)
-          if (ceremony.button) {
-            ceremony.button.setAttribute("tabindex", String(tabIndex++));
-            console.log(`Ceremony guides (button) - tabindex ${tabIndex - 1}`);
-          }
-        } else if (explore) {
-          // Explore label (span) first
-          if (explore.trigger) {
-            explore.trigger.setAttribute("tabindex", String(tabIndex++));
-            console.log(`Explore more (label) - tabindex ${tabIndex - 1}`);
-          }
-          // Then the caret button
-          if (explore.button) {
-            explore.button.setAttribute("tabindex", String(tabIndex++));
-            console.log(`Explore more (button) - tabindex ${tabIndex - 1}`);
-          }
-        } else if (link) {
-          // Regular top-level link (e.g., "Commemoration Day 2025", "Memories…")
-          // If you want to push "Memories…" last no matter what, you could skip here and set after; DOM already has it last.
-          link.setAttribute("tabindex", String(tabIndex++));
-          console.log(
-            `Top link "${(link.textContent || "").trim()}" - tabindex ${
-              tabIndex - 1
-            }`
-          );
-        }
-      });
     }
 
-    // 3) Submenu items WHEN OPEN
-    // Explore submenu (<ul> with <a>s)
+    // 3) Explore more trigger (+ caret)
+    if (this.nav.explore?.trigger) {
+      this.nav.explore.trigger.setAttribute("tabindex", String(i++));
+      console.log(`Explore more (label) - tabindex ${i - 1}`);
+    }
+    if (this.nav.explore?.button && this.canFocus(this.nav.explore.button)) {
+      this.nav.explore.button.setAttribute("tabindex", String(i++));
+      console.log(`Explore more (caret) - tabindex ${i - 1}`);
+    }
+
+    // 3a) Explore items IF OPEN
     if (this.nav.explore && this.isMenuOpen(this.nav.explore)) {
-      this.nav.explore.items.forEach((a) => {
+      this.nav.explore.items.forEach((a, idx) => {
         if (this.isVisible(a)) {
-          a.setAttribute("tabindex", String(tabIndex++));
-          console.log(
-            `Explore item "${(a.textContent || "").trim()}" - tabindex ${
-              tabIndex - 1
-            }`
-          );
+          a.setAttribute("tabindex", String(i++));
+          console.log(`Explore item ${idx} - tabindex ${i - 1}`);
+        } else {
+          a.setAttribute("tabindex", "-1");
         }
       });
-    } else if (this.nav.explore) {
-      // Ensure closed items are skipped
+    } else if (this.nav.explore?.items) {
       this.nav.explore.items.forEach((a) => a.setAttribute("tabindex", "-1"));
     }
 
-    // Ceremony custom dropdown (<div> items)
-    if (this.nav.ceremony && this.isMenuOpen(this.nav.ceremony)) {
-      this.nav.ceremony.items.forEach((div, i) => {
-        if (this.isVisible(div)) {
-          // Already 0 when open; assign numeric order to maintain your sequence
-          div.setAttribute("tabindex", String(tabIndex++));
-          console.log(
-            `Ceremony item ${i} "${(
-              div.textContent || ""
-            ).trim()}" - tabindex ${tabIndex - 1}`
-          );
-        }
-      });
-    } else if (this.nav.ceremony) {
-      this.nav.ceremony.items.forEach((div) =>
-        div.setAttribute("tabindex", "-1")
-      );
+    // 4) Memories last
+    if (this.nav.memories) {
+      this.nav.memories.setAttribute("tabindex", String(i++));
+      console.log(`Memories - tabindex ${i - 1}`);
     }
 
-    // 4) Ceremony buttons in the page content
+    // 5) Page content
     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
-    console.log(`Found ${ceremonyButtons.length} ceremony buttons`);
-    ceremonyButtons.forEach((button, i) => {
-      button.setAttribute("tabindex", String(tabIndex++));
-      console.log(`Ceremony button ${i} - tabindex ${tabIndex - 1}`);
+    ceremonyButtons.forEach((btn, idx) => {
+      btn.setAttribute("tabindex", String(i++));
+      console.log(`Ceremony button ${idx} - tabindex ${i - 1}`);
     });
 
-    // 5) Focusable content in expanded sections
     const showingSections = document.querySelectorAll(".showing");
     showingSections.forEach((section) => {
       const links = section.querySelectorAll("a[href]");
       const buttons = section.querySelectorAll("button");
       const inputs = section.querySelectorAll("input, select, textarea");
-
       [...links, ...buttons, ...inputs].forEach((el) => {
         if (this.isVisible(el) && !el.hasAttribute("tabindex")) {
-          el.setAttribute("tabindex", String(tabIndex++));
+          el.setAttribute("tabindex", String(i++));
         }
       });
     });
 
-    // Diagnostics
-    const allTabbable = document.querySelectorAll(
-      '[tabindex]:not([tabindex="-1"])'
+    console.log(
+      `Total tabbable elements: ${
+        document.querySelectorAll('[tabindex]:not([tabindex="-1"])').length
+      }`
     );
-    console.log(`Total tabbable elements: ${allTabbable.length}`);
-    console.log("First 10 tabbable:");
-    allTabbable.forEach((el, i) => {
-      if (i < 10) {
-        const text =
-          el.textContent?.trim().substring(0, 30) ||
-          el.getAttribute("aria-label") ||
-          el.tagName;
-        console.log(
-          `  ${el.getAttribute("tabindex")}: ${el.tagName} - "${text}"`
-        );
-      }
-    });
   }
 
-  // ---------- UTILS ----------
+  // ---------- utils ----------
 
   addFocusStyles() {
     const style = document.createElement("style");
@@ -1283,42 +1238,38 @@ class TabOrderManager {
     document.head.appendChild(style);
   }
 
-  isVisible(element) {
-    if (!element) return false;
-    const rect = element.getBoundingClientRect();
-    const style = window.getComputedStyle(element);
+  isVisible(el) {
+    if (!el) return false;
+    const r = el.getBoundingClientRect();
+    const cs = window.getComputedStyle(el);
     return (
-      rect.width > 0 &&
-      rect.height > 0 &&
-      style.display !== "none" &&
-      style.visibility !== "hidden"
+      r.width > 0 &&
+      r.height > 0 &&
+      cs.display !== "none" &&
+      cs.visibility !== "hidden"
     );
   }
 }
 
 // Initialize
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    window.tabOrderManager = new TabOrderManager();
-  });
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => (window.tabOrderManager = new TabOrderManager())
+  );
 } else {
   window.tabOrderManager = new TabOrderManager();
 }
 
 // Manual refresh
 window.refreshTabOrder = function () {
-  if (window.tabOrderManager) {
-    window.tabOrderManager.updateTabOrder();
-  }
+  window.tabOrderManager?.updateTabOrder();
 };
 
-// Test function to check a specific tabindex
+// Quick test
 window.testFocus = function (n = 2) {
   const elements = document.querySelectorAll(`[tabindex="${n}"]`);
-  console.log(`Elements with tabindex="${n}":`, elements.length);
-  if (elements.length > 0) {
-    console.log(`First element with tabindex="${n}":`, elements[0]);
-    elements[0].focus();
-    console.log("Active element after focus:", document.activeElement);
-  }
+  console.log(`Elements with tabindex="${n}":`, elements.length, elements[0]);
+  elements[0]?.focus();
+  console.log("Active element after focus:", document.activeElement);
 };
