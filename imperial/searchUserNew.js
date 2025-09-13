@@ -1119,18 +1119,16 @@ class TabOrderManager {
 
     allNavLinks.forEach((link) => {
       if (
-        !link.textContent.trim().includes("Memories of Commemoration Day 2025")
+        !link.textContent
+          .trim()
+          .includes("Memories of Commemoration Day 2025") &&
+        !link.textContent.trim().includes("Ceremony guides")
       ) {
         newNavs.push(link);
       } else {
         memory = link;
       }
     });
-
-    // 3. Find Explore more span separately
-    const dropdownSpans = document.querySelectorAll(
-      "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
-    );
 
     newNavs.forEach((link) => {
       link.setAttribute("tabindex", String(tabIndex++));
@@ -1139,10 +1137,16 @@ class TabOrderManager {
       );
     });
 
+    // 3. Find Explore more span separately
+    const dropdownSpans = document.querySelectorAll(
+      "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
+    );
+
     if (
       dropdownSpans[0] &&
       dropdownSpans[0].textContent.trim() === "Ceremony guides"
     ) {
+      console.log("updating ceremony");
       dropdownSpans[0].setAttribute("tabindex", String(tabIndex++));
       console.log(`Custom dropdown 0 - tabindex ${tabIndex - 1}`);
 
@@ -1158,6 +1162,7 @@ class TabOrderManager {
       dropdownSpans[1] &&
       dropdownSpans[1].textContent.trim() === "Explore more"
     ) {
+      console.log("updating explore");
       dropdownSpans[1].setAttribute("tabindex", String(tabIndex++));
       console.log(`Custom dropdown 1 - tabindex ${tabIndex - 1}`);
 
