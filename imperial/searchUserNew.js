@@ -733,6 +733,7 @@ setTimeout(() => {
 }, 500);
 
 // Simplified Tab Order Manager - Let browser handle tabbing
+/*
 class TabOrderManager {
   constructor() {
     this.init();
@@ -773,7 +774,7 @@ class TabOrderManager {
         border-radius: 4px;
       }
       
-      /* More specific selectors to ensure our styles win */
+    
       a:focus-visible,
       button:focus-visible,
       input:focus-visible,
@@ -1032,3 +1033,224 @@ window.testFocus = function () {
 
   console.log("MutationObserver script initialized successfully");
 })();
+
+*/
+
+class TabOrderManager {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    // Add Imperial focus styles
+    this.addFocusStyles();
+
+    // Initial tab order setup
+    setTimeout(() => this.updateTabOrder(), 100);
+
+    // Refresh when ceremony sections are toggled
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".time-toggle")) {
+        setTimeout(() => this.updateTabOrder(), 350);
+      }
+    });
+
+    // Log tab events for debugging
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        console.log("Tab pressed. Current focus:", document.activeElement);
+      }
+    });
+  }
+
+  addFocusStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
+      *:focus {
+        outline: none !important;
+      }
+       
+      *:focus-visible {
+        box-shadow: 0 0 0 4px #b90072 inset !important;
+        outline: none !important;
+        border-radius: 4px;
+      }
+      
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      [tabindex]:focus-visible {
+        box-shadow: 0 0 0 4px #b90072 inset !important;
+        outline: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  updateTabOrder() {
+    console.log("=== Updating tab order ===");
+
+    // Remove all tabindex attributes (except -1)
+    document
+      .querySelectorAll('[tabindex]:not([tabindex="-1"])')
+      .forEach((el) => {
+        el.removeAttribute("tabindex");
+      });
+
+    let tabIndex = 1; // Start at 1 instead of 0
+
+    // 1. Imperial Logo
+    const logo = document.querySelector(".Theme-Logo a");
+    if (logo) {
+      logo.setAttribute("tabindex", String(tabIndex++));
+      console.log("Logo set to tabindex: 1");
+    }
+
+    // 2. Try to find ALL navigation links directly
+    const allNavLinks = document.querySelectorAll(
+      "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
+    );
+
+    const newNavs = [];
+
+    let memory;
+
+    allNavLinks.forEach((link) => {
+      if (
+        !link.getAttribute("href").includes("memories-of-graduation-days-2025")
+      ) {
+        newNavs.push(link);
+      } else {
+        memory = link;
+      }
+    });
+
+    // 3. Find Explore more span separately
+    const dropdownSpans = document.querySelectorAll(
+      "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
+    );
+
+    if (
+      dropdownSpans[0] &&
+      dropdownSpans[0].textContent.trim() === "Explore more"
+    ) {
+      dropdownSpans[0].setAttribute("tabindex", String(tabIndex++));
+      console.log(`Custom dropdown 0 - tabindex ${tabIndex - 1}`);
+
+      // And its button
+      const exploreBtn = dropdownSpans[0].nextElementSibling;
+      if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
+        exploreBtn.setAttribute("tabindex", String(tabIndex++));
+        console.log(`custom dropdown 0 button - tabindex ${tabIndex - 1}`);
+      }
+    }
+
+    if (
+      dropdownSpans[1] &&
+      dropdownSpans[1].textContent.trim() === "Explore more"
+    ) {
+      dropdownSpans[1].setAttribute("tabindex", String(tabIndex++));
+      console.log(`Custom dropdown 1 - tabindex ${tabIndex - 1}`);
+
+      // And its button
+      const exploreBtn = dropdownSpans[1].nextElementSibling;
+      if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
+        exploreBtn.setAttribute("tabindex", String(tabIndex++));
+        console.log(`custom dropdown 1 button - tabindex ${tabIndex - 1}`);
+      }
+    }
+
+    newNavs.forEach((link) => {
+      link.setAttribute("tabindex", String(tabIndex++));
+      console.log(
+        `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+      );
+    });
+
+    memory.setAttribute("tabindex", String(tabIndex++));
+
+    // 4. Ceremony buttons
+    const ceremonyButtons = document.querySelectorAll(".time-toggle button");
+    console.log(`Found ${ceremonyButtons.length} ceremony buttons`);
+    ceremonyButtons.forEach((button, i) => {
+      button.setAttribute("tabindex", String(tabIndex++));
+      console.log(`Ceremony button ${i} - tabindex ${tabIndex - 1}`);
+    });
+
+    // 5. Content in expanded ceremony sections
+    const showingSections = document.querySelectorAll(".showing");
+    showingSections.forEach((section) => {
+      const links = section.querySelectorAll("a[href]");
+      const buttons = section.querySelectorAll("button");
+      const inputs = section.querySelectorAll("input, select, textarea");
+
+      [...links, ...buttons, ...inputs].forEach((el) => {
+        if (this.isVisible(el) && !el.hasAttribute("tabindex")) {
+          el.setAttribute("tabindex", String(tabIndex++));
+        }
+      });
+    });
+
+    // Log all elements with tabindex
+    const allTabbable = document.querySelectorAll(
+      '[tabindex]:not([tabindex="-1"])'
+    );
+    console.log(`Total tabbable elements: ${allTabbable.length}`);
+
+    // Log first 10 for debugging
+    console.log("Tabbable elements:");
+    allTabbable.forEach((el, i) => {
+      if (i < 10) {
+        const text =
+          el.textContent?.trim().substring(0, 30) ||
+          el.getAttribute("aria-label") ||
+          el.tagName;
+        console.log(
+          `  ${el.getAttribute("tabindex")}: ${el.tagName} - "${text}"`
+        );
+      }
+    });
+  }
+
+  isVisible(element) {
+    if (!element) return false;
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+    return (
+      rect.width > 0 &&
+      rect.height > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden"
+    );
+  }
+}
+
+// Initialize
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.tabOrderManager = new TabOrderManager();
+  });
+} else {
+  window.tabOrderManager = new TabOrderManager();
+}
+
+// Manual refresh
+window.refreshTabOrder = function () {
+  if (window.tabOrderManager) {
+    window.tabOrderManager.updateTabOrder();
+  }
+};
+
+// Test function to check what's focusable
+window.testFocus = function () {
+  const elements = document.querySelectorAll('[tabindex="2"]');
+  console.log('Elements with tabindex="2":', elements.length);
+  if (elements.length > 0) {
+    console.log('First element with tabindex="2":', elements[0]);
+    console.log("Can it be focused?");
+    elements[0].focus();
+    console.log("Active element after focus:", document.activeElement);
+  }
+};
