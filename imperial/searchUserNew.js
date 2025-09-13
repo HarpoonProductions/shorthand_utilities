@@ -935,6 +935,9 @@ window.testFocus = function () {
   }
 };
 
+
+*/
+
 (function () {
   "use strict";
 
@@ -1033,8 +1036,6 @@ window.testFocus = function () {
 
   console.log("MutationObserver script initialized successfully");
 })();
-
-*/
 
 class TabOrderManager {
   constructor() {
