@@ -1131,7 +1131,7 @@ class TabOrderManager {
       }
     });
 
-    console.log("NEWNEW", allNavLinks);
+    console.log("NEWNEW", allNavLinks, newNavs);
 
     newNavs.forEach((link) => {
       link.setAttribute("tabindex", String(tabIndex++));
@@ -1144,6 +1144,8 @@ class TabOrderManager {
     const dropdownSpans = document.querySelectorAll(
       "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
     );
+
+    console.log(dropdownSpans);
 
     if (
       dropdownSpans[0] &&
