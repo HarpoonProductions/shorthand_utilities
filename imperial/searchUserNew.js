@@ -1164,7 +1164,7 @@ class TabOrderManager {
 
     if (dropdownSpan && dropdownSpan.textContent.trim() === "Explore more") {
       console.log("updating explore");
-      dropdownSpan.setAttribute("tabindex", String(tabIndex++));
+      dropdownSpan.setAttribute("tabindex", "-1");
       console.log(`Custom dropdown 1 - tabindex ${tabIndex - 1}`);
 
       // And its button
