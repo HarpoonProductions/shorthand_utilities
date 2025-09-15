@@ -1117,6 +1117,7 @@ class TabOrderManager {
     const newNavs = [];
 
     let memory;
+    let ceremony;
 
     allNavLinks.forEach((link) => {
       if (
@@ -1126,6 +1127,9 @@ class TabOrderManager {
         !link.textContent.trim().includes("Ceremony guides")
       ) {
         newNavs.push(link);
+      }
+      if (link.textContent.trim().includes("Ceremony guides")) {
+        ceremony = link;
       } else {
         memory = link;
       }
@@ -1141,34 +1145,26 @@ class TabOrderManager {
     });
 
     // 3. Find Explore more span separately
-    const dropdownSpans = document.querySelectorAll(
+    const dropdownSpan = document.querySelector(
       "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
     );
 
-    console.log(dropdownSpans);
-
-    if (
-      dropdownSpans[0] &&
-      dropdownSpans[0].textContent.trim() === "Ceremony guides"
-    ) {
+    if (ceremony && ceremony.textContent.trim() === "Ceremony guides") {
       console.log("updating ceremony");
-      dropdownSpans[0].setAttribute("tabindex", String(tabIndex++));
+      ceremony.setAttribute("tabindex", String(tabIndex++));
       console.log(`Custom dropdown 0 - tabindex ${tabIndex - 1}`);
 
       // And its button
-      const exploreBtn = dropdownSpans[0].nextElementSibling;
+      const exploreBtn = ceremony.nextElementSibling;
       if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
         exploreBtn.setAttribute("tabindex", String(tabIndex++));
         console.log(`custom dropdown 0 button - tabindex ${tabIndex - 1}`);
       }
     }
 
-    if (
-      dropdownSpans[1] &&
-      dropdownSpans[1].textContent.trim() === "Explore more"
-    ) {
+    if (dropdownSpan && dropdownSpan.textContent.trim() === "Explore more") {
       console.log("updating explore");
-      dropdownSpans[1].setAttribute("tabindex", String(tabIndex++));
+      dropdownSpan.setAttribute("tabindex", String(tabIndex++));
       console.log(`Custom dropdown 1 - tabindex ${tabIndex - 1}`);
 
       // And its button
