@@ -168,6 +168,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Select the target node (the div with class .project-search-sideBar)
   const targetNode = document.querySelector(".project-search-sideBar");
 
+  console.log("Getting Project", targetNode);
+
   // Check if targetNode exists to avoid errors
   if (targetNode) {
     observer.observe(targetNode, config);
@@ -182,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
   style.textContent = `
     @media (min-width: 900px) {
       .project-search-button::after {
-          content: "Search name TEST:" !important;
+          content: "Search name:" !important;
       }
     }
   `;
