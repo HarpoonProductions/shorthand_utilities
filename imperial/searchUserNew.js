@@ -212,7 +212,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Create and insert sentry section before the target element
   function createSentrySection() {
-    const targetElement = document.getElementById("section-tVbkG6IJAz");
+    const targetElement =
+      document.getElementById("section-tVbkG6IJAz") ||
+      document.getElementById("#section-EHjvjQ9uQ4");
 
     if (targetElement) {
       const sentrySection = document.createElement("div");
