@@ -150,11 +150,7 @@ const callback = function (mutationsList, observer) {
       for (const node of mutation.addedNodes) {
         console.log("node", node);
         // Check if the added node is a ul with class '.project-search-results'
-        if (
-          node.nodeType === 1 &&
-          (node.matches(".project-search-results") ||
-            node.matches(".search-results-found-list"))
-        ) {
+        if (node.nodeType === 1 && node.matches(".project-search-results")) {
           const listItems = node.querySelectorAll(".project-story-list-item");
           listItems.forEach(processListItem);
         }
