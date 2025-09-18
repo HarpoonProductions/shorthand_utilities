@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
   style.textContent = `
     @media (min-width: 900px) {
       .project-search-button::after {
-          content: "Search name:" !important;
+          content: "Search name TEST:" !important;
       }
     }
   `;
