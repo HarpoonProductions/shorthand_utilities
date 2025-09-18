@@ -143,9 +143,12 @@ function processListItem(li) {
 
 // Callback function to execute when mutations are observed
 const callback = function (mutationsList, observer) {
+  console.log("calling back");
   for (const mutation of mutationsList) {
+    console.log("mutation", mutation);
     if (mutation.type === "childList") {
       for (const node of mutation.addedNodes) {
+        console.log("node", node);
         // Check if the added node is a ul with class '.project-search-results'
         if (node.nodeType === 1 && node.matches(".project-search-results")) {
           const listItems = node.querySelectorAll(".project-story-list-item");
@@ -218,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function createSentrySection() {
     const targetElement =
       document.getElementById("section-tVbkG6IJAz") ||
-      document.getElementById("section-EHjvjQ9uQ4");
+      document.getElementById("section-OcWb6x3SxS");
 
     if (targetElement) {
       const sentrySection = document.createElement("div");
