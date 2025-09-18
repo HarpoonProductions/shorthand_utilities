@@ -156,25 +156,27 @@ const callback = function (mutationsList, observer) {
   }
 };
 
-// Create a MutationObserver instance
-const observer = new MutationObserver(callback);
-
-// Configuration of the observer
-const config = { childList: true, subtree: true };
-
-// Select the target node (the div with class .project-search-sideBar)
-const targetNode = document.querySelector(".project-search-sideBar");
-
-// Check if targetNode exists to avoid errors
-if (targetNode) {
-  observer.observe(targetNode, config);
-} else {
-  console.error("The target element `.project-search-sideBar` was not found.");
-}
-
 // Optionally, disconnect the observer at some point using observer.disconnect();
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Create a MutationObserver instance
+  const observer = new MutationObserver(callback);
+
+  // Configuration of the observer
+  const config = { childList: true, subtree: true };
+
+  // Select the target node (the div with class .project-search-sideBar)
+  const targetNode = document.querySelector(".project-search-sideBar");
+
+  // Check if targetNode exists to avoid errors
+  if (targetNode) {
+    observer.observe(targetNode, config);
+  } else {
+    console.error(
+      "The target element `.project-search-sideBar` was not found."
+    );
+  }
+
   var style = document.createElement("style");
   style.id = "searchTitle";
   style.textContent = `
@@ -214,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function createSentrySection() {
     const targetElement =
       document.getElementById("section-tVbkG6IJAz") ||
-      document.getElementById("#section-EHjvjQ9uQ4");
+      document.getElementById("section-EHjvjQ9uQ4");
 
     if (targetElement) {
       const sentrySection = document.createElement("div");
