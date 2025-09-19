@@ -125,11 +125,17 @@ function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
-    const result = document.querySelector(".project-search-results");
-    result.style.display = "none";
+    const result = document.querySelectorAll(
+      ".project-search-results, .search-results-found-list"
+    );
+    result.forEach((result) => (result.style.display = "none"));
     if (
       link.href ===
-      "https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html"
+        "https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html" ||
+      link.href ===
+        "https://graduation-programmes.imperial.ac.uk/7f547269-7abd-44bc-94bd-c0cae69b796e/index.html" ||
+      link.href ===
+        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html"
     ) {
       const input = document.querySelector(".project-search-input");
       const name = input ? input.value : "";
@@ -150,7 +156,11 @@ const callback = function (mutationsList, observer) {
       for (const node of mutation.addedNodes) {
         console.log("node", node);
         // Check if the added node is a ul with class '.project-search-results'
-        if (node.nodeType === 1 && node.matches(".project-search-results")) {
+        if (
+          node.nodeType === 1 &&
+          (node.matches(".project-search-results") ||
+            node.matches(".search-results-found-list"))
+        ) {
           const listItems = node.querySelectorAll(".project-story-list-item");
           listItems.forEach(processListItem);
         }
