@@ -126,7 +126,7 @@ function processListItem(li) {
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
     const result = document.querySelectorAll(
-      ".project-search-results, .search-results-found-list"
+      ".project-search-results, .search-results-found-list, .project-search-results-container"
     );
     result.forEach((result) => (result.style.display = "none"));
     if (
@@ -142,7 +142,7 @@ function processListItem(li) {
       const studentName = encodeURIComponent(name);
       const url = new URL(link.href);
       url.searchParams.set("student_name", studentName);
-      // window.location.replace(url.href);
+      window.location.replace(url.href);
     }
   }
 }
