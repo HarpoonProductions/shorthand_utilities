@@ -1187,6 +1187,7 @@ class TabOrderManager {
       console.log(`Custom dropdown 1 - tabindex ${tabIndex - 1}`);
 
       // And its button
+      return;
       const exploreBtn = dropdownSpan.nextElementSibling;
       if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
         exploreBtn.setAttribute("tabindex", String(tabIndex++));
