@@ -142,7 +142,7 @@ function processListItem(li) {
       const studentName = encodeURIComponent(name);
       const url = new URL(link.href);
       url.searchParams.set("student_name", studentName);
-      window.location.replace(url.href);
+      // window.location.replace(url.href);
     }
   }
 }
