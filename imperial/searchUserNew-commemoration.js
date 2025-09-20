@@ -1,3 +1,20 @@
+(function () {
+  const origTo = window.scrollTo;
+  const origInto = Element.prototype.scrollIntoView;
+
+  window.scrollTo = function (...args) {
+    console.warn("[trace] window.scrollTo", args);
+    console.trace();
+    return origTo.apply(this, args);
+  };
+
+  Element.prototype.scrollIntoView = function (...args) {
+    console.warn("[trace] scrollIntoView on", this, args);
+    console.trace();
+    return origInto.apply(this, args);
+  };
+})();
+
 function updateResultButtonText(current, total) {
   var button = document.getElementById("result-inner");
   if (button) {
