@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Handling submission...");
     panelOpenButton.click(); // First click to open the panel
     setTimeout(() => {
+      panelEnterButton.removeAttribute("disabled");
       panelEnterButton.click();
       if (input2.value !== storedInput) input2.value = storedInput;
       scrollToInputField(input2); // Smooth scroll to inputField2
