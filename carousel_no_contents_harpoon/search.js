@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to handle the button clicks and scrolling
   function handleSubmission() {
-    console.log("Handling submission...");
+    console.log("Handling submission TEST3...");
     panelOpenButton.click(); // First click to open the panel
     setTimeout(() => {
       panelEnterButton.click();
