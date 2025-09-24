@@ -16,17 +16,18 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("panelOpenButton:", panelOpenButton);
   console.log("panelEnterButton:", panelEnterButton);
 
-  // Update input2 whenever input1 changes
-  input1.addEventListener("input", function () {
-    storedInput = this.value;
-    input2.value = this.value;
-  });
+  // // Update input2 whenever input1 changes
+  // input1.addEventListener("input", function () {
+  //   storedInput = this.value;
+  //   input2.value = this.value;
+  // });
 
   // Function to handle the button clicks and scrolling
   function handleSubmission() {
     console.log("Handling submission...");
     panelOpenButton.click(); // First click to open the panel
     setTimeout(() => {
+      panelEnterButton.removeAttribute("disabled");
       panelEnterButton.click();
       if (input2.value !== storedInput) input2.value = storedInput;
       scrollToInputField(input2); // Smooth scroll to inputField2

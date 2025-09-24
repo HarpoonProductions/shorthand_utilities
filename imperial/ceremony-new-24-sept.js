@@ -53,14 +53,11 @@ document.addEventListener("DOMContentLoaded", function () {
     caretButton.setAttribute("aria-controls", dropdownId);
 
     // Compose: <a> label + caret button
-    // (We keep the caret as a separate focusable control for keyboard users)
     const labelWrap = document.createElement("span");
     labelWrap.style.display = "inline-flex";
     labelWrap.style.alignItems = "center";
     labelWrap.style.gap = "6px";
     labelWrap.style.width = "100%";
-    // Move the caret button next to the label but inside the anchor's visual area
-    // NOTE: caret is NOT appended to the <a> to avoid nested interactive controls
     labelWrap.appendChild(ceremonyLink);
     labelWrap.appendChild(caretButton);
 
@@ -92,20 +89,24 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdown.style.padding = "8px";
     dropdown.setAttribute("role", "menu");
 
+    // ---- items: add 'key' (identity) and keep 'scrollToId' (anchor) ----
     const items = [
       {
+        key: "ceremony-1",
         label: "10.00 Faculty of Medicine",
         scrollToId: "ceremony-1-anchor",
         sections:
           ".Theme-Section-Position-5, .Theme-Section-Position-6, .Theme-Section-Position-7, .Theme-Section-Position-8, .Theme-Section-Position-9",
       },
       {
+        key: "ceremony-2",
         label: "13.15 Faculty of Natural Sciences",
         scrollToId: "ceremony-2-anchor",
         sections:
           ".Theme-Section-Position-10, .Theme-Section-Position-11, .Theme-Section-Position-12, .Theme-Section-Position-13, .Theme-Section-Position-14",
       },
       {
+        key: "ceremony-3",
         label: "16.30 Faculty of Engineering",
         scrollToId: "ceremony-3-anchor",
         sections:
@@ -129,7 +130,6 @@ document.addEventListener("DOMContentLoaded", function () {
       link.style.color = "#fff";
       link.style.cursor = "pointer";
 
-      // Hover styling (inline to match your pattern)
       link.addEventListener("mouseenter", () => {
         link.style.backgroundColor = "#40E0D04D";
         link.style.color = "white";
@@ -141,21 +141,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Click handler: keep your section toggle + smooth scroll, then close menu
       link.addEventListener("click", function (e) {
-        // We want to control scroll + visibility, so prevent default anchor behaviour
+        const menu = document.querySelector(
+          'button.Navigation__hamburger[aria-expanded="true"]'
+        );
+        if (menu) menu.click();
         e.preventDefault();
         e.stopPropagation();
 
         // Hide all groups
         const allSections = document.querySelectorAll(`
-          .Theme-Section-Position-5, .Theme-Section-Position-6, .Theme-Section-Position-7, 
-          .Theme-Section-Position-8, .Theme-Section-Position-9, .Theme-Section-Position-10, 
-          .Theme-Section-Position-11, .Theme-Section-Position-12, .Theme-Section-Position-13, 
-          .Theme-Section-Position-14, .Theme-Section-Position-15, .Theme-Section-Position-16, 
-          .Theme-Section-Position-17, .Theme-Section-Position-18, .Theme-Section-Position-19
-        `);
+            .Theme-Section-Position-5, .Theme-Section-Position-6, .Theme-Section-Position-7, 
+            .Theme-Section-Position-8, .Theme-Section-Position-9, .Theme-Section-Position-10, 
+            .Theme-Section-Position-11, .Theme-Section-Position-12, .Theme-Section-Position-13, 
+            .Theme-Section-Position-14, .Theme-Section-Position-15, .Theme-Section-Position-16, 
+            .Theme-Section-Position-17, .Theme-Section-Position-18, .Theme-Section-Position-19
+          `);
         allSections.forEach((section) => section.classList.remove("showing"));
 
-        // Clear any saved state to prevent conflicts with restoration logic
         try {
           sessionStorage.removeItem("lastActiveToggle");
           sessionStorage.removeItem("lastScrollY");
@@ -183,7 +185,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Smooth scroll to the anchor target
         const target = document.getElementById(item.scrollToId);
-
         if (target) {
           target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
@@ -313,8 +314,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // scroll
-
     // ---------- FLOATING BARS (IO + rect fallback + triggers + sentinels + logs) ----------
 
     const FLOATING_IO_OPTIONS = {
@@ -330,14 +329,14 @@ document.addEventListener("DOMContentLoaded", function () {
     /** Global “always hide all” section(s) */
     const ALWAYS_HIDE_SELECTORS = ["#section-cI3S4Duca7"];
 
-    /** Switch-to-other ceremony triggers */
+    /** Switch-to-other ceremony triggers — now point at *anchor* ids */
     const CEREMONY_TRIGGER_SELECTORS = new Map([
-      ["ceremony-1", ["#ceremony-2", "#ceremony-3"]],
-      ["ceremony-2", ["#ceremony-1", "#ceremony-3"]],
-      ["ceremony-3", ["#ceremony-1", "#ceremony-2"]],
+      ["ceremony-1", ["#ceremony-2-anchor", "#ceremony-3-anchor"]],
+      ["ceremony-2", ["#ceremony-1-anchor", "#ceremony-3-anchor"]],
+      ["ceremony-3", ["#ceremony-1-anchor", "#ceremony-2-anchor"]],
     ]);
 
-    /** NEW: end-of-block sentinel triggers (positive for own ceremony) */
+    /** End-of-block sentinel triggers (unchanged) */
     const SENTINEL_SELECTORS = new Map([
       ["ceremony-1", ["#ceremony-1-sentinel"]],
       ["ceremony-2", ["#ceremony-2-sentinel"]],
@@ -368,16 +367,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // Counts from main IO
+      // Counts from main IO — use item.key for identity
       const counts = Object.create(null);
-      items.forEach((item) => (counts[item.scrollToId] = 0));
+      items.forEach((item) => (counts[item.key] = 0));
 
-      // NEW: counts from sentinels (kept separate so we can see which path is active)
+      // Counts from sentinels — use item.key for identity
       const sentinelCounts = Object.create(null);
-      items.forEach((item) => (sentinelCounts[item.scrollToId] = 0));
+      items.forEach((item) => (sentinelCounts[item.key] = 0));
 
-      // ceremonyId -> observed content sections
-      const sectionsById = new Map(items.map((it) => [it.scrollToId, []]));
+      // ceremonyKey -> observed content sections
+      const sectionsById = new Map(items.map((it) => [it.key, []]));
       const observedSet = new WeakSet();
 
       let suppressAll = false;
@@ -414,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const computeVisible = (id) =>
         !suppressAll &&
         ((counts[id] || 0) > 0 ||
-          (sentinelCounts[id] || 0) > 0 || // NEW: sentinel makes it positive
+          (sentinelCounts[id] || 0) > 0 ||
           isVisibleByRects(id));
 
       const updateForId = (id, reason = "") => {
@@ -446,14 +445,14 @@ document.addEventListener("DOMContentLoaded", function () {
           hideAllBars();
           return;
         }
-        items.forEach((it) => updateForId(it.scrollToId, reason));
+        items.forEach((it) => updateForId(it.key, reason)); // <-- use key
       };
 
-      // Main content IO (observes TRUE content sections from items[].sections)
+      // Main content IO: tag observed sections with ceremony key
       const io = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const el = entry.target;
-          const itemId = el.getAttribute("data-item-id");
+          const itemId = el.getAttribute("data-item-id"); // value = key now
           if (!itemId) return;
 
           const before = counts[itemId] || 0;
@@ -488,10 +487,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const ensureObserved = () => {
         items.forEach((item) => {
           const arr = Array.from(document.querySelectorAll(item.sections));
-          sectionsById.set(item.scrollToId, arr);
+          sectionsById.set(item.key, arr); // <-- key
           arr.forEach((section) => {
             if (!section.hasAttribute("data-item-id")) {
-              section.setAttribute("data-item-id", item.scrollToId);
+              section.setAttribute("data-item-id", item.key); // <-- value is key
             }
             if (!observedSet.has(section)) {
               observedSet.add(section);
@@ -500,7 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log(
                   "%c[FLOATING] observe ↳",
                   "color:#7aa2f7",
-                  item.scrollToId,
+                  item.key,
                   labelEl(section)
                 );
             }
@@ -549,7 +548,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   );
               }
             } else {
-              // Re-check if any other always-hide is still intersecting
               const still = entries.some(
                 (e) => e !== entry && e.isIntersecting
               );
@@ -583,14 +581,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-      // SWITCH observer (other-ceremony triggers)
+      // SWITCH observer (other-ceremony triggers) — selectors use *anchor* ids; update by key
       const ioSwitch = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
             const target = entry.target;
             for (const [
-              ceremonyId,
+              ceremonyId, // this is actually the ceremony *key*
               selectors,
             ] of CEREMONY_TRIGGER_SELECTORS.entries()) {
               if (selectors.some((sel) => target.matches(sel))) {
@@ -598,10 +596,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   console.log(
                     "%c[FLOATING] SWITCH trigger ENTER",
                     "color:#e0af68",
-                    {
-                      ceremonyId,
-                      trigger: labelEl(target),
-                    }
+                    { ceremonyId, trigger: labelEl(target) }
                   );
                 }
                 hideAllBars();
@@ -630,14 +625,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-      // NEW: SENTINEL observer (positive trigger for own ceremony, negative for others)
+      // SENTINEL observer (unchanged behavior; now uses keys consistently)
       const ioSentinels = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             const target = entry.target;
-            // Which ceremony does this sentinel belong to?
             for (const [
-              ceremonyId,
+              ceremonyId, // key
               selectors,
             ] of SENTINEL_SELECTORS.entries()) {
               if (selectors.some((sel) => target.matches(sel))) {
@@ -653,7 +647,6 @@ document.addEventListener("DOMContentLoaded", function () {
                       { ceremonyId, target: labelEl(target) }
                     );
                   }
-                  // Negative effect for others: hide all, then let this one show via update
                   hideAllBars();
                   updateForId(ceremonyId, "sentinel-enter");
                 } else {
@@ -661,14 +654,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     0,
                     (sentinelCounts[ceremonyId] || 0) - 1
                   );
-                  // if (DEBUG) {
-                  //   console.log(
-                  //     "%c[FLOATING] SENTINEL LEAVE",
-                  //     "color:#7dcfff",
-                  //     { ceremonyId, target: labelEl(target) }
-                  //   );
-                  // }
-                  // updateForId(ceremonyId, "sentinel-leave");
+                  // leaving sentinel intentionally does not force-hide
                 }
                 break;
               }
@@ -678,7 +664,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { root: null, threshold: 0 }
       );
 
-      // Observe sentinel elements only (NOT added to items[].sections)
       SENTINEL_SELECTORS.forEach((selectors, ceremonyId) => {
         selectors.forEach((sel) => {
           document.querySelectorAll(sel).forEach((el) => {
