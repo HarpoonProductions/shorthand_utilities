@@ -1,11 +1,16 @@
-var lastScrollY = sessionStorage.getItem("lastScrollY");
-if (lastScrollY !== null) {
-  var y = parseInt(lastScrollY, 10);
-  if (!Number.isNaN(y)) {
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        window.scrollTo(0, y);
-      });
-    });
+// Block mouseup for clicks that land on #inputField1
+function blockIfInsideInput(e) {
+  if (
+    e.target &&
+    (e.target.closest("#inputField1") ||
+      e.target.closest(".project-search-input") ||
+      e.target.closest(".Theme-SearchInput"))
+  ) {
+    e.stopImmediatePropagation(); // stop later capture + all bubble listeners
+    // e.preventDefault(); // only if needed
   }
 }
+
+// Attach on window and document (capture) to be as early as possible
+window.addEventListener("mouseup", blockIfInsideInput, true);
+document.addEventListener("mouseup", blockIfInsideInput, true);
