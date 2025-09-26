@@ -622,13 +622,19 @@ document.addEventListener("DOMContentLoaded", function () {
           const daySection = document.querySelectorAll("[id^=" + day + "]");
           console.log("DAY SECTION CHECK", daySection);
           if (daySection && daySection.length) {
-            daySection.forEach((section) => section.classList.add("showing"));
+            daySection.forEach((section) => {
+              console.log("SECTION CHECK", section);
+              section.classList.add("showing");
+            });
 
             daySection.forEach((section) => {
               const sec = section.querySelector(
                 'section[class^="Theme-Section-Position"]'
               );
-              if (sec) sec.classList.add("showing");
+              if (sec) {
+                console.log("SECTION 2 CHECK", section);
+                sec.classList.add("showing");
+              }
             });
 
             const dayBar = daySection[0].querySelector(".floating-day-bar");
