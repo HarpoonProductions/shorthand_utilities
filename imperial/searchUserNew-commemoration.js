@@ -615,10 +615,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         container.classList.add("show");
         const id = container.getAttribute("id");
+        console.log("ID CHECK", id);
         const day = id.match(/^[^-]+-\d{4}/);
-
+        console.log("DAY CHECK", day);
         if (day && day[0]) {
           const daySection = document.querySelectorAll("[id^=" + day + "]");
+          console.log("DAY SECTION CHECK", daySection);
           if (daySection && daySection.length) {
             daySection.forEach((section) => section.classList.add("showing"));
 
