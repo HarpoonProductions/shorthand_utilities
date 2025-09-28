@@ -144,7 +144,7 @@ function processListItem(li) {
     const result = document.querySelectorAll(
       ".project-search-results, .search-results-found-list, .project-search-results-container"
     );
-    result.forEach((result) => (result.style.display = "none"));
+    // result.forEach((result) => (result.style.display = "none"));
     if (
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html" ||
@@ -158,7 +158,7 @@ function processListItem(li) {
       const studentName = encodeURIComponent(name);
       const url = new URL(link.href);
       url.searchParams.set("student_name", studentName);
-      window.location.replace(url.href);
+      // window.location.replace(url.href);
     }
   }
 }

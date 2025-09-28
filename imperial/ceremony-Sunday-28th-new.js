@@ -101,21 +101,21 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         key: "ceremony-1",
         label: "10.00 Faculty of Medicine",
-        scrollToId: "ceremony-1-anchor",
+        scrollToId: "ceremony-1",
         sections:
           ".Theme-Section-Position-5, .Theme-Section-Position-6, .Theme-Section-Position-7, .Theme-Section-Position-8, .Theme-Section-Position-9",
       },
       {
         key: "ceremony-2",
         label: "13.15 Faculty of Natural Sciences",
-        scrollToId: "ceremony-2-anchor",
+        scrollToId: "ceremony-2",
         sections:
           ".Theme-Section-Position-10, .Theme-Section-Position-11, .Theme-Section-Position-12, .Theme-Section-Position-13, .Theme-Section-Position-14",
       },
       {
         key: "ceremony-3",
         label: "16.30 Faculty of Engineering",
-        scrollToId: "ceremony-3-anchor",
+        scrollToId: "ceremony-3",
         sections:
           ".Theme-Section-Position-15, .Theme-Section-Position-16, .Theme-Section-Position-17, .Theme-Section-Position-18, .Theme-Section-Position-19",
       },
@@ -179,9 +179,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (timeToggles.length > 0) {
           timeToggles.forEach((btn) => btn.classList.remove("active"));
           let toggleIndex = -1;
-          if (item.scrollToId === "ceremony-1-anchor") toggleIndex = 0;
-          else if (item.scrollToId === "ceremony-2-anchor") toggleIndex = 1;
-          else if (item.scrollToId === "ceremony-3-anchor") toggleIndex = 2;
+          if (item.scrollToId === "ceremony-1") toggleIndex = 0;
+          else if (item.scrollToId === "ceremony-2") toggleIndex = 1;
+          else if (item.scrollToId === "ceremony-3") toggleIndex = 2;
           if (toggleIndex >= 0 && timeToggles[toggleIndex]) {
             timeToggles[toggleIndex].classList.add("active");
             try {
@@ -321,387 +321,21 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // ---------- FLOATING BARS (IO + rect fallback + triggers + sentinels + logs) ----------
-
-    const FLOATING_IO_OPTIONS = {
-      root: null,
-      threshold: 0.05,
-      // rootMargin: '8% 0px 8% 0px',
-    };
-
-    // Bias the rect fallback if you have a sticky header
-    const VIEW_TOP_OFFSET = 0;
-    const VIEW_BOTTOM_OFFSET = 0;
-
-    /** Global “always hide all” section(s) */
-    const ALWAYS_HIDE_SELECTORS = ["#section-cI3S4Duca7"];
-
-    /** Switch-to-other ceremony triggers — now point at *anchor* ids */
-    const CEREMONY_TRIGGER_SELECTORS = new Map([
-      ["ceremony-1", ["#ceremony-2-anchor", "#ceremony-3-anchor"]],
-      ["ceremony-2", ["#ceremony-1-anchor", "#ceremony-3-anchor"]],
-      ["ceremony-3", ["#ceremony-1-anchor", "#ceremony-2-anchor"]],
-    ]);
-
-    /** End-of-block sentinel triggers (unchanged) */
-    const SENTINEL_SELECTORS = new Map([
-      ["ceremony-1", ["#ceremony-1-sentinel"]],
-      ["ceremony-2", ["#ceremony-2-sentinel"]],
-      ["ceremony-3", ["#ceremony-3-sentinel"]],
-    ]);
-
-    function setupFloatingBarsByIntersection(items) {
-      const DEBUG = true;
-
-      const labelEl = (el) => {
-        if (!el) return "<null>";
-        const id = el.id ? `#${el.id}` : "";
-        const pos =
-          (el.className || "")
-            .toString()
-            .match(/Theme-Section-Position-\d+/)?.[0] || "";
-        return `${el.tagName.toLowerCase()}${id}${pos ? ` [${pos}]` : ""}`;
-      };
-
-      // Bars
-      const barsById = new Map();
-      document.querySelectorAll(".floating-day-bar[data-id]").forEach((bar) => {
-        const id = bar.getAttribute("data-id");
-        if (id) {
-          barsById.set(id, bar);
-          if (DEBUG)
-            console.log("%c[FLOATING] bar detected", "color:#9ece6a", id, bar);
+    function updateFloatingBars() {
+      const bars = document.querySelectorAll(".floating-day-bar");
+      bars.forEach((bar) => {
+        const section = bar.closest("section");
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 0 && section.classList.contains("showing")) {
+          bar.classList.add("visible");
+        } else {
+          bar.classList.remove("visible");
         }
       });
-
-      // Counts from main IO — use item.key for identity
-      const counts = Object.create(null);
-      items.forEach((item) => (counts[item.key] = 0));
-
-      // Counts from sentinels — use item.key for identity
-      const sentinelCounts = Object.create(null);
-      items.forEach((item) => (sentinelCounts[item.key] = 0));
-
-      // ceremonyKey -> observed content sections
-      const sectionsById = new Map(items.map((it) => [it.key, []]));
-      const observedSet = new WeakSet();
-
-      let suppressAll = false;
-
-      const hideAllBars = () =>
-        barsById.forEach((b) => b.classList.remove("visible"));
-      const showBar = (id) => {
-        const b = barsById.get(id);
-        if (b) b.classList.add("visible");
-      };
-      const hideBar = (id) => {
-        const b = barsById.get(id);
-        if (b) b.classList.remove("visible");
-      };
-
-      const viewportIntersect = (rect) => {
-        const top = rect.top;
-        const bottom = rect.bottom;
-        const vpTop = 0 + VIEW_TOP_OFFSET;
-        const vpBottom = window.innerHeight + VIEW_BOTTOM_OFFSET;
-        return bottom > vpTop && top < vpBottom;
-      };
-
-      const isVisibleByRects = (id) => {
-        if (suppressAll) return false;
-        const list = sectionsById.get(id) || [];
-        for (const el of list) {
-          const rect = el.getBoundingClientRect();
-          if (viewportIntersect(rect)) return true;
-        }
-        return false;
-      };
-
-      const computeVisible = (id) =>
-        !suppressAll &&
-        ((counts[id] || 0) > 0 ||
-          (sentinelCounts[id] || 0) > 0 ||
-          isVisibleByRects(id));
-
-      const updateForId = (id, reason = "") => {
-        const visible = computeVisible(id);
-        if (DEBUG) {
-          console.log(
-            `%c[FLOATING] update → ${id} ${visible ? "SHOW" : "HIDE"}`,
-            `color:${visible ? "#9ece6a" : "#f7768e"}`,
-            {
-              reason,
-              counts: { main: counts[id], sentinel: sentinelCounts[id] },
-              rectVisible: suppressAll ? false : isVisibleByRects(id),
-              suppressAll,
-            }
-          );
-        }
-        if (visible) showBar(id);
-        else hideBar(id);
-      };
-
-      const refreshAll = (reason = "refreshAll") => {
-        if (suppressAll) {
-          if (DEBUG)
-            console.log(
-              "%c[FLOATING] suppressAll active → hideAll",
-              "color:#e0af68",
-              { reason }
-            );
-          hideAllBars();
-          return;
-        }
-        items.forEach((it) => updateForId(it.key, reason)); // <-- use key
-      };
-
-      // Main content IO: tag observed sections with ceremony key
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          const el = entry.target;
-          const itemId = el.getAttribute("data-item-id"); // value = key now
-          if (!itemId) return;
-
-          const before = counts[itemId] || 0;
-          const delta = entry.isIntersecting ? +1 : -1;
-          counts[itemId] = Math.max(0, before + delta);
-
-          const label = entry.isIntersecting ? "ENTER" : "LEAVE";
-          if (DEBUG) {
-            console.groupCollapsed(
-              `%c[FLOATING] ${label} ${itemId} ← ${labelEl(el)}`,
-              `color:${entry.isIntersecting ? "#9ece6a" : "#f7768e"}`
-            );
-            console.log({
-              ceremony: itemId,
-              element: labelEl(el),
-              ratio: Number(
-                entry.intersectionRatio?.toFixed?.(3) ?? entry.intersectionRatio
-              ),
-              threshold: FLOATING_IO_OPTIONS.threshold,
-              rootMargin: FLOATING_IO_OPTIONS.rootMargin ?? "0px",
-              counts: { before, after: counts[itemId] },
-              sentinelCounts: sentinelCounts[itemId],
-              suppressAll,
-            });
-            console.groupEnd();
-          }
-
-          updateForId(itemId, `${label} ${labelEl(el)}`);
-        });
-      }, FLOATING_IO_OPTIONS);
-
-      const ensureObserved = () => {
-        items.forEach((item) => {
-          const arr = Array.from(document.querySelectorAll(item.sections));
-          sectionsById.set(item.key, arr); // <-- key
-          arr.forEach((section) => {
-            if (!section.hasAttribute("data-item-id")) {
-              section.setAttribute("data-item-id", item.key); // <-- value is key
-            }
-            if (!observedSet.has(section)) {
-              observedSet.add(section);
-              io.observe(section);
-              if (DEBUG)
-                console.log(
-                  "%c[FLOATING] observe ↳",
-                  "color:#7aa2f7",
-                  item.key,
-                  labelEl(section)
-                );
-            }
-          });
-        });
-      };
-
-      // Mutation observer (rebind on DOM swaps)
-      const mo = new MutationObserver((muts) => {
-        for (const m of muts) {
-          if (
-            m.type === "childList" &&
-            (m.addedNodes.length || m.removedNodes.length)
-          ) {
-            if (DEBUG)
-              console.log(
-                "%c[FLOATING] Mutation → re-scan sections",
-                "color:#e0af68"
-              );
-            ensureObserved();
-            refreshAll("mutation-resync");
-            break;
-          }
-        }
-      });
-      mo.observe(document.body, { childList: true, subtree: true });
-
-      window.addEventListener("resize", () => refreshAll("resize"), {
-        passive: true,
-      });
-
-      // ALWAYS-HIDE observer
-      const ioAlwaysHide = new IntersectionObserver(
-        (entries) => {
-          let changed = false;
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              if (!suppressAll) {
-                suppressAll = true;
-                changed = true;
-                if (DEBUG)
-                  console.log(
-                    "%c[FLOATING] ALWAYS-HIDE ENTER",
-                    "color:#bb9af7",
-                    labelEl(entry.target)
-                  );
-              }
-            } else {
-              const still = entries.some(
-                (e) => e !== entry && e.isIntersecting
-              );
-              if (!still && suppressAll) {
-                suppressAll = false;
-                changed = true;
-                if (DEBUG)
-                  console.log(
-                    "%c[FLOATING] ALWAYS-HIDE LEAVE",
-                    "color:#bb9af7",
-                    labelEl(entry.target)
-                  );
-              }
-            }
-          });
-          if (changed) refreshAll("always-hide-toggle");
-        },
-        { root: null, threshold: 0 }
-      );
-
-      ALWAYS_HIDE_SELECTORS.forEach((sel) => {
-        document.querySelectorAll(sel).forEach((el) => {
-          ioAlwaysHide.observe(el);
-          if (DEBUG)
-            console.log(
-              "%c[FLOATING] ALWAYS-HIDE observe",
-              "color:#bb9af7",
-              labelEl(el),
-              sel
-            );
-        });
-      });
-
-      // SWITCH observer (other-ceremony triggers) — selectors use *anchor* ids; update by key
-      const ioSwitch = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            const target = entry.target;
-            for (const [
-              ceremonyId, // this is actually the ceremony *key*
-              selectors,
-            ] of CEREMONY_TRIGGER_SELECTORS.entries()) {
-              if (selectors.some((sel) => target.matches(sel))) {
-                if (DEBUG) {
-                  console.log(
-                    "%c[FLOATING] SWITCH trigger ENTER",
-                    "color:#e0af68",
-                    { ceremonyId, trigger: labelEl(target) }
-                  );
-                }
-                hideAllBars();
-                updateForId(ceremonyId, "switch-trigger");
-                break;
-              }
-            }
-          });
-        },
-        { root: null, threshold: 0 }
-      );
-
-      CEREMONY_TRIGGER_SELECTORS.forEach((selectors, ceremonyId) => {
-        selectors.forEach((sel) => {
-          document.querySelectorAll(sel).forEach((el) => {
-            ioSwitch.observe(el);
-            if (DEBUG)
-              console.log(
-                "%c[FLOATING] SWITCH observe",
-                "color:#e0af68",
-                ceremonyId,
-                labelEl(el),
-                sel
-              );
-          });
-        });
-      });
-
-      // SENTINEL observer (unchanged behavior; now uses keys consistently)
-      const ioSentinels = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const target = entry.target;
-            for (const [
-              ceremonyId, // key
-              selectors,
-            ] of SENTINEL_SELECTORS.entries()) {
-              if (selectors.some((sel) => target.matches(sel))) {
-                if (entry.isIntersecting) {
-                  sentinelCounts[ceremonyId] = Math.max(
-                    1,
-                    (sentinelCounts[ceremonyId] || 0) + 1
-                  );
-                  if (DEBUG) {
-                    console.log(
-                      "%c[FLOATING] SENTINEL ENTER",
-                      "color:#7dcfff",
-                      { ceremonyId, target: labelEl(target) }
-                    );
-                  }
-                  hideAllBars();
-                  updateForId(ceremonyId, "sentinel-enter");
-                } else {
-                  sentinelCounts[ceremonyId] = Math.max(
-                    0,
-                    (sentinelCounts[ceremonyId] || 0) - 1
-                  );
-                  // leaving sentinel intentionally does not force-hide
-                }
-                break;
-              }
-            }
-          });
-        },
-        { root: null, threshold: 0 }
-      );
-
-      SENTINEL_SELECTORS.forEach((selectors, ceremonyId) => {
-        selectors.forEach((sel) => {
-          document.querySelectorAll(sel).forEach((el) => {
-            ioSentinels.observe(el);
-            if (DEBUG)
-              console.log(
-                "%c[FLOATING] SENTINEL observe",
-                "color:#7dcfff",
-                ceremonyId,
-                labelEl(el),
-                sel
-              );
-          });
-        });
-      });
-
-      // Init
-      ensureObserved();
-      refreshAll("init");
-
-      return () => {
-        io.disconnect();
-        mo.disconnect();
-        ioAlwaysHide.disconnect();
-        ioSwitch.disconnect();
-        ioSentinels.disconnect();
-      };
     }
-
-    // Init
-    setupFloatingBarsByIntersection(items);
+    window.addEventListener("scroll", updateFloatingBars, { passive: true });
+    updateFloatingBars();
   }
 
   createCeremonyGuideLink(); // Start the process
