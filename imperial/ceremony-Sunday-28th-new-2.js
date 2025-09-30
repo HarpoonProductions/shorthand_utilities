@@ -168,6 +168,8 @@ document.addEventListener("DOMContentLoaded", function () {
           section.classList.remove("show");
         });
 
+        document.body.classList.add("no_search");
+
         try {
           sessionStorage.removeItem("lastActiveToggle");
           sessionStorage.removeItem("lastScrollY");

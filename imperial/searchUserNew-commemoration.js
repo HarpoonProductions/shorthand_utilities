@@ -543,9 +543,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function scrollToAndHighlightText(t) {
     const text = toTitleCase(t);
-    const containers = document.querySelectorAll(
-      ".sh-names, .sh-prizewinnernames"
-    );
+    const BLACKLIST = [
+      "#section-1000-Faculty-of-Medicine-RAAfL6Gb9C",
+      "#section-1000-Awardees-ZDXuQCf04I",
+      "#section-1000-Prizewinners-mVj59WimUb",
+      "#section-1315-Faculty-of-Natural-Sciences-3Ki3t5HiWP",
+      "#section-1315-Awardees-5eRgt7aaSQ",
+      "#section-1315-Prizewinners-Zw6UNxD2G8",
+      "#section-1630-Faculty-of-Engineering-aZ7BhfnHLG",
+      "#section-1630-Awardees-QJ186VyFCA",
+      "#section-1630-Prizewinners-KzYozJGfQ8",
+    ];
+
+    const blacklistSelector = BLACKLIST.join(",");
+
+    const containers = [
+      ...document.querySelectorAll(".sh-names, .sh-prizewinnernames"),
+    ].filter((el) => !el.closest(blacklistSelector));
+
     if (!containers.length) {
       console.error("Container .sh-names not found.");
       return;
