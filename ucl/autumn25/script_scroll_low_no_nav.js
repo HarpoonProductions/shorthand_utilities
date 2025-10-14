@@ -1,5 +1,3 @@
-
-
 /* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
 (function () {
   let currentPageIndex = null;
