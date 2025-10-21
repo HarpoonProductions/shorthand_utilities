@@ -476,7 +476,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.contents {
   background: #2FBBBA;
-  color: #fff;
+  color: #000;
   border: 1px solid #fff;
   cursor: pointer;
   width: 105px;
