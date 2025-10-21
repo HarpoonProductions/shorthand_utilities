@@ -364,7 +364,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transition: transform 0.8s ease-in-out;
   z-index: 100;
   transition-delay: 0.5s;
-  border: 1px solid #fff;
+  border: 1px solid #000;
 }
 
 @media only screen and (min-width: 400px) {
