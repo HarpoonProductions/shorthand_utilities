@@ -30,7 +30,7 @@
 
         if (!isCurrent) {
           const pathname = window.location.pathname;
-          const clean = pathname.replace("/issue-32", "");
+          const clean = pathname.replace("/autumn-2025", "");
           const check = new RegExp(clean, "gi");
           isCurrent = clean !== "/index.html" && check.test(href);
         }
