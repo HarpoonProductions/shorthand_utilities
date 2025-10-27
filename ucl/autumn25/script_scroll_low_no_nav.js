@@ -3,7 +3,7 @@
   let currentPageIndex = null;
   var logoUrl = "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_icon.jpg";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl-logo-purple.png";
+    "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl-logo-aqua.png";
 
   function extractLinks(list) {
     const links = [];

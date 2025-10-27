@@ -81,7 +81,7 @@ font-style: normal;
   bottom: 35px;
   font-size: 17px;
   font-family: "Helvetica Neue Cond", sans-serif !important;
-  color: #fff;
+  color: #000;
 }
 
 @media only screen and (max-width: 799px) {
@@ -364,7 +364,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   transition: transform 0.8s ease-in-out;
   z-index: 100;
   transition-delay: 0.5s;
-  border: 1px solid #fff;
+  border: 1px solid #000;
 }
 
 @media only screen and (min-width: 400px) {
@@ -476,13 +476,19 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.contents {
   background: #2FBBBA;
-  color: #fff;
-  border: 1px solid #fff;
+  color: #000;
+  border: 1px solid #000;
   cursor: pointer;
   width: 105px;
   height: 126px;
   padding-bottom: 14px;
 }
+
+/* new from claude */
+.button_container.contents .contents-label {
+  color: #000; /* or whatever color you want */
+}
+/* end new from claude */
 
 .button_container.next {
   margin-left: 20px;
@@ -651,9 +657,4 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-text:hover {
   opacity: 1;
-}
-}}
-
-.related-story-image img
-}
 }
