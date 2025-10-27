@@ -430,7 +430,7 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
             function startPollingCarousel() {
               let poller = setInterval(() => {
                 const relatedStoryCarousel = document.querySelectorAll(
-                  '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"]'
+                  '.Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list="true"] li'
                 );
 
                 const navContainer = document.querySelector(
@@ -441,7 +441,7 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
 
                 if (
                   relatedStoryCarousel &&
-                  relatedStoryCarousel.length &&
+                  relatedStoryCarousel.length > 3 &&
                   navContainer
                 ) {
                   clearInterval(poller);
