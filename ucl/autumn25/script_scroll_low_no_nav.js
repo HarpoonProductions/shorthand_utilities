@@ -413,7 +413,7 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
     const maxAttempts = 50;
     let attempts = 0;
 
-    const pollForElement = () => {
+    const pollForElement = async () => {
       const list = document.querySelectorAll(
         ".Theme-RelatedStoriesSection:not(.sh-more) ul[data-related-stories-list='true']"
       );
@@ -421,7 +421,7 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
         console.log("polling", attempts, list);
         clearInterval(pollingInterval);
         if (list && list.length) {
-          const linksNew = extractLinks(list[list.length - 1]);
+          const linksNew = await extractLinks(list[list.length - 1]);
           renderCustomNavigation(linksNew);
           initializeCarousel(list[list.length - 1]);
 
