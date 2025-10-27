@@ -83,12 +83,11 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
       }
     }
 
-    // const cards = list.querySelectorAll(
-    //   ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
-    // );
+    await pollForCards(list);
 
-    const cards = await pollForCards(list);
-
+    const cards = list.querySelectorAll(
+      ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
+    );
     console.log(cards);
 
     cards.forEach(getLink);
