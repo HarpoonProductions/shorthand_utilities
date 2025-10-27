@@ -148,30 +148,30 @@
         const minSwipeDistance = 75; // Minimum pixels to be considered a swipe
         const maxVerticalDistance = 100; // Maximum vertical distance to still consider it a horizontal swipe
 
-        document.body.addEventListener("touchstart", (e) => {
-          touchstartX = e.changedTouches[0].screenX;
-          touchstartY = e.changedTouches[0].screenY;
-        });
+        // document.body.addEventListener("touchstart", (e) => {
+        //   touchstartX = e.changedTouches[0].screenX;
+        //   touchstartY = e.changedTouches[0].screenY;
+        // });
 
-        document.body.addEventListener("touchend", (e) => {
-          touchendX = e.changedTouches[0].screenX;
-          touchendY = e.changedTouches[0].screenY;
-          let horizontalDistance = touchendX - touchstartX;
-          let verticalDistance = Math.abs(touchendY - touchstartY); // Absolute value to handle both up and down swipes
+        // document.body.addEventListener("touchend", (e) => {
+        //   touchendX = e.changedTouches[0].screenX;
+        //   touchendY = e.changedTouches[0].screenY;
+        //   let horizontalDistance = touchendX - touchstartX;
+        //   let verticalDistance = Math.abs(touchendY - touchstartY); // Absolute value to handle both up and down swipes
 
-          if (
-            !e.target.closest(".Theme-RelatedStories") &&
-            horizontalDistance > minSwipeDistance &&
-            verticalDistance < maxVerticalDistance
-          ) {
-            window.location.href = url; // Navigate if swipe is valid and predominantly horizontal
-          }
-          // Always reset the touch coordinates to start fresh for the next swipe
-          touchstartX = 0;
-          touchstartY = 0;
-          touchendX = 0;
-          touchendY = 0;
-        });
+        //   if (
+        //     !e.target.closest(".Theme-RelatedStories") &&
+        //     horizontalDistance > minSwipeDistance &&
+        //     verticalDistance < maxVerticalDistance
+        //   ) {
+        //     window.location.href = url; // Navigate if swipe is valid and predominantly horizontal
+        //   }
+        //   // Always reset the touch coordinates to start fresh for the next swipe
+        //   touchstartX = 0;
+        //   touchstartY = 0;
+        //   touchendX = 0;
+        //   touchendY = 0;
+        // });
       }
     } else {
       buttonContainer.classList.add("next");
