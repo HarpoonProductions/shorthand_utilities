@@ -1,11 +1,41 @@
 /* Re-use of this code on stories not produced by Harpoon Productions is not permitted */
+
+function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+
+    const checkCards = () => {
+      const cards = list.querySelectorAll(
+        ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
+      );
+
+      console.log(`Found ${cards.length} cards`);
+
+      if (cards.length > minCount) {
+        console.log("Condition met! Proceeding...");
+        resolve(cards);
+      } else if (Date.now() - startTime > timeout) {
+        reject(
+          new Error(
+            `Timeout: Only found ${cards.length} cards after ${timeout}ms`
+          )
+        );
+      } else {
+        setTimeout(checkCards, interval);
+      }
+    };
+
+    checkCards();
+  });
+}
+
 (function () {
   let currentPageIndex = null;
   var logoUrl = "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl_icon.jpg";
   var logoUrlInner =
     "https://harpn.s3.eu-west-2.amazonaws.com/ucl/ucl-logo-aqua.png";
 
-  function extractLinks(list) {
+  async function extractLinks(list) {
     const links = [];
     const currentUrl = window.location.href;
 
@@ -53,9 +83,11 @@
       }
     }
 
-    const cards = list.querySelectorAll(
-      ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
-    );
+    // const cards = list.querySelectorAll(
+    //   ".Theme-RelatedStoriesSection:not(.sh-more) .related-story-card"
+    // );
+
+    const cards = await pollForCards(list);
 
     console.log(cards);
 
