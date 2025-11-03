@@ -1,0 +1,28 @@
+{
+  "name": "UCL Magazine — Autumn 2025",
+  "short_name": "UCL Magazine",
+  "description": "Offline-first PWA for UCL Portico Magazine — Autumn 2025.",
+  "start_url": "/autumn-2025/?source=pwa",
+  "scope": "/autumn-2025/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/autumn-2025/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/autumn-2025/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/autumn-2025/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
