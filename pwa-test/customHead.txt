@@ -31,7 +31,7 @@ async function sendAssetsToSW() {
   });
 
   assets.add(location.pathname);
-  assets.add('/dummy-magazine/');
+  assets.add('/dummy-magazine/index.html');
 
   reg.active?.postMessage({ type: 'PWA_ASSETS', assets: [...assets] });
 }

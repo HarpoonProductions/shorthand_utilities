@@ -30,6 +30,15 @@ const PAGES_INDEX_URL =
 
 // ------------- helpers -------------
 
+function asIndexRequest(request) {
+  const url = new URL(request.url);
+  if (url.pathname.endsWith("/")) {
+    url.pathname += "index.html";
+    return new Request(url.toString(), { credentials: "same-origin" });
+  }
+  return request;
+}
+
 const isHTML = (req) =>
   req.mode === "navigate" || req.destination === "document";
 const isStatic = (req) => STATIC_DESTS.includes(req.destination);
@@ -191,20 +200,25 @@ self.addEventListener("fetch", (event) => {
 
 async function handleHTML(request) {
   const cache = await caches.open(HTML_CACHE);
+
+  // Map "/path/" → "/path/index.html" for S3 REST endpoint
+  const indexReq = asIndexRequest(request);
+
   try {
-    const net = await fetch(request);
-    cache.put(request, net.clone()).catch(() => {});
+    const net = await fetch(indexReq);
+    cache.put(indexReq, net.clone()).catch(() => {});
+    // also cache under the folder URL so offline navigation to "/path/" works:
+    if (indexReq.url !== request.url) {
+      cache.put(request, net.clone()).catch(() => {});
+    }
     return net;
   } catch {
-    const hit = await cache.match(request);
+    // try both cache keys
+    const hit = (await cache.match(request)) || (await cache.match(indexReq));
     if (hit) return hit;
-    const fb = await caches.match(OFFLINE_FALLBACK_URL);
-    return (
-      fb ||
-      new Response("<h1>Offline</h1>", {
-        headers: { "Content-Type": "text/html" },
-      })
-    );
+    return new Response("<h1>Offline</h1>", {
+      headers: { "Content-Type": "text/html" },
+    });
   }
 }
 
