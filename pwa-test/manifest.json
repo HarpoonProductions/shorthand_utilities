@@ -1,0 +1,28 @@
+{
+  "name": "Dummy Magazine",
+  "short_name": "Dummy Mag",
+  "description": "Dummy magazine PWA for testing full offline editions.",
+  "start_url": "/dummy-magazine/?source=pwa",
+  "scope": "/dummy-magazine/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/dummy-magazine/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/dummy-magazine/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/dummy-magazine/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": "dummy-v1",
+  "pages": [
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/edition-20-front-page/20-page-1/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/edition-20-front-page/20-page-2/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/edition-20-front-page/20-page-3/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/edition-20-front-page/20-page-4/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/edition-20-front-page/20-page-5/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/dummy-1-front-page/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/dummy-14-front-page-copy/index.html",
+    "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/dummy-9-front-page/index.html"
+  ]
+}
