@@ -2,7 +2,7 @@
   "name": "Dummy Magazine",
   "short_name": "Dummy Mag",
   "description": "Dummy magazine PWA for testing full offline editions.",
-  "start_url": "/dummy-magazine/?source=pwa",
+  "start_url": "/dummy-magazine/index.html?source=pwa",
   "scope": "/dummy-magazine/",
   "display": "standalone",
   "background_color": "#ffffff",
