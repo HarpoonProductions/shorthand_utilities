@@ -1,9 +1,7 @@
 /* sw-core.v1.js — sitemap-driven deep precache + cross-origin allowlist
-   Host this on GitHub Pages. Your on-origin /dummy-magazine/service-worker.js uses:
-   importScripts('https://harpoonproductions.github.io/shorthand_utilities/ucl/sw-core.v1.js')
+   + periodic revalidation of pages/assets + pruning of stale assets
 */
-
-const CORE_VERSION = "1.3.0"; // bump to rotate caches
+const CORE_VERSION = "1.4.0"; // bump to rotate caches
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -17,23 +15,23 @@ const STATIC_DESTS = [
   "video",
   "track",
 ];
-const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1h background refresh while app is open
+
+// Refresh cadence while the app is open:
+const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1h
+// Force conditional revalidation on background refresh:
+const REVALIDATE_FETCH_INIT = { cache: "no-cache" };
 
 // Scope/origin derived from registration (works on dummy + prod)
-const ROOT_ORIGIN = self.location.origin; // e.g. https://hpn-edn.s3.eu-west-2.amazonaws.com
-const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, ""); // e.g. /dummy-magazine
+const ROOT_ORIGIN = self.location.origin;
+const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const SITEMAP_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/sitemap.xml`;
 const OFFLINE_FALLBACK_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/offline.html`;
 
-/* ===== Cross-origin caching controls =====
-   If you use third-party CDNs (fonts, JS, charts, your utilities repo, OneSignal, etc.)
-   set SAME_ORIGIN_ONLY=false and whitelist their origins below.
-*/
+/* Cross-origin caching controls */
 const SAME_ORIGIN_ONLY = false;
 const ALLOW_ORIGINS = [
   "https://harpoonproductions.github.io",
   "https://cdn.onesignal.com",
-  // common CDNs you might use — keep/remove as needed:
   "https://cdn.jsdelivr.net",
   "https://unpkg.com",
   "https://cdnjs.cloudflare.com",
@@ -43,32 +41,32 @@ const ALLOW_ORIGINS = [
   "https://fonts.gstatic.com",
 ];
 
-// ---- helpers ----
+// Optionally keep some URLs even if not re-discovered (e.g., static promo images)
+const KEEP_URL_PATTERNS = [
+  // example: /\/icons\/pwa-promo\.png$/
+];
+
 const isHTML = (req) =>
   req.mode === "navigate" || req.destination === "document";
 const isStatic = (req) => STATIC_DESTS.includes(req.destination);
 
-// Should we cache/serve this URL at all?
 function isCacheableURL(u) {
   try {
     const url = new URL(u);
     if (url.origin === ROOT_ORIGIN) {
-      // same-origin: keep within SW scope
       return (
         url.pathname === SCOPE_PATH || url.pathname.startsWith(SCOPE_PATH + "/")
       );
     }
-    // cross-origin assets allowed?
     return !SAME_ORIGIN_ONLY && ALLOW_ORIGINS.includes(url.origin);
   } catch {
     return false;
   }
 }
 
-// Map "/dir/" → "/dir/index.html" for S3 REST endpoints
 function asIndexRequest(request) {
   const url = new URL(request.url);
-  if (url.origin !== ROOT_ORIGIN) return request; // only rewrite same-origin HTML
+  if (url.origin !== ROOT_ORIGIN) return request;
   if (url.pathname.endsWith("/")) {
     url.pathname += "index.html";
     return new Request(url.toString(), { credentials: "same-origin" });
@@ -76,7 +74,6 @@ function asIndexRequest(request) {
   return request;
 }
 
-// extract assets from HTML (href/src/srcset/url(...))
 function extractAssetUrls(html, baseHref) {
   const out = new Set();
   const push = (v) => {
@@ -90,7 +87,6 @@ function extractAssetUrls(html, baseHref) {
   const SRC = /src\s*=\s*"([^"]+)"/gi;
   const SRCSET = /srcset\s*=\s*"([^"]+)"/gi;
   const CSSURL = /url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
-
   while ((m = HREF.exec(html))) push(m[1]);
   while ((m = SRC.exec(html))) push(m[1]);
   while ((m = SRCSET.exec(html)))
@@ -99,7 +95,6 @@ function extractAssetUrls(html, baseHref) {
   return Array.from(out);
 }
 
-// simple meta store (for “content updated” toasts if you use them)
 async function getMeta(key) {
   const c = await caches.open(META_CACHE);
   const r = await c.match(new Request(key));
@@ -110,29 +105,35 @@ async function setMeta(key, val) {
   await c.put(new Request(key), new Response(val));
 }
 
+async function fetchSitemapXML() {
+  const res = await fetch(SITEMAP_URL, { cache: "no-cache" });
+  if (!res.ok) throw new Error("sitemap fetch failed");
+  return res.text();
+}
+function parseSitemapLocs(xml) {
+  const locs = [];
+  const re = /<loc>([^<]+)<\/loc>/gi;
+  let m;
+  while ((m = re.exec(xml))) locs.push(m[1].trim());
+  return Array.from(new Set(locs));
+}
+function normalisePageURL(u) {
+  try {
+    const url = new URL(u);
+    if (url.origin === ROOT_ORIGIN && url.pathname.endsWith("/"))
+      url.pathname += "index.html";
+    return url.toString();
+  } catch {
+    return u;
+  }
+}
 async function fetchSitemapPages() {
   try {
-    const res = await fetch(SITEMAP_URL, { cache: "no-cache" });
-    if (!res.ok) return [];
-    const xml = await res.text();
-    const locs = [];
-    const re = /<loc>([^<]+)<\/loc>/gi;
-    let m;
-    while ((m = re.exec(xml))) locs.push(m[1].trim());
-    // normalise folder → index.html and filter to cacheable URLs
-    const norm = locs
-      .map((u) => {
-        try {
-          const url = new URL(u);
-          if (url.origin === ROOT_ORIGIN && url.pathname.endsWith("/"))
-            url.pathname += "index.html";
-          return url.toString();
-        } catch {
-          return u;
-        }
-      })
+    const xml = await fetchSitemapXML();
+    const urls = parseSitemapLocs(xml)
+      .map(normalisePageURL)
       .filter(isCacheableURL);
-    return Array.from(new Set(norm));
+    return Array.from(new Set(urls));
   } catch {
     return [];
   }
@@ -143,16 +144,22 @@ async function cachePutSafe(cache, req, res) {
     await cache.put(req, res);
   } catch {}
 }
-
-// choose fetch init for a URL (CORS vs opaque)
-function requestInitFor(url) {
+function requestInitFor(url, revalidate = false) {
   const u = new URL(url);
-  if (u.origin === ROOT_ORIGIN) return { credentials: "same-origin" };
-  // cross-origin: request opaque so we can cache even if CDN omits CORS
-  return { mode: "no-cors" };
+  if (u.origin === ROOT_ORIGIN) {
+    return revalidate
+      ? { ...REVALIDATE_FETCH_INIT, credentials: "same-origin" }
+      : { credentials: "same-origin" };
+  }
+  return revalidate
+    ? { ...REVALIDATE_FETCH_INIT, mode: "no-cors" }
+    : { mode: "no-cors" };
+}
+function shouldKeepURL(urlStr) {
+  return KEEP_URL_PATTERNS.some((re) => re.test(urlStr));
 }
 
-// ---- install/activate ----
+/* INSTALL / ACTIVATE */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
@@ -171,40 +178,48 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       await clients.claim();
-      // purge old buckets
       const keep = new Set([HTML_CACHE, ASSET_CACHE, META_CACHE]);
       const keys = await caches.keys();
       await Promise.all(
         keys.map((k) => (keep.has(k) ? null : caches.delete(k)))
       );
-      // initial deep precache
+
       const pages = await fetchSitemapPages();
-      await deepPrecachePages(pages);
+      await deepPrecachePages(pages, { revalidate: true, prune: true });
       scheduleSitemapRefresh();
     })()
   );
 });
 
-// ---- deep precache (pages + assets) ----
-async function deepPrecachePages(pages) {
+/* DEEP PRECACHE + PRUNE */
+async function deepPrecachePages(
+  pages,
+  { revalidate = false, prune = false } = {}
+) {
   if (!pages.length) return;
   const htmlCache = await caches.open(HTML_CACHE);
   const assetCache = await caches.open(ASSET_CACHE);
 
+  const discoveredAssets = new Set();
+
   let done = 0;
   for (const pageUrl of pages) {
-    // fetch & store HTML (same-origin only)
+    // HTML (same-origin only)
     let htmlRes;
     try {
       if (new URL(pageUrl).origin === ROOT_ORIGIN) {
-        htmlRes = await fetch(pageUrl, { credentials: "same-origin" });
-        if (htmlRes.ok) {
-          await cachePutSafe(htmlCache, new Request(pageUrl), htmlRes.clone());
-          // also under folder path for offline "/dir/"
+        const init = requestInitFor(pageUrl, revalidate);
+        htmlRes = await fetch(pageUrl, init);
+        if (htmlRes.ok || htmlRes.type === "opaqueredirect") {
+          await cachePutSafe(
+            htmlCache,
+            new Request(pageUrl, init),
+            htmlRes.clone()
+          );
           if (pageUrl.endsWith("/index.html")) {
             await cachePutSafe(
               htmlCache,
-              new Request(pageUrl.replace(/index\.html$/, "")),
+              new Request(pageUrl.replace(/index\.html$/, ""), init),
               htmlRes.clone()
             );
           }
@@ -212,17 +227,17 @@ async function deepPrecachePages(pages) {
       }
     } catch {}
 
-    // extract & cache assets (same-origin and allowlisted cross-origin)
+    // Assets
     try {
       const html = htmlRes ? await htmlRes.clone().text() : "";
       const assets = extractAssetUrls(html, pageUrl);
       for (const a of assets) {
         if (!isCacheableURL(a)) continue;
+        discoveredAssets.add(a);
         try {
-          const init = requestInitFor(a);
+          const init = requestInitFor(a, revalidate);
           const req = new Request(a, init);
           const res = await fetch(req);
-          // accept ok same-origin or opaque cross-origin
           if (res && (res.ok || res.type === "opaque")) {
             await cachePutSafe(assetCache, req, res.clone());
           }
@@ -231,7 +246,6 @@ async function deepPrecachePages(pages) {
     } catch {}
 
     done++;
-    // (optional) progress messages
     const cs = await clients.matchAll({
       type: "window",
       includeUncontrolled: true,
@@ -244,6 +258,11 @@ async function deepPrecachePages(pages) {
       })
     );
   }
+
+  if (prune) {
+    await pruneStaleAssets(assetCache, discoveredAssets);
+  }
+
   const cs = await clients.matchAll({
     type: "window",
     includeUncontrolled: true,
@@ -251,14 +270,32 @@ async function deepPrecachePages(pages) {
   cs.forEach((c) => c.postMessage({ type: "PWA_PRECACHE_DONE" }));
 }
 
-// periodic background refresh from sitemap
+async function pruneStaleAssets(assetCache, discoveredAssets) {
+  try {
+    const keys = await assetCache.keys();
+    const keep = new Set(discoveredAssets);
+    for (const req of keys) {
+      const url = req.url;
+      if (!isCacheableURL(url)) continue; // out of scope → ignore
+      if (shouldKeepURL(url)) continue; // protected by KEEP_URL_PATTERNS
+      if (!keep.has(url)) {
+        try {
+          await assetCache.delete(req);
+        } catch {}
+      }
+    }
+  } catch {}
+}
+
+/* PERIODIC REFRESH */
 function scheduleSitemapRefresh() {
   (async function loop() {
     while (true) {
       await new Promise((r) => setTimeout(r, PAGES_REFRESH_INTERVAL_MS));
       try {
         const pages = await fetchSitemapPages();
-        await deepPrecachePages(pages);
+        // Revalidate even if sitemap didn't change, and prune stale assets
+        await deepPrecachePages(pages, { revalidate: true, prune: true });
         const stamp = new Date().toISOString();
         await setMeta("last-refresh", stamp);
         const cs = await clients.matchAll({
@@ -273,7 +310,7 @@ function scheduleSitemapRefresh() {
   })();
 }
 
-// messages: asset push + manual refresh
+/* MESSAGES */
 self.addEventListener("message", (event) => {
   const msg = event.data || {};
   if (msg.type === "PWA_ASSETS" && Array.isArray(msg.assets)) {
@@ -283,7 +320,7 @@ self.addEventListener("message", (event) => {
     event.waitUntil(
       (async () => {
         const pages = await fetchSitemapPages();
-        await deepPrecachePages(pages);
+        await deepPrecachePages(pages, { revalidate: true, prune: true });
       })()
     );
   }
@@ -292,12 +329,11 @@ self.addEventListener("message", (event) => {
 
 async function backgroundAddAssets(urls) {
   const cache = await caches.open(ASSET_CACHE);
-  const unique = Array.from(new Set(urls));
+  const unique = Array.from(new Set(urls)).filter(isCacheableURL);
   await Promise.all(
     unique.map(async (u) => {
-      if (!isCacheableURL(u)) return;
       try {
-        const init = requestInitFor(u);
+        const init = requestInitFor(u, true);
         const req = new Request(u, init);
         const res = await fetch(req);
         if (res && (res.ok || res.type === "opaque")) {
@@ -308,12 +344,12 @@ async function backgroundAddAssets(urls) {
   );
 }
 
-// ---- fetch routing ----
+/* FETCH ROUTING */
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // HTML: only same-origin within scope
+  // HTML: same-origin within scope
   if (isHTML(req)) {
     const url = new URL(req.url);
     if (url.origin !== ROOT_ORIGIN || !isCacheableURL(req.url)) return;
@@ -321,7 +357,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: allow same-origin and allowlisted cross-origin
+  // Static assets: same-origin + allowlisted cross-origin
   if (isStatic(req) && isCacheableURL(req.url)) {
     event.respondWith(handleStatic(req));
   }
@@ -354,14 +390,11 @@ async function handleStatic(request) {
   const cache = await caches.open(ASSET_CACHE);
   const url = new URL(request.url);
   const sameOrigin = url.origin === ROOT_ORIGIN;
-
-  // Build a cache key & fetch init that match what we precached
   const init = sameOrigin
     ? { credentials: "same-origin" }
     : { mode: "no-cors" };
   const keyReq = new Request(request.url, init);
 
-  // Try cache first (SWR)
   const hit = await cache.match(keyReq);
   if (hit) {
     fetch(new Request(request.url, init))
@@ -372,8 +405,6 @@ async function handleStatic(request) {
       .catch(() => {});
     return hit;
   }
-
-  // Else go to network
   try {
     const net = await fetch(new Request(request.url, init));
     if (net && (net.ok || net.type === "opaque"))
