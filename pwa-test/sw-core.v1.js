@@ -1,7 +1,12 @@
-/* sw-core.v1.js — sitemap-driven deep precache + cross-origin allowlist
-   + periodic revalidation of pages/assets + pruning of stale assets
+/* sw-core.v1.js — v1.5.0
+   - Sitemap-driven deep precache (pages + assets)
+   - Cross-origin allowlist (opaque ok)
+   - Throttled background fetches
+   - Delayed start (after page load)
+   - Periodic revalidation + prune
 */
-const CORE_VERSION = "1.4.0"; // bump to rotate caches
+
+const CORE_VERSION = "1.5.0";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -16,14 +21,38 @@ const STATIC_DESTS = [
   "track",
 ];
 
-// Refresh cadence while the app is open:
+// Background behaviour
 const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1h
-// Force conditional revalidation on background refresh:
 const REVALIDATE_FETCH_INIT = { cache: "no-cache" };
 
+// Start control + throttle
+const START_DELAY_MS = 3000; // wait a moment after page load before heavy work
+const FALLBACK_START_MS = 15000; // safety: start even if page doesn't message
+const MAX_CONCURRENT = 6; // limit parallel background fetches
+
+function createLimiter(max) {
+  let active = 0,
+    queue = [];
+  const runNext = () => {
+    if (active >= max || queue.length === 0) return;
+    active++;
+    const fn = queue.shift();
+    fn().finally(() => {
+      active--;
+      runNext();
+    });
+  };
+  return (task) =>
+    new Promise((resolve, reject) => {
+      queue.push(() => task().then(resolve, reject));
+      runNext();
+    });
+}
+const limit = createLimiter(MAX_CONCURRENT);
+
 // Scope/origin derived from registration (works on dummy + prod)
-const ROOT_ORIGIN = self.location.origin;
-const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
+const ROOT_ORIGIN = self.location.origin; // e.g. https://hpn-edn.s3.eu-west-2.amazonaws.com
+const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, ""); // e.g. /dummy-magazine
 const SITEMAP_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/sitemap.xml`;
 const OFFLINE_FALLBACK_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/offline.html`;
 
@@ -32,6 +61,7 @@ const SAME_ORIGIN_ONLY = false;
 const ALLOW_ORIGINS = [
   "https://harpoonproductions.github.io",
   "https://cdn.onesignal.com",
+  // common CDNs (add/remove to taste)
   "https://cdn.jsdelivr.net",
   "https://unpkg.com",
   "https://cdnjs.cloudflare.com",
@@ -41,11 +71,12 @@ const ALLOW_ORIGINS = [
   "https://fonts.gstatic.com",
 ];
 
-// Optionally keep some URLs even if not re-discovered (e.g., static promo images)
+// Optionally keep URLs even if not rediscovered (promo images, etc.)
 const KEEP_URL_PATTERNS = [
-  // example: /\/icons\/pwa-promo\.png$/
+  // /\/icons\/pwa-promo\.png$/ ,
 ];
 
+/* ---------- utils ---------- */
 const isHTML = (req) =>
   req.mode === "navigate" || req.destination === "document";
 const isStatic = (req) => STATIC_DESTS.includes(req.destination);
@@ -64,6 +95,7 @@ function isCacheableURL(u) {
   }
 }
 
+// Map "/dir/" → "/dir/index.html" for S3 REST endpoints
 function asIndexRequest(request) {
   const url = new URL(request.url);
   if (url.origin !== ROOT_ORIGIN) return request;
@@ -74,6 +106,7 @@ function asIndexRequest(request) {
   return request;
 }
 
+// Extract asset URLs from HTML (href/src/srcset/url(...))
 function extractAssetUrls(html, baseHref) {
   const out = new Set();
   const push = (v) => {
@@ -87,6 +120,7 @@ function extractAssetUrls(html, baseHref) {
   const SRC = /src\s*=\s*"([^"]+)"/gi;
   const SRCSET = /srcset\s*=\s*"([^"]+)"/gi;
   const CSSURL = /url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
+
   while ((m = HREF.exec(html))) push(m[1]);
   while ((m = SRC.exec(html))) push(m[1]);
   while ((m = SRCSET.exec(html)))
@@ -95,6 +129,7 @@ function extractAssetUrls(html, baseHref) {
   return Array.from(out);
 }
 
+// Tiny meta store (for “content updated” stamping if you use it)
 async function getMeta(key) {
   const c = await caches.open(META_CACHE);
   const r = await c.match(new Request(key));
@@ -106,7 +141,7 @@ async function setMeta(key, val) {
 }
 
 async function fetchSitemapXML() {
-  const res = await fetch(SITEMAP_URL, { cache: "no-cache" });
+  const res = await limit(() => fetch(SITEMAP_URL, { cache: "no-cache" }));
   if (!res.ok) throw new Error("sitemap fetch failed");
   return res.text();
 }
@@ -144,6 +179,7 @@ async function cachePutSafe(cache, req, res) {
     await cache.put(req, res);
   } catch {}
 }
+
 function requestInitFor(url, revalidate = false) {
   const u = new URL(url);
   if (u.origin === ROOT_ORIGIN) {
@@ -155,11 +191,12 @@ function requestInitFor(url, revalidate = false) {
     ? { ...REVALIDATE_FETCH_INIT, mode: "no-cors" }
     : { mode: "no-cors" };
 }
+
 function shouldKeepURL(urlStr) {
   return KEEP_URL_PATTERNS.some((re) => re.test(urlStr));
 }
 
-/* INSTALL / ACTIVATE */
+/* ---------- install / activate ---------- */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
@@ -174,6 +211,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// We'll start heavy work later (message or fallback timer)
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
@@ -183,15 +221,11 @@ self.addEventListener("activate", (event) => {
       await Promise.all(
         keys.map((k) => (keep.has(k) ? null : caches.delete(k)))
       );
-
-      const pages = await fetchSitemapPages();
-      await deepPrecachePages(pages, { revalidate: true, prune: true });
-      scheduleSitemapRefresh();
     })()
   );
 });
 
-/* DEEP PRECACHE + PRUNE */
+/* ---------- deep precache + prune ---------- */
 async function deepPrecachePages(
   pages,
   { revalidate = false, prune = false } = {}
@@ -201,15 +235,15 @@ async function deepPrecachePages(
   const assetCache = await caches.open(ASSET_CACHE);
 
   const discoveredAssets = new Set();
-
   let done = 0;
+
   for (const pageUrl of pages) {
     // HTML (same-origin only)
     let htmlRes;
     try {
       if (new URL(pageUrl).origin === ROOT_ORIGIN) {
         const init = requestInitFor(pageUrl, revalidate);
-        htmlRes = await fetch(pageUrl, init);
+        htmlRes = await limit(() => fetch(pageUrl, init));
         if (htmlRes.ok || htmlRes.type === "opaqueredirect") {
           await cachePutSafe(
             htmlCache,
@@ -227,7 +261,7 @@ async function deepPrecachePages(
       }
     } catch {}
 
-    // Assets
+    // Assets (same-origin + allowlisted cross-origin)
     try {
       const html = htmlRes ? await htmlRes.clone().text() : "";
       const assets = extractAssetUrls(html, pageUrl);
@@ -237,7 +271,7 @@ async function deepPrecachePages(
         try {
           const init = requestInitFor(a, revalidate);
           const req = new Request(a, init);
-          const res = await fetch(req);
+          const res = await limit(() => fetch(req));
           if (res && (res.ok || res.type === "opaque")) {
             await cachePutSafe(assetCache, req, res.clone());
           }
@@ -276,8 +310,8 @@ async function pruneStaleAssets(assetCache, discoveredAssets) {
     const keep = new Set(discoveredAssets);
     for (const req of keys) {
       const url = req.url;
-      if (!isCacheableURL(url)) continue; // out of scope → ignore
-      if (shouldKeepURL(url)) continue; // protected by KEEP_URL_PATTERNS
+      if (!isCacheableURL(url)) continue;
+      if (shouldKeepURL(url)) continue;
       if (!keep.has(url)) {
         try {
           await assetCache.delete(req);
@@ -287,14 +321,13 @@ async function pruneStaleAssets(assetCache, discoveredAssets) {
   } catch {}
 }
 
-/* PERIODIC REFRESH */
+/* ---------- periodic refresh ---------- */
 function scheduleSitemapRefresh() {
   (async function loop() {
     while (true) {
       await new Promise((r) => setTimeout(r, PAGES_REFRESH_INTERVAL_MS));
       try {
         const pages = await fetchSitemapPages();
-        // Revalidate even if sitemap didn't change, and prune stale assets
         await deepPrecachePages(pages, { revalidate: true, prune: true });
         const stamp = new Date().toISOString();
         await setMeta("last-refresh", stamp);
@@ -310,9 +343,32 @@ function scheduleSitemapRefresh() {
   })();
 }
 
-/* MESSAGES */
+/* ---------- background start control ---------- */
+let _started = false;
+async function startBackgroundWork() {
+  if (_started) return;
+  _started = true;
+  const pages = await fetchSitemapPages();
+  await deepPrecachePages(pages, { revalidate: true, prune: true });
+  scheduleSitemapRefresh();
+}
+
+// Safety fallback: if page never tells us to start, begin after a short delay
+setTimeout(() => {
+  startBackgroundWork().catch(() => {});
+}, FALLBACK_START_MS);
+
+/* ---------- messages ---------- */
 self.addEventListener("message", (event) => {
   const msg = event.data || {};
+  if (msg.type === "PWA_START_PRECACHE") {
+    event.waitUntil(
+      (async () => {
+        await new Promise((r) => setTimeout(r, START_DELAY_MS)); // let page settle
+        await startBackgroundWork();
+      })()
+    );
+  }
   if (msg.type === "PWA_ASSETS" && Array.isArray(msg.assets)) {
     event.waitUntil(backgroundAddAssets(msg.assets));
   }
@@ -335,7 +391,7 @@ async function backgroundAddAssets(urls) {
       try {
         const init = requestInitFor(u, true);
         const req = new Request(u, init);
-        const res = await fetch(req);
+        const res = await limit(() => fetch(req));
         if (res && (res.ok || res.type === "opaque")) {
           await cachePutSafe(cache, req, res.clone());
         }
@@ -344,12 +400,12 @@ async function backgroundAddAssets(urls) {
   );
 }
 
-/* FETCH ROUTING */
+/* ---------- fetch routing ---------- */
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // HTML: same-origin within scope
+  // HTML: only same-origin within scope
   if (isHTML(req)) {
     const url = new URL(req.url);
     if (url.origin !== ROOT_ORIGIN || !isCacheableURL(req.url)) return;
@@ -397,7 +453,7 @@ async function handleStatic(request) {
 
   const hit = await cache.match(keyReq);
   if (hit) {
-    fetch(new Request(request.url, init))
+    limit(() => fetch(new Request(request.url, init)))
       .then((res) => {
         if (res && (res.ok || res.type === "opaque"))
           cachePutSafe(cache, keyReq, res.clone());
@@ -406,7 +462,7 @@ async function handleStatic(request) {
     return hit;
   }
   try {
-    const net = await fetch(new Request(request.url, init));
+    const net = await limit(() => fetch(new Request(request.url, init)));
     if (net && (net.ok || net.type === "opaque"))
       cachePutSafe(cache, keyReq, net.clone());
     return net;
