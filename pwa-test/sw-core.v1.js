@@ -27,7 +27,10 @@ const PAGES_INDEX_URL =
 // Allow assets from same-origin only (toggle if your assets live elsewhere)
 const SAME_ORIGIN_ONLY = false;
 // If you have cross-origin assets, set SAME_ORIGIN_ONLY=false and fill this allowlist:
-const ALLOW_ORIGINS = ["https://harpoonproductions.github.io"];
+const ALLOW_ORIGINS = [
+  "https://harpoonproductions.github.io",
+  "https://cdn.onesignal.com",
+];
 
 // ---------- helpers ----------
 const isHTML = (r) => r.mode === "navigate" || r.destination === "document";
