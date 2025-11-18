@@ -1,8 +1,9 @@
-/* sw-core.v1.js — deep-precaches pages + their assets */
+/* sw-core.v1.js — sitemap-driven deep precache */
 
-const CORE_VERSION = "1.1.0"; // bump to rotate cache buckets (did so here)
+const CORE_VERSION = "1.2.0"; // bump to rotate caches if you want
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
+const META_CACHE = `meta-${CORE_VERSION}`;
 
 const STATIC_DESTS = [
   "script",
@@ -13,24 +14,17 @@ const STATIC_DESTS = [
   "video",
   "track",
 ];
-const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000;
+const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1h
 
-// Derive origin/scope from registration (works on dummy + prod)
-const ROOT_ORIGIN = self.location.origin;
-const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
+// Derive origin/scope (works on dummy & prod)
+const ROOT_ORIGIN = self.location.origin; // e.g. https://hpn-edn.s3.eu-west-2.amazonaws.com
+const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, ""); // /dummy-magazine
+const SITEMAP_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/sitemap.xml`; // <-- use your existing sitemap
 const OFFLINE_FALLBACK_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/offline.html`;
 
-// Your JSON of pages (dummy for now)
-const PAGES_INDEX_URL =
-  "https://harpoonproductions.github.io/shorthand_utilities/pwa-test/dummy-magazine-pages.json";
-
-// Allow assets from same-origin only (toggle if your assets live elsewhere)
-const SAME_ORIGIN_ONLY = false;
-// If you have cross-origin assets, set SAME_ORIGIN_ONLY=false and fill this allowlist:
-const ALLOW_ORIGINS = [
-  "https://harpoonproductions.github.io",
-  "https://cdn.onesignal.com",
-];
+// If some assets are cross-origin, set SAME_ORIGIN_ONLY=false and add to ALLOW_ORIGINS
+const SAME_ORIGIN_ONLY = true;
+const ALLOW_ORIGINS = [];
 
 // ---------- helpers ----------
 const isHTML = (r) => r.mode === "navigate" || r.destination === "document";
@@ -48,28 +42,54 @@ function sameOriginAndInScope(urlString) {
   }
 }
 
-// Map "/path/" → "/path/index.html" for S3 REST endpoints
-function asIndexRequest(request) {
-  const url = new URL(request.url);
-  if (url.pathname.endsWith("/")) {
-    url.pathname += "index.html";
-    return new Request(url.toString(), { credentials: "same-origin" });
+function toIndexHtml(u) {
+  try {
+    const url = new URL(u);
+    if (url.pathname.endsWith("/")) url.pathname += "index.html";
+    return url.toString();
+  } catch {
+    return u;
   }
-  return request;
 }
 
-// VERY simple asset extraction from HTML (no DOM needed)
+// quick-n-dirty XML <loc> extraction (no DOMParser needed)
+function extractLocsFromSitemap(xmlText) {
+  const locs = [];
+  const re = /<loc>([^<]+)<\/loc>/gi;
+  let m;
+  while ((m = re.exec(xmlText))) locs.push(m[1].trim());
+  return Array.from(new Set(locs));
+}
+
+async function fetchSitemapPages() {
+  try {
+    const res = await fetch(SITEMAP_URL, { cache: "no-cache" });
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const urls = extractLocsFromSitemap(xml)
+      .map(toIndexHtml)
+      .filter(sameOriginAndInScope);
+    return Array.from(new Set(urls));
+  } catch {
+    return [];
+  }
+}
+
+async function cachePutSafe(cache, req, res) {
+  try {
+    await cache.put(req, res);
+  } catch {}
+}
+
 function extractAssetUrls(html, baseHref) {
   const urls = new Set();
   const push = (url) => {
     try {
       const abs = new URL(url, baseHref);
-      // same-origin (or allowlisted) only
       const okOrigin =
         abs.origin === ROOT_ORIGIN ||
         (!SAME_ORIGIN_ONLY && ALLOW_ORIGINS.includes(abs.origin));
       if (!okOrigin) return;
-      // keep within scope or allowlist
       if (
         !(abs.origin === ROOT_ORIGIN
           ? abs.pathname.startsWith(SCOPE_PATH + "/")
@@ -79,49 +99,31 @@ function extractAssetUrls(html, baseHref) {
       urls.add(abs.toString());
     } catch {}
   };
-
-  // href/src/srcset pulls
-  const reHref = /href\s*=\s*"(.*?)"/gi;
-  const reSrc = /src\s*=\s*"(.*?)"/gi;
-  const reSrcS = /srcset\s*=\s*"(.*?)"/gi;
+  // href/src/srcset/url(...) — simple but effective
+  const reHref = /href\s*=\s*"([^"]+)"/gi;
+  const reSrc = /src\s*=\s*"([^"]+)"/gi;
+  const reSrcS = /srcset\s*=\s*"([^"]+)"/gi;
+  const reCss = /url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
 
   let m;
   while ((m = reHref.exec(html))) push(m[1]);
   while ((m = reSrc.exec(html))) push(m[1]);
-  while ((m = reSrcS.exec(html))) {
-    m[1].split(",").forEach((part) => push(part.trim().split(" ")[0]));
-  }
-
-  // Common inline CSS url(...) cases (LQIPs/backgrounds)
-  const reCssUrl = /url\(\s*['"]?(.*?)['"]?\s*\)/gi;
-  while ((m = reCssUrl.exec(html))) push(m[1]);
+  while ((m = reSrcS.exec(html)))
+    m[1].split(",").forEach((p) => push(p.trim().split(" ")[0]));
+  while ((m = reCss.exec(html))) push(m[1]);
 
   return Array.from(urls);
 }
 
-async function fetchPagesIndex() {
-  try {
-    const res = await fetch(PAGES_INDEX_URL, { cache: "no-cache" });
-    if (!res.ok) return { pages: [] };
-    const json = await res.json();
-    const raw = Array.isArray(json.pages) ? json.pages : [];
-    // normalise & keep explicit index.html preferred
-    const pages = raw
-      .map((p) => {
-        const u = new URL(p);
-        return u.toString();
-      })
-      .filter(sameOriginAndInScope);
-    return { pages: Array.from(new Set(pages)) };
-  } catch {
-    return { pages: [] };
-  }
+// optional tiny meta storage for “new content” toasts
+async function getMeta(key) {
+  const c = await caches.open(META_CACHE);
+  const r = await c.match(new Request(key));
+  return r ? await r.text() : null;
 }
-
-async function cachePutSafe(cache, req, res) {
-  try {
-    await cache.put(req, res);
-  } catch {}
+async function setMeta(key, val) {
+  const c = await caches.open(META_CACHE);
+  await c.put(new Request(key), new Response(val));
 }
 
 // -------- INSTALL / ACTIVATE --------
@@ -143,16 +145,17 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       await clients.claim();
-      // clean old caches
-      const keep = new Set([HTML_CACHE, ASSET_CACHE]);
+      // clean old caches (when CORE_VERSION changes)
+      const keep = new Set([HTML_CACHE, ASSET_CACHE, META_CACHE]);
       const keys = await caches.keys();
       await Promise.all(
         keys.map((k) => (keep.has(k) ? null : caches.delete(k)))
       );
-      // initial deep precache
-      const { pages } = await fetchPagesIndex();
+
+      // initial deep precache from sitemap
+      const pages = await fetchSitemapPages();
       await deepPrecachePages(pages);
-      schedulePagesRefresh();
+      scheduleSitemapRefresh();
     })()
   );
 });
@@ -165,23 +168,26 @@ async function deepPrecachePages(pages) {
 
   let done = 0;
   for (const pageUrl of pages) {
-    // Fetch HTML (prefer index.html URLs)
     let htmlRes;
     try {
       htmlRes = await fetch(pageUrl, { credentials: "same-origin" });
-      if (!htmlRes.ok) throw new Error("bad status");
-      await cachePutSafe(htmlCache, new Request(pageUrl), htmlRes.clone());
-      // Also store under folder path if applicable
-      if (pageUrl.endsWith("/index.html")) {
-        const folderReq = new Request(pageUrl.replace(/index\.html$/, ""));
-        await cachePutSafe(htmlCache, folderReq, htmlRes.clone());
+      if (htmlRes.ok) {
+        await cachePutSafe(htmlCache, new Request(pageUrl), htmlRes.clone());
+        // also cache folder URL for offline “/dir/”
+        if (pageUrl.endsWith("/index.html")) {
+          await cachePutSafe(
+            htmlCache,
+            new Request(pageUrl.replace(/index\.html$/, "")),
+            htmlRes.clone()
+          );
+        }
       }
     } catch {}
 
-    // Extract & cache assets
+    // extract & cache assets
     try {
-      const htmlText = htmlRes ? await htmlRes.clone().text() : "";
-      const assets = extractAssetUrls(htmlText, pageUrl);
+      const html = htmlRes ? await htmlRes.clone().text() : "";
+      const assets = extractAssetUrls(html, pageUrl);
       for (const a of assets) {
         try {
           const r = new Request(a, { credentials: "same-origin" });
@@ -192,7 +198,6 @@ async function deepPrecachePages(pages) {
     } catch {}
 
     done++;
-    // optional: progress events to clients
     const cs = await clients.matchAll({
       type: "window",
       includeUncontrolled: true,
@@ -209,25 +214,33 @@ async function deepPrecachePages(pages) {
     type: "window",
     includeUncontrolled: true,
   });
-  cs.forEach((c) =>
-    c.postMessage({ type: "PWA_PRECACHE_DONE", total: pages.length })
-  );
+  cs.forEach((c) => c.postMessage({ type: "PWA_PRECACHE_DONE" }));
 }
 
-// Periodic background refresh of the pages index (and deep-precache new ones)
-function schedulePagesRefresh() {
+// periodic background refresh
+function scheduleSitemapRefresh() {
   (async function loop() {
     while (true) {
       await new Promise((r) => setTimeout(r, PAGES_REFRESH_INTERVAL_MS));
       try {
-        const { pages } = await fetchPagesIndex();
+        const pages = await fetchSitemapPages();
         await deepPrecachePages(pages);
+        // optional “content updated” toast
+        const stamp = new Date().toISOString();
+        await setMeta("last-refresh", stamp);
+        const cs = await clients.matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        });
+        cs.forEach((c) =>
+          c.postMessage({ type: "PWA_CONTENT_UPDATED", at: stamp })
+        );
       } catch {}
     }
   })();
 }
 
-// -------- messages: asset push + manual refresh ----------
+// messages: asset push + manual refresh
 self.addEventListener("message", (event) => {
   const msg = event.data || {};
   if (msg.type === "PWA_ASSETS" && Array.isArray(msg.assets)) {
@@ -236,7 +249,7 @@ self.addEventListener("message", (event) => {
   if (msg.type === "PWA_REFRESH_INDEX") {
     event.waitUntil(
       (async () => {
-        const { pages } = await fetchPagesIndex();
+        const pages = await fetchSitemapPages();
         await deepPrecachePages(pages);
       })()
     );
@@ -260,7 +273,7 @@ async function backgroundAddAssets(urls) {
   );
 }
 
-// -------- fetch routing ----------
+// fetch routing
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -278,14 +291,20 @@ self.addEventListener("fetch", (event) => {
 
 async function handleHTML(event) {
   const cache = await caches.open(HTML_CACHE);
-  const indexReq = asIndexRequest(event.request);
+  const indexReq = (function asIndexRequest(r) {
+    const url = new URL(r.url);
+    if (url.pathname.endsWith("/")) {
+      url.pathname += "index.html";
+      return new Request(url.toString(), { credentials: "same-origin" });
+    }
+    return r;
+  })(event.request);
 
   try {
     const net = await fetch(indexReq);
     cachePutSafe(cache, indexReq, net.clone());
-    if (indexReq.url !== event.request.url) {
+    if (indexReq.url !== event.request.url)
       cachePutSafe(cache, event.request, net.clone());
-    }
     return net;
   } catch {
     const hit =
