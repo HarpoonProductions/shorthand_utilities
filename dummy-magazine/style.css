@@ -1,4 +1,3 @@
-
 .inner-logo-container:before {
   content: '';
   background: white;
@@ -67,15 +66,6 @@ font-weight: 400;
 font-style: normal;
 }
 
-
-/* .contents-label {
-  position: absolute;
-  bottom: -7.6px;
-  font-size: 11px;
-  font-family: "Imperial Sans Text", sans-serif !important;
-  color: #500778;
-} */
-
 .contents-label {
   position: absolute;
   bottom: 35px;
@@ -105,12 +95,11 @@ font-style: normal;
 
     .custom-min-nav-container .Theme-RelatedStoriesSection {
         min-height: 400px;
-        background: #2FBBBA;
+        background: #4A270E;
         position: relative;
       bottom: 20px;
-     border-left: 0.5px solid #2FBBBA;
-    border-right: 0.5px solid #2FBBBA;
-
+     border-left: 0.5px solid #4A270E;
+    border-right: 0.5px solid #4A270E;
     }
 
     .custom-min-nav-container .Theme-RelatedStoriesSection .Theme-Layer-BodyText {
@@ -135,35 +124,25 @@ font-style: normal;
     width: 95% !important;
   }
   
-
-
 .glider-next {
     right: -19px !important;
     top: 50% !important;
     transform: translateY(-88%);
 }
 
-  
- .glider-prev {
+.glider-prev {
    left: -19px !important;
     top: 50% !important;
     transform: translateY(-88%);
   }
-  
- 
 
 .glider-dots {
    position: relative;
     top: 9px;
 }
-
-
-
-
 }
 
 @media only screen and (min-width: 832px) {
-  
   .glider-dots {
    position: relative;
     top: 0;
@@ -171,12 +150,7 @@ font-style: normal;
   .custom-min-nav-container {
     height: 355px !important;
   }
-  
-  
 }
-
-
-
 
 .custom-min-nav-container .splide__pagination {
  padding: 0 !important;
@@ -189,27 +163,22 @@ font-style: normal;
   
   .custom-min-nav-container .splide__pagination {
     bottom: -1.15em !important;
-
 }
-
-
 }
-
 
 .splide__arrows {
   display: none;
 }
 
 .splide__pagination__page.is-active {
- background: #2FBBBA !important;
+ background: #4A270E !important;
 }
+
 .splide__pagination__page {
   margin: 3px 9px !important;
   padding: 4px !important;
-  background: #2FBBBA !important;
-
+  background: #4A270E !important;
 }
-
 
 .splide__pagination li {
     width: auto !important;
@@ -233,21 +202,17 @@ font-style: normal;
     pointer-events: none !important;
 }
 
-
 .Theme-RelatedStories--Medium .related-stories-list li:not(:only-child) {
-
   max-width: unset !important;
   max-height: 288px;
-  }
-
-
+}
 
 .related-stories-list li {
     border: unset !important;
 }
 
 .custom-min-nav-container {
-  background: #2FBBBA;
+  background: #4A270E;
 }
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
@@ -260,26 +225,17 @@ font-style: normal;
 
 .custom-min-nav-container .Theme-RelatedStoriesSection {
     min-height: 400px;
-    background: #2FBBBA;
+    background: #4A270E;
   position: relative;
-border-left: 0.5px solid #2FBBBA;
-    border-right: 0.5px solid #2FBBBA;
-
-    bottom: 20px;
-}
-
-@media only screen and (min-width: 1100px) {
-  /* .custom-min-nav-container .Theme-RelatedStoriesSection {
-    width: 100vw;
-    width: 100svw;
-} */
+  border-left: 0.5px solid #4A270E;
+  border-right: 0.5px solid #4A270E;
+  bottom: 20px;
 }
 
 .custom-min-nav-container .Theme-RelatedStoriesSection .Theme-Layer-BodyText {
   position: relative;
-    top: 8px;
+  top: 8px;
 }
-
 
 .Theme-RelatedStoriesSection ul {
   display: flex !important;
@@ -287,34 +243,21 @@ border-left: 0.5px solid #2FBBBA;
 }
 
 .Theme-RelatedStoriesSection .splide__track > ul,
-.custom-min-nav-container .splide__track > ul
-{
+.custom-min-nav-container .splide__track > ul {
       display: flex !important;
     justify-content: unset !important;
     flex-wrap: unset !important;
 }
 
-
-
-
-
-
-
 /* old css below this line */
 
 #StandardFooter {
   display: none;
-}#StandardFooter {
+}
+#StandardFooter {
   display: none;
 }
 
-/* alex's css 
-
-.Theme-TitleSection {
-  min-height: 100vh !important;
-  min-height: 100svh !important;
-}
-*/
 .hide {
   opacity: 0 !important;
   cursor: unset !important;
@@ -354,7 +297,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container {
   transform: translate(-50%, 100%);
-  background: #2FBBBA;
+  background: #4A270E;
   height: 344px;
   width: 339px;
   border-radius: 3px;
@@ -400,9 +343,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   justify-content: center;
   align-items: center;
   width: 142px;
-  color: #2FBBBA;
+  color: #4A270E;
   text-decoration: none;
-  background: #2FBBBA;
+  background: #4A270E;
 }
 
 .button_container:focus {
@@ -475,7 +418,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .button_container.contents {
-  background: #2FBBBA;
+  background: #4A270E;
   color: #000;
   border: 1px solid #000;
   cursor: pointer;
@@ -486,7 +429,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 /* new from claude */
 .button_container.contents .contents-label {
-  color: #000; /* or whatever color you want */
+  color: #000;
 }
 /* end new from claude */
 
@@ -528,7 +471,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   margin-top: 6px;
 }
 
-/* Scrollbar styling for linkContainer */
 .custom-min-nav-container-inner::-webkit-scrollbar {
   width: 5px;
 }
@@ -557,7 +499,6 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   background: white;
 }
 
-/* Reset default anchor styling while keeping the cursor pointer */
 .linkAnchor {
   text-decoration: none;
   color: inherit;
@@ -571,53 +512,47 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   margin: 0 2px;
 }
 
-/* Styling for linkAnchor with current-link class */
 .linkAnchor.current-link {
-  background-color: #d0d0d0; /* Different background color */
-  color: #555; /* Darker text color for contrast */
-  font-weight: bold; /* Make the text bolder */
-  border-left: 4px solid #666; /* Add a left border for emphasis */
+  background-color: #d0d0d0;
+  color: #555;
+  font-weight: bold;
+  border-left: 4px solid #666;
 }
 
-/* Adjusting the linkText and pageNumber inside the current linkAnchor */
 .linkAnchor.current-link .linkText,
 .linkAnchor.current-link .pageNumber {
-  color: #555; /* Change text color to match the linkAnchor */
+  color: #555;
 }
 
-/* Optional: Adjust hover effect for current-link */
 .linkAnchor.current-link:hover {
-  background-color: #c8c8c8; /* Slightly different hover background */
+  background-color: #c8c8c8;
 }
 
 .linkAnchor.current-link .linkContainer {
   border-radius: 0 10px 10px 0;
 }
 
-/* Container styling */
 .linkContainer {
-  background-color: #f0f0f0; /* Default background color */
-  border-radius: 10px; /* Rounded corners */
-  padding: 10px; /* Internal spacing */
-  transition: background-color 0.3s ease-in-out; /* Smooth background color transition on hover */
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  padding: 10px;
+  transition: background-color 0.3s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Styling for linkText */
 .linkText {
-  font-size: 1.2em; /* Larger font size */
-  color: black; /* Main text color */
-  margin-bottom: 5px; /* Space between linkText and pageNumber */
+  font-size: 1.2em;
+  color: black;
+  margin-bottom: 5px;
 }
 
-/* Styling for pageNumber */
 .pageNumber {
   font-size: 0.8em;
-  color: grey; /* Subtle color for pageNumber */
+  color: grey;
 }
 
-/* Hover effect on linkContainer */
 .linkContainer:hover {
-  background-color: #e8e8e8; /* Light color on hover */
+  background-color: #e8e8e8;
 }
 
 .linkText,
@@ -625,36 +560,17 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   text-align: center;
 }
 
-/* Additional visual enhancements */
 @media (max-width: 600px) {
   .linkAnchor {
-    border-radius: 8px; /* Slightly smaller border-radius for mobile */
+    border-radius: 8px;
   }
 
   .linkContainer {
     padding: 8px;
-    border-radius: 8px; /* Slightly smaller border-radius for mobile */
+    border-radius: 8px;
   }
 
   .linkAnchor.current-link .linkContainer {
     border-radius: 0 8px 8px 0;
   }
-}
-
-/* Optional: adding a subtle shadow to linkContainer for depth */
-.linkContainer {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
-  border: 0.5px solid #2FBBBA;
-}
-
-.custom-min-nav-container .Theme-RelatedStories--Title .related-story-text {
-  z-index: 10;
-  opacity: 0.9;
-}
-
-.custom-min-nav-container .Theme-RelatedStories--Title .related-story-text:hover {
-  opacity: 1;
 }
