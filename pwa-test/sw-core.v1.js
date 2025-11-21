@@ -54,6 +54,28 @@ const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const SITEMAP_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/sitemap.xml`;
 const OFFLINE_FALLBACK_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/offline.html`;
 
+// If the original Shorthand project lived under /dummy-magazine on S3,
+// but the new site is mounted at the root (https://dummy-magazine.com/),
+// we strip that prefix when mapping sitemap URLs onto the new origin.
+const PROJECT_PREFIX = "/dummy-magazine";
+
+function mapSitemapPath(pathname) {
+  // Exact project root (/dummy-magazine or /dummy-magazine/)
+  if (pathname === PROJECT_PREFIX || pathname === PROJECT_PREFIX + "/") {
+    return "/index.html";
+  }
+
+  // Any nested story: /dummy-magazine/story/index.html -> /story/index.html
+  if (pathname.startsWith(PROJECT_PREFIX + "/")) {
+    const stripped = pathname.slice(PROJECT_PREFIX.length); // remove "/dummy-magazine"
+    if (stripped === "" || stripped === "/") return "/index.html";
+    return stripped;
+  }
+
+  // Anything else: leave as-is
+  return pathname;
+}
+
 /* Cross-origin caching controls */
 const SAME_ORIGIN_ONLY = false;
 const ALLOW_ORIGINS = [
@@ -159,21 +181,62 @@ function parseSitemapLocs(xml) {
 }
 function normalisePageURL(u) {
   try {
-    const url = new URL(u);
-    if (url.origin === ROOT_ORIGIN && url.pathname.endsWith("/"))
-      url.pathname += "index.html";
-    return url.toString();
+    const original = new URL(u);
+
+    // 1) Map the sitemap path from the original host (S3) to the PWA layout
+    // 2) Re-base onto ROOT_ORIGIN (dummy-magazine.com)
+    let rebasedPath = mapSitemapPath(original.pathname);
+
+    // Ensure leading slash
+    if (!rebasedPath.startsWith("/")) rebasedPath = "/" + rebasedPath;
+
+    const rebased = new URL(rebasedPath + original.search, ROOT_ORIGIN);
+
+    // Normalise directory-style URLs to index.html
+    if (rebased.pathname.endsWith("/")) {
+      rebased.pathname += "index.html";
+    }
+
+    return rebased.toString();
   } catch {
     return u;
   }
 }
+
 async function fetchSitemapPages() {
   try {
     const xml = await fetchSitemapXML();
-    const urls = parseSitemapLocs(xml)
+    const urlsFromSitemap = parseSitemapLocs(xml);
+
+    // 1) Take each <loc> from the sitemap
+    // 2) Normalise + rebase it to dummy-magazine.com
+    // 3) Keep only URLs the worker is allowed to cache
+    const rebased = urlsFromSitemap
       .map(normalisePageURL)
       .filter(isCacheableURL);
-    return Array.from(new Set(urls));
+
+    const unique = Array.from(new Set(rebased));
+
+    // Optional debug: if nothing is cacheable, tell the page
+    if (!unique.length) {
+      try {
+        const cs = await clients.matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        });
+        cs.forEach((c) =>
+          c.postMessage({
+            type: "PWA_PRECACHE_ERROR",
+            reason: "No cacheable pages discovered from sitemap",
+            sitemap: SITEMAP_URL,
+          })
+        );
+      } catch (e) {
+        // non-fatal
+      }
+    }
+
+    return unique;
   } catch {
     return [];
   }
