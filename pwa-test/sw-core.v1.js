@@ -1,12 +1,12 @@
-/* sw-core.v1.js — v1.5.0
+/* sw-core.v1.js — v1.6.0
    - Sitemap-driven deep precache (pages + assets)
-   - Cross-origin allowlist (opaque ok)
-   - Throttled background fetches
-   - Delayed start (after page load)
+   - Throttled background fetches + delayed start
    - Periodic revalidation + prune
+   - Cross-origin allowlist (opaque ok)
+   - Same-origin path allowlist (for /assets, etc.)
 */
 
-const CORE_VERSION = "1.5.0";
+const CORE_VERSION = "1.6.0";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -20,15 +20,13 @@ const STATIC_DESTS = [
   "video",
   "track",
 ];
-
-// Background behaviour
 const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1h
 const REVALIDATE_FETCH_INIT = { cache: "no-cache" };
 
 // Start control + throttle
-const START_DELAY_MS = 3000; // wait a moment after page load before heavy work
-const FALLBACK_START_MS = 15000; // safety: start even if page doesn't message
-const MAX_CONCURRENT = 6; // limit parallel background fetches
+const START_DELAY_MS = 3000;
+const FALLBACK_START_MS = 15000;
+const MAX_CONCURRENT = 6;
 
 function createLimiter(max) {
   let active = 0,
@@ -50,7 +48,7 @@ function createLimiter(max) {
 }
 const limit = createLimiter(MAX_CONCURRENT);
 
-// Scope/origin derived from registration (works on dummy + prod)
+// Scope/origin
 const ROOT_ORIGIN = self.location.origin; // e.g. https://hpn-edn.s3.eu-west-2.amazonaws.com
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, ""); // e.g. /dummy-magazine
 const SITEMAP_URL = `${ROOT_ORIGIN}${SCOPE_PATH}/sitemap.xml`;
@@ -61,7 +59,6 @@ const SAME_ORIGIN_ONLY = false;
 const ALLOW_ORIGINS = [
   "https://harpoonproductions.github.io",
   "https://cdn.onesignal.com",
-  // common CDNs (add/remove to taste)
   "https://cdn.jsdelivr.net",
   "https://unpkg.com",
   "https://cdnjs.cloudflare.com",
@@ -71,12 +68,20 @@ const ALLOW_ORIGINS = [
   "https://fonts.gstatic.com",
 ];
 
-// Optionally keep URLs even if not rediscovered (promo images, etc.)
-const KEEP_URL_PATTERNS = [
-  // /\/icons\/pwa-promo\.png$/ ,
+/* Same-origin path allowlist (outside SCOPE_PATH) */
+const SAME_ORIGIN_PATH_ALLOWLIST = [
+  "/assets/",
+  "/static/",
+  "/icons/",
+  "/theme.min.css",
+  "/project/",
 ];
 
-/* ---------- utils ---------- */
+// Optionally keep URLs even if not rediscovered
+const KEEP_URL_PATTERNS = [
+  // /\/icons\/pwa-promo\.png$/
+];
+
 const isHTML = (req) =>
   req.mode === "navigate" || req.destination === "document";
 const isStatic = (req) => STATIC_DESTS.includes(req.destination);
@@ -85,9 +90,12 @@ function isCacheableURL(u) {
   try {
     const url = new URL(u);
     if (url.origin === ROOT_ORIGIN) {
-      return (
-        url.pathname === SCOPE_PATH || url.pathname.startsWith(SCOPE_PATH + "/")
-      );
+      if (
+        url.pathname === SCOPE_PATH ||
+        url.pathname.startsWith(SCOPE_PATH + "/")
+      )
+        return true;
+      return SAME_ORIGIN_PATH_ALLOWLIST.some((p) => url.pathname.startsWith(p));
     }
     return !SAME_ORIGIN_ONLY && ALLOW_ORIGINS.includes(url.origin);
   } catch {
@@ -95,7 +103,6 @@ function isCacheableURL(u) {
   }
 }
 
-// Map "/dir/" → "/dir/index.html" for S3 REST endpoints
 function asIndexRequest(request) {
   const url = new URL(request.url);
   if (url.origin !== ROOT_ORIGIN) return request;
@@ -106,7 +113,7 @@ function asIndexRequest(request) {
   return request;
 }
 
-// Extract asset URLs from HTML (href/src/srcset/url(...))
+// Extract assets from HTML
 function extractAssetUrls(html, baseHref) {
   const out = new Set();
   const push = (v) => {
@@ -120,16 +127,14 @@ function extractAssetUrls(html, baseHref) {
   const SRC = /src\s*=\s*"([^"]+)"/gi;
   const SRCSET = /srcset\s*=\s*"([^"]+)"/gi;
   const CSSURL = /url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
-
   while ((m = HREF.exec(html))) push(m[1]);
   while ((m = SRC.exec(html))) push(m[1]);
   while ((m = SRCSET.exec(html)))
-    m[1].split(",").forEach((p) => push(p.trim().split(" ")[0]));
+    m[1].split(",").forEach((s) => push(s.trim().split(" ")[0]));
   while ((m = CSSURL.exec(html))) push(m[1]);
   return Array.from(out);
 }
 
-// Tiny meta store (for “content updated” stamping if you use it)
 async function getMeta(key) {
   const c = await caches.open(META_CACHE);
   const r = await c.match(new Request(key));
@@ -179,24 +184,18 @@ async function cachePutSafe(cache, req, res) {
     await cache.put(req, res);
   } catch {}
 }
-
 function requestInitFor(url, revalidate = false) {
   const u = new URL(url);
-  if (u.origin === ROOT_ORIGIN) {
+  if (u.origin === ROOT_ORIGIN)
     return revalidate
       ? { ...REVALIDATE_FETCH_INIT, credentials: "same-origin" }
       : { credentials: "same-origin" };
-  }
   return revalidate
     ? { ...REVALIDATE_FETCH_INIT, mode: "no-cors" }
     : { mode: "no-cors" };
 }
 
-function shouldKeepURL(urlStr) {
-  return KEEP_URL_PATTERNS.some((re) => re.test(urlStr));
-}
-
-/* ---------- install / activate ---------- */
+/* INSTALL / ACTIVATE */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
@@ -211,7 +210,6 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// We'll start heavy work later (message or fallback timer)
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
@@ -225,7 +223,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-/* ---------- deep precache + prune ---------- */
+/* DEEP PRECACHE + PRUNE */
 async function deepPrecachePages(
   pages,
   { revalidate = false, prune = false } = {}
@@ -293,9 +291,7 @@ async function deepPrecachePages(
     );
   }
 
-  if (prune) {
-    await pruneStaleAssets(assetCache, discoveredAssets);
-  }
+  if (prune) await pruneStaleAssets(assetCache, discoveredAssets);
 
   const cs = await clients.matchAll({
     type: "window",
@@ -311,7 +307,7 @@ async function pruneStaleAssets(assetCache, discoveredAssets) {
     for (const req of keys) {
       const url = req.url;
       if (!isCacheableURL(url)) continue;
-      if (shouldKeepURL(url)) continue;
+      if (KEEP_URL_PATTERNS.some((re) => re.test(url))) continue;
       if (!keep.has(url)) {
         try {
           await assetCache.delete(req);
@@ -321,7 +317,7 @@ async function pruneStaleAssets(assetCache, discoveredAssets) {
   } catch {}
 }
 
-/* ---------- periodic refresh ---------- */
+/* PERIODIC REFRESH LOOP */
 function scheduleSitemapRefresh() {
   (async function loop() {
     while (true) {
@@ -343,7 +339,7 @@ function scheduleSitemapRefresh() {
   })();
 }
 
-/* ---------- background start control ---------- */
+/* BACKGROUND START CONTROL */
 let _started = false;
 async function startBackgroundWork() {
   if (_started) return;
@@ -352,13 +348,12 @@ async function startBackgroundWork() {
   await deepPrecachePages(pages, { revalidate: true, prune: true });
   scheduleSitemapRefresh();
 }
-
-// Safety fallback: if page never tells us to start, begin after a short delay
+// Safety fallback: begin even if page didn't message us
 setTimeout(() => {
   startBackgroundWork().catch(() => {});
 }, FALLBACK_START_MS);
 
-/* ---------- messages ---------- */
+/* MESSAGES */
 self.addEventListener("message", (event) => {
   const msg = event.data || {};
   if (msg.type === "PWA_START_PRECACHE") {
@@ -400,12 +395,12 @@ async function backgroundAddAssets(urls) {
   );
 }
 
-/* ---------- fetch routing ---------- */
+/* FETCH ROUTING */
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // HTML: only same-origin within scope
+  // HTML: only same-origin within scope or allowed same-origin paths
   if (isHTML(req)) {
     const url = new URL(req.url);
     if (url.origin !== ROOT_ORIGIN || !isCacheableURL(req.url)) return;
@@ -463,10 +458,12 @@ async function handleStatic(request) {
   }
   try {
     const net = await limit(() => fetch(new Request(request.url, init)));
-    if (net && (net.ok || net.type === "opaque"))
-      cachePutSafe(cache, keyReq, net.clone());
+    if (net && resOk(net)) cachePutSafe(cache, keyReq, net.clone());
     return net;
   } catch {
     return new Response("", { status: 504 });
   }
+}
+function resOk(res) {
+  return res && (res.ok || res.type === "opaque");
 }

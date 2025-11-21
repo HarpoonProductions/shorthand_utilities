@@ -1,13 +1,13 @@
-// /dummy-magazine/service-worker.js (on S3)
+// /service-worker.js at https://dummy-magazine.com/
 
-// (Optional) bump this query when you deploy a new core to force a fresh fetch.
+// Bump the version query when you publish a new core to bust any CDN cache.
 const CORE_URL =
-  "https://harpoonproductions.github.io/shorthand_utilities/pwa-test/sw-core.v1.js?v=1.5.0";
+  "https://harpoonproductions.github.io/shorthand_utilities/pwa-test/sw-core.v1.js?v=1.6.0";
 const ONESIGNAL_SW =
   "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js";
 
 try {
-  importScripts(CORE_URL); // your caching/routing logic
+  importScripts(CORE_URL); // caching/routing core
 } catch (e) {
   console.error("[PWA] core worker load failed", e);
 }
