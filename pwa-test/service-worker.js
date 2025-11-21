@@ -1,6 +1,3 @@
-// /service-worker.js at https://dummy-magazine.com/
-
-// Bump the version query when you publish a new core to bust any CDN cache.
 const CORE_URL =
   "https://harpoonproductions.github.io/shorthand_utilities/pwa-test/sw-core.v1.js?v=1.6.2";
 const ONESIGNAL_SW =
@@ -8,12 +5,14 @@ const ONESIGNAL_SW =
 
 try {
   importScripts(CORE_URL); // caching/routing core
+  console.log("[PWA] core worker loaded:", CORE_URL);
 } catch (e) {
   console.error("[PWA] core worker load failed", e);
 }
 
 try {
   importScripts(ONESIGNAL_SW); // push handling
+  console.log("[PWA] OneSignal SW loaded:", ONESIGNAL_SW);
 } catch (e) {
   console.error("[PWA] OneSignal SW load failed", e);
 }
