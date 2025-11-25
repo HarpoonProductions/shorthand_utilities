@@ -53,24 +53,19 @@
     const debugOverride = window.location.search.includes("source=pwa-debug");
 
     console.log("[OneSignal] debug display-mode standalone =", dmStandalone);
-    console.log("[OneSignal] debug navigator.standalone    =", iosStandalone);
-    console.log("[OneSignal] debug window.__isStandalone   =", helperStandalone);
-    console.log("[OneSignal] debug ?source=pwa-debug       =", debugOverride);
+    console.log("[OneSignal] debug navigator.standalone =", iosStandalone);
+    console.log("[OneSignal] debug window.__isStandalone =", helperStandalone);
+    console.log("[OneSignal] debug ?source=pwa-debug =", debugOverride);
 
-    const isPwaContext =
-      helperStandalone || dmStandalone || iosStandalone || debugOverride;
-
+    const isPwaContext = helperStandalone || dmStandalone || iosStandalone || debugOverride;
     console.log("[OneSignal] isPwaContext =", isPwaContext);
     console.log("[OneSignal] init starting on", currentOrigin);
 
-    // Optional, but handy while we’re still tweaking things
-    OneSignal.Debug.setLogLevel("debug");
-
     let initOk = false;
 
-    // 1) Init OneSignal (don’t throw away the whole flow if it fails)
+    // 1) Try to init OneSignal, but DON'T bail out the rest of the logic if it fails.
     try {
-      const appId = "81c48753-9d1c-4306-8bdd-968ecbb5a27d";
+      const appId = "81c48753-9d1c-4306-8bdd-968ecbb5a27d"; // or your new app id
       await OneSignal.init({ appId });
       initOk = true;
       console.log("[OneSignal] init completed successfully");
@@ -78,50 +73,37 @@
       console.error("[OneSignal] init error", e);
     }
 
-    // 2) Only *ask* for permission inside the PWA (or debug override)
+    // 2) If it's not a PWA context, don't ask for permission.
     if (!isPwaContext) {
       console.info("[OneSignal] Not PWA context, skipping permission request");
       return;
     }
 
-    // 3) Read current permission
-    const browserPerm =
+    // 3) Log current permission state
+    const beforePerm =
       typeof Notification !== "undefined" ? Notification.permission : "unsupported";
-    console.log("[OneSignal] Notification.permission (before) =", browserPerm);
+    console.log("[OneSignal] Notification.permission (before) =", beforePerm);
 
-    // For v16, OneSignal.Notifications.permission is a boolean-ish,
-    // but we mostly care if the browser says "default" or "granted/denied".
-    const alreadyDecided = browserPerm === "granted" || browserPerm === "denied";
-
-    // 4) Use OneSignal slidedown if possible and permission not yet decided
+    // 4) Try to request permission via OneSignal if possible, otherwise fall back.
     try {
-      if (!alreadyDecided && initOk && OneSignal.Slidedown) {
-        console.log("[OneSignal] Showing OneSignal slidedown prompt…");
-        await OneSignal.Slidedown.promptPush({
-          // While testing, force will show it even if OneSignal thinks it has
-          // shown a prompt recently. Remove or set false for production.
-          force: true,
-        });
-      } else if (!alreadyDecided && initOk && OneSignal.Notifications?.requestPermission) {
+      if (initOk && OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
         console.log("[OneSignal] Calling OneSignal.Notifications.requestPermission()…");
         await OneSignal.Notifications.requestPermission();
-      } else if (!alreadyDecided && typeof Notification !== "undefined" && Notification.requestPermission) {
+      } else if (typeof Notification !== "undefined" && Notification.requestPermission) {
         console.log("[OneSignal] Falling back to native Notification.requestPermission()…");
         await Notification.requestPermission();
       } else {
-        console.log(
-          "[OneSignal] Permission already decided or no API available; no prompt shown"
-        );
+        console.warn("[OneSignal] No available API to request permission");
       }
     } catch (err) {
-      console.warn("[OneSignal] permission flow errored", err);
+      console.warn("[OneSignal] requestPermission flow errored", err);
     }
 
     const afterPerm =
       typeof Notification !== "undefined" ? Notification.permission : "unsupported";
     console.log("[OneSignal] Notification.permission (after) =", afterPerm);
 
-    // 5) Foreground notification handling (optional sugar)
+    // 5) Only wire foreground display if init was ok
     if (initOk && OneSignal.Notifications) {
       OneSignal.Notifications.addEventListener(
         "foregroundWillDisplay",
@@ -133,7 +115,6 @@
     }
   });
 </script>
-
 
 
 
