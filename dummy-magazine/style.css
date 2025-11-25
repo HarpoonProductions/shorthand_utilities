@@ -35,9 +35,11 @@ span[style="background-color: rgba(255, 255, 255, 0.114);"] {
   padding: 0 !important;
 }
 
+/* ❗ CHANGE 1: Commented out footer hiding
 .Project-FooterContainer ul {
   display: none !important;
 }
+*/
 
 .tab_container .nav_container {
     transform: translateY(0%) !important;
@@ -251,12 +253,14 @@ font-style: normal;
 
 /* old css below this line */
 
+/* ❗ CHANGE 1 (continued): Commented out footer hiding
 #StandardFooter {
   display: none;
 }
 #StandardFooter {
   display: none;
 }
+*/
 
 .hide {
   opacity: 0 !important;
@@ -417,21 +421,20 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
   display: none;
 }
 
+/* CHANGE 2 + 3: white text & white border */
 .button_container.contents {
   background: #4A270E;
-  color: #000;
-  border: 1px solid #000;
+  color: #fff;          /* ← CHANGE 2 */
+  border: 1px solid #fff; /* ← CHANGE 3 */
   cursor: pointer;
   width: 105px;
   height: 126px;
   padding-bottom: 14px;
 }
 
-/* new from claude */
 .button_container.contents .contents-label {
-  color: #000;
+  color: #fff !important;  /* ← CHANGE 2 (label text white) */
 }
-/* end new from claude */
 
 .button_container.next {
   margin-left: 20px;
