@@ -17,7 +17,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png">
 <link rel="icon" href="/icons/icon-192.png">
 <meta name="theme-color" content="#0a0a0a">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <!-- Helper: detect installed PWA vs normal tab -->
@@ -28,25 +28,75 @@
 </script>
 
 <!-- OneSignal (permission gated to PWA only) -->
+<!-- OneSignal (permission gated to PWA only, with domain sanity-check) -->
+<!-- OneSignal (v16, PWA-gated, without getPermissionStatus) -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function (OneSignal) {
-    await OneSignal.init({ appId: "81c48753-9d1c-4306-8bdd-968ecbb5a27d" });
+    const expectedOrigin = "https://dummy-magazine.com";
+    const currentOrigin = window.location.origin;
 
-    if (window.__isStandalone) {
-      try {
-        await OneSignal.Notifications.requestPermission();
-        OneSignal.Notifications.addEventListener('foregroundWillDisplay', async (event) => {
-          await OneSignal.Notifications.display(event.notification);
-          // or: event.preventDefault(); showCustomToast(event.notification);
-        });
-      } catch (e) {
-        console.warn('[OneSignal] permission/init skipped', e);
+    if (currentOrigin !== expectedOrigin) {
+      console.warn(
+        "[OneSignal] Skipping init. Expected origin:",
+        expectedOrigin,
+        "but running on:",
+        currentOrigin
+      );
+      return;
+    }
+
+    console.log("[OneSignal] init starting on", currentOrigin);
+
+    try {
+      const appId = "81c48753-9d1c-4306-8bdd-968ecbb5a27d";
+      await OneSignal.init({ appId });
+
+      // Check browser-level permission directly
+      const currentPerm = (typeof Notification !== "undefined")
+        ? Notification.permission
+        : "unsupported";
+
+      console.log("[OneSignal] Notification.permission =", currentPerm);
+
+      const isStandalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true ||
+        window.location.search.includes("source=pwa");
+
+      if (!isStandalone) {
+        console.info("[OneSignal] Not standalone, skipping permission request");
+        return;
       }
+
+      if (currentPerm === "default") {
+        console.log("[OneSignal] Requesting notification permission…");
+        try {
+          await OneSignal.Notifications.requestPermission();
+        } catch (err) {
+          console.warn("[OneSignal] requestPermission error", err);
+        }
+      } else {
+        console.info(
+          "[OneSignal] Not requesting permission; current state is",
+          currentPerm
+        );
+      }
+
+      OneSignal.Notifications.addEventListener(
+        "foregroundWillDisplay",
+        async (event) => {
+          console.log("[OneSignal] foregroundWillDisplay", event);
+          await OneSignal.Notifications.display(event.notification);
+        }
+      );
+    } catch (e) {
+      console.error("[OneSignal] init error", e);
     }
   });
 </script>
+
 
 <!-- Service Worker @ root: single registration; start heavy work only in PWA -->
 <script>
@@ -165,44 +215,77 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
-<!-- PWA toasts: progress & “new content” — PWA ONLY -->
+<!-- PWA toasts: progress & “new content” — with debug logging -->
 <script>
-(function(){
-  if (!window.__isStandalone) return;
+  (function () {
+    // For debugging, allow ?source=pwa-debug to turn this on in a normal tab.
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true ||
+      window.location.search.includes("source=pwa-debug");
 
-  function toast(text, withButton) {
-    const el = document.createElement('div');
-    el.className = 'pwa-toast';
-    el.style.cssText = 'position:fixed;left:12px;bottom:12px;background:#111;color:#fff;padding:8px 12px;border-radius:8px;z-index:99999;font:14px system-ui';
-    if (matchMedia('(prefers-color-scheme: light)').matches) {
-      el.style.background = '#fff'; el.style.color = '#111'; el.style.border = '1px solid #e5e5e5';
+    if (!isStandalone) {
+      console.info("[PWA] Toast listener disabled (not standalone / no ?source=pwa-debug)");
+      return;
     }
-    el.textContent = text;
-    if (withButton) {
-      const btn = document.createElement('button');
-      btn.textContent = 'Refresh';
-      btn.style.marginLeft = '8px';
-      btn.onclick = () => location.reload();
-      el.appendChild(btn);
-    }
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), withButton ? 10000 : 2500);
-    return el;
-  }
 
-  let progressEl = null;
-  navigator.serviceWorker?.addEventListener?.('message', (e) => {
-    const { type, done, total } = e.data || {};
-    if (type === 'PWA_PRECACHE_PROGRESS') {
-      if (!progressEl) progressEl = toast(`Caching pages… ${done}/${total}`, false);
-      else progressEl.textContent = `Caching pages… ${done}/${total}`;
+    function toast(text, withButton) {
+      const el = document.createElement("div");
+      el.className = "pwa-toast";
+      el.style.cssText =
+        "position:fixed;left:12px;bottom:12px;background:#111;color:#fff;padding:8px 12px;border-radius:8px;z-index:99999;font:14px system-ui";
+      if (matchMedia("(prefers-color-scheme: light)").matches) {
+        el.style.background = "#fff";
+        el.style.color = "#111";
+        el.style.border = "1px solid #e5e5e5";
+      }
+      el.textContent = text;
+      if (withButton) {
+        const btn = document.createElement("button");
+        btn.textContent = "Refresh";
+        btn.style.marginLeft = "8px";
+        btn.onclick = () => location.reload();
+        el.appendChild(btn);
+      }
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), withButton ? 10000 : 2500);
+      return el;
     }
-    if (type === 'PWA_PRECACHE_DONE') {
-      progressEl?.remove(); progressEl = null;
+
+    let progressEl = null;
+
+    if (!navigator.serviceWorker) {
+      console.warn("[PWA] No navigator.serviceWorker available");
+      return;
     }
-    if (type === 'PWA_CONTENT_UPDATED') {
-      toast('New content downloaded — refresh to see it', true);
-    }
-  });
-})();
+
+    navigator.serviceWorker.addEventListener("message", (e) => {
+      console.log("[PWA msg from SW]", e.data);
+      const { type, done, total, reason, from } = e.data || {};
+
+      if (type === "PWA_PRECACHE_PROGRESS") {
+        if (!progressEl) progressEl = toast(`Caching pages… ${done}/${total}`, false);
+        else progressEl.textContent = `Caching pages… ${done}/${total}`;
+      }
+
+      if (type === "PWA_PRECACHE_DONE") {
+        progressEl?.remove();
+        progressEl = null;
+        toast("All pages cached for offline use", false);
+      }
+
+      if (type === "PWA_CONTENT_UPDATED") {
+        toast("New content downloaded — refresh to see it", true);
+      }
+
+      if (type === "PWA_PRECACHE_ERROR") {
+        toast("Caching error: " + (reason || "Unknown"), false);
+      }
+
+      if (type === "PWA_DEBUG_PAGES") {
+        console.log("[PWA DEBUG_PAGES]", e.data);
+      }
+    });
+  })();
 </script>
+
