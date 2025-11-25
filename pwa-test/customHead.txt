@@ -47,43 +47,64 @@
       return;
     }
 
+    const dmStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    const iosStandalone = window.navigator.standalone === true;
+    const helperStandalone = window.__isStandalone === true;
+    const debugOverride = window.location.search.includes("source=pwa-debug");
+
+    console.log("[OneSignal] debug display-mode standalone =", dmStandalone);
+    console.log("[OneSignal] debug navigator.standalone =", iosStandalone);
+    console.log("[OneSignal] debug window.__isStandalone =", helperStandalone);
+    console.log("[OneSignal] debug ?source=pwa-debug =", debugOverride);
+
+    const isPwaContext = helperStandalone || dmStandalone || iosStandalone || debugOverride;
+    console.log("[OneSignal] isPwaContext =", isPwaContext);
     console.log("[OneSignal] init starting on", currentOrigin);
 
+    let initOk = false;
+
+    // 1) Try to init OneSignal, but DON'T bail out the rest of the logic if it fails.
     try {
-      const appId = "81c48753-9d1c-4306-8bdd-968ecbb5a27d";
+      const appId = "81c48753-9d1c-4306-8bdd-968ecbb5a27d"; // or your new app id
       await OneSignal.init({ appId });
+      initOk = true;
+      console.log("[OneSignal] init completed successfully");
+    } catch (e) {
+      console.error("[OneSignal] init error", e);
+    }
 
-      // Check browser-level permission directly
-      const currentPerm = (typeof Notification !== "undefined")
-        ? Notification.permission
-        : "unsupported";
+    // 2) If it's not a PWA context, don't ask for permission.
+    if (!isPwaContext) {
+      console.info("[OneSignal] Not PWA context, skipping permission request");
+      return;
+    }
 
-      console.log("[OneSignal] Notification.permission =", currentPerm);
+    // 3) Log current permission state
+    const beforePerm =
+      typeof Notification !== "undefined" ? Notification.permission : "unsupported";
+    console.log("[OneSignal] Notification.permission (before) =", beforePerm);
 
-      const isStandalone =
-        window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone === true ||
-        window.location.search.includes("source=pwa");
-
-      if (!isStandalone) {
-        console.info("[OneSignal] Not standalone, skipping permission request");
-        return;
-      }
-
-      if (currentPerm === "default") {
-        console.log("[OneSignal] Requesting notification permission…");
-        try {
-          await OneSignal.Notifications.requestPermission();
-        } catch (err) {
-          console.warn("[OneSignal] requestPermission error", err);
-        }
+    // 4) Try to request permission via OneSignal if possible, otherwise fall back.
+    try {
+      if (initOk && OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
+        console.log("[OneSignal] Calling OneSignal.Notifications.requestPermission()…");
+        await OneSignal.Notifications.requestPermission();
+      } else if (typeof Notification !== "undefined" && Notification.requestPermission) {
+        console.log("[OneSignal] Falling back to native Notification.requestPermission()…");
+        await Notification.requestPermission();
       } else {
-        console.info(
-          "[OneSignal] Not requesting permission; current state is",
-          currentPerm
-        );
+        console.warn("[OneSignal] No available API to request permission");
       }
+    } catch (err) {
+      console.warn("[OneSignal] requestPermission flow errored", err);
+    }
 
+    const afterPerm =
+      typeof Notification !== "undefined" ? Notification.permission : "unsupported";
+    console.log("[OneSignal] Notification.permission (after) =", afterPerm);
+
+    // 5) Only wire foreground display if init was ok
+    if (initOk && OneSignal.Notifications) {
       OneSignal.Notifications.addEventListener(
         "foregroundWillDisplay",
         async (event) => {
@@ -91,11 +112,10 @@
           await OneSignal.Notifications.display(event.notification);
         }
       );
-    } catch (e) {
-      console.error("[OneSignal] init error", e);
     }
   });
 </script>
+
 
 
 <!-- Service Worker @ root: single registration; start heavy work only in PWA -->
