@@ -6,7 +6,7 @@
    - Same-origin path allowlist (for /assets, etc.)
 */
 
-const CORE_VERSION = "1.6.0";
+const CORE_VERSION = "1.6.1";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -412,9 +412,9 @@ async function startBackgroundWork() {
   scheduleSitemapRefresh();
 }
 // Safety fallback: begin even if page didn't message us
-setTimeout(() => {
-  startBackgroundWork().catch(() => {});
-}, FALLBACK_START_MS);
+// setTimeout(() => {
+//   startBackgroundWork().catch(() => {});
+// }, FALLBACK_START_MS);
 
 /* MESSAGES */
 self.addEventListener("message", (event) => {

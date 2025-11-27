@@ -139,42 +139,83 @@
 
 <!-- Service Worker @ root: single registration; start heavy work only in PWA -->
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
     try {
-      const reg = await navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' });
-      reg.update().catch(()=>{});
+      const reg = await navigator.serviceWorker.register("/service-worker.js", {
+        updateViaCache: "none",
+      });
+
+      // Try to grab a fresh version of the SW in the background
+      reg.update().catch(() => {});
+
       const ready = await navigator.serviceWorker.ready;
 
-      if (window.__isStandalone) {
-        // If already controlled, start background caching now
-        if (navigator.serviceWorker.controller) {
-          ready.active?.postMessage({ type: 'PWA_START_PRECACHE' });
-        }
-        // Also start the moment control is gained (first-launch edge)
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          navigator.serviceWorker.ready.then(r => r.active?.postMessage({ type: 'PWA_START_PRECACHE' }));
-        });
+      // Helper: schedule the REAL deep sitemap precache
+      function scheduleBackgroundPrecache() {
+        const kickOff = () => {
+          navigator.serviceWorker.ready.then((r) => {
+            r.active?.postMessage({ type: "PWA_START_PRECACHE" });
+          });
+        };
 
-        // Optional: send current page assets so SW grabs anything referenced here
+        // Prefer not to compete with initial rendering / scripting
+        if ("requestIdleCallback" in window) {
+          requestIdleCallback(kickOff, { timeout: 20000 }); // max 20s delay
+        } else {
+          // Fallback: simple timeout after first paint etc.
+          setTimeout(kickOff, 20000);
+        }
+      }
+
+      if (window.__isStandalone) {
+        // If SW already controls this page (return visit)
+        if (navigator.serviceWorker.controller) {
+          scheduleBackgroundPrecache();
+        } else {
+          // First launch: wait until the SW takes control, then schedule
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
+            scheduleBackgroundPrecache();
+          });
+        }
+
+        // Still OK to send current page's assets early so the *first* page
+        // itself becomes offlineable quickly, without hammering the network.
         const assets = new Set();
-        const push = (u) => { try { assets.add(new URL(u, location.href).toString()); } catch {} };
-        document.querySelectorAll(
-          'link[rel="stylesheet"], link[rel="preload"][as], script[src], img[src], source[srcset], video[src], audio[src]'
-        ).forEach(el => {
-          if (el.href) push(el.href);
-          if (el.src)  push(el.src);
-          if (el.srcset) el.srcset.split(',').forEach(s => push(s.trim().split(' ')[0]));
+        const push = (u) => {
+          try {
+            assets.add(new URL(u, location.href).toString());
+          } catch {}
+        };
+
+        document
+          .querySelectorAll(
+            'link[rel="stylesheet"], link[rel="preload"][as], script[src], img[src], source[srcset], video[src], audio[src]'
+          )
+          .forEach((el) => {
+            if (el.href) push(el.href);
+            if (el.src) push(el.src);
+            if (el.srcset)
+              el.srcset
+                .split(",")
+                .forEach((s) => push(s.trim().split(" ")[0]));
+          });
+
+        // Also cache the "root" landing page
+        assets.add(new URL("/", location.origin).toString());
+
+        ready.active?.postMessage({
+          type: "PWA_ASSETS",
+          assets: [...assets],
         });
-        assets.add(new URL('/', location.origin).toString());
-        ready.active?.postMessage({ type: 'PWA_ASSETS', assets: [...assets] });
       }
     } catch (e) {
-      console.warn('[PWA] SW register failed', e);
+      console.warn("[PWA] SW register failed", e);
     }
   });
 }
 </script>
+
 
 <!-- Install banner: shows on website; suppressed inside PWA -->
 <script>
