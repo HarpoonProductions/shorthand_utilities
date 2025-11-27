@@ -6,7 +6,7 @@
    - Same-origin path allowlist (for /assets, etc.)
 */
 
-const CORE_VERSION = "1.6.1";
+const CORE_VERSION = "1.6.3";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -22,6 +22,8 @@ const STATIC_DESTS = [
 ];
 const PAGES_REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1h
 const REVALIDATE_FETCH_INIT = { cache: "no-cache" };
+
+const MAX_PAGES_FIRST_RUN = 10;
 
 // Start control + throttle
 const START_DELAY_MS = 3000;
@@ -208,16 +210,12 @@ async function fetchSitemapPages() {
     const xml = await fetchSitemapXML();
     const urlsFromSitemap = parseSitemapLocs(xml);
 
-    // 1) Take each <loc> from the sitemap
-    // 2) Normalise + rebase it to dummy-magazine.com
-    // 3) Keep only URLs the worker is allowed to cache
     const rebased = urlsFromSitemap
       .map(normalisePageURL)
       .filter(isCacheableURL);
 
     const unique = Array.from(new Set(rebased));
 
-    // Optional debug: if nothing is cacheable, tell the page
     if (!unique.length) {
       try {
         const cs = await clients.matchAll({
@@ -232,12 +230,47 @@ async function fetchSitemapPages() {
           })
         );
       } catch (e) {
-        // non-fatal
+        /* non-fatal */
       }
+      return [];
     }
 
-    return unique;
-  } catch {
+    // NEW: only aggressively precache the first N pages
+    const selected = unique.slice(0, MAX_PAGES_FIRST_RUN);
+
+    // Tell any page listeners what we're about to cache
+    try {
+      const cs = await clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      cs.forEach((c) =>
+        c.postMessage({
+          type: "PWA_DEBUG_PAGES",
+          pages: selected,
+        })
+      );
+    } catch (e) {
+      /* non-fatal */
+    }
+
+    return selected;
+  } catch (e) {
+    try {
+      const cs = await clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      cs.forEach((c) =>
+        c.postMessage({
+          type: "PWA_PRECACHE_ERROR",
+          reason: "Sitemap fetch failed: " + (e && e.message),
+          sitemap: SITEMAP_URL,
+        })
+      );
+    } catch (e2) {
+      /* non-fatal */
+    }
     return [];
   }
 }

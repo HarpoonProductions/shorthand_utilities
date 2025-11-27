@@ -1,34 +1,167 @@
 <!-- digital edition nav -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/splide-core.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/themes/splide-default.min.css">
-<link href="https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.css" rel="stylesheet">
-
-
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/splide-core.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/themes/splide-default.min.css"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.css"
+  rel="stylesheet"
+/>
 
 <link
-    rel="stylesheet"
-    type="text/css"
-    href="https://harpoonproductions.github.io/shorthand_utilities/dummy-magazine/style.css"
-      />
-
+  rel="stylesheet"
+  type="text/css"
+  href="https://harpoonproductions.github.io/shorthand_utilities/dummy-magazine/style.css"
+/>
 
 <!-- Manifest & icons (root) -->
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png">
-<link rel="icon" href="/icons/icon-192.png">
-<meta name="theme-color" content="#0a0a0a">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json" />
+<link
+  rel="apple-touch-icon"
+  sizes="180x180"
+  href="/icons/apple-touch-icon-180.png"
+/>
+<link rel="icon" href="/icons/icon-192.png" />
+<meta name="theme-color" content="#0a0a0a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta
+  name="apple-mobile-web-app-status-bar-style"
+  content="black-translucent"
+/>
 
 <!-- Helper: detect installed PWA vs normal tab -->
+<!-- Helper: detect installed PWA vs normal tab -->
 <script>
-  window.__isStandalone =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true;
+  (function () {
+    const dmStandalone = window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches;
+    const iosStandalone = window.navigator.standalone === true;
+    const hasPwaParam = window.location.search.includes("source=pwa");
+    const debugOverride = window.location.search.includes("source=pwa-debug");
+
+    // Treat installed app + ?source=pwa + ?source=pwa-debug as PWA context
+    window.__isStandalone =
+      dmStandalone || iosStandalone || hasPwaParam || debugOverride;
+
+    console.log("[PWA] __isStandalone =", window.__isStandalone);
+  })();
+</script>
+
+<!-- Service Worker @ root: single registration; start heavy work only in PWA -->
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const reg = await navigator.serviceWorker.register(
+          "/service-worker.js",
+          {
+            updateViaCache: "none",
+          }
+        );
+
+        reg.update().catch(() => {});
+
+        const ready = await navigator.serviceWorker.ready;
+
+        function scheduleBackgroundPrecache() {
+          const kickOff = () => {
+            console.log("[PWA] Sending PWA_START_PRECACHE message to SW…");
+            navigator.serviceWorker.ready.then((r) => {
+              if (r.active) {
+                r.active.postMessage({ type: "PWA_START_PRECACHE" });
+                console.log("[PWA] PWA_START_PRECACHE message sent");
+              } else {
+                console.warn("[PWA] No active SW to message");
+              }
+            });
+          };
+
+          if ("requestIdleCallback" in window) {
+            console.log(
+              "[PWA] Scheduling precache via requestIdleCallback (timeout: 5000)"
+            );
+            requestIdleCallback(kickOff, { timeout: 5000 });
+          } else {
+            console.log("[PWA] Scheduling precache via setTimeout (2000ms)");
+            setTimeout(kickOff, 2000);
+          }
+        }
+
+        if (window.__isStandalone) {
+          // PWA context (installed or ?source=pwa / ?source=pwa-debug)
+
+          if (navigator.serviceWorker.controller) {
+            // Return visit: SW already controlling this page
+            scheduleBackgroundPrecache();
+          } else {
+            // First launch: wait until the SW takes control, then schedule
+            navigator.serviceWorker.addEventListener("controllerchange", () => {
+              console.log("[PWA] controllerchange → scheduling precache");
+              scheduleBackgroundPrecache();
+            });
+          }
+
+          // 1) Per-page asset snapshot (what you already had)
+          const assets = new Set();
+          const push = (u) => {
+            try {
+              assets.add(new URL(u, location.href).toString());
+            } catch {}
+          };
+
+          document
+            .querySelectorAll(
+              'link[rel="stylesheet"], link[rel="preload"][as], script[src], img[src], source[srcset], video[src], audio[src]'
+            )
+            .forEach((el) => {
+              if (el.href) push(el.href);
+              if (el.src) push(el.src);
+              if (el.srcset)
+                el.srcset
+                  .split(",")
+                  .forEach((s) => push(s.trim().split(" ")[0]));
+            });
+
+          // Also cache the root landing page
+          assets.add(new URL("/", location.origin).toString());
+
+          // 2) Explicitly add critical nav / CSS assets (belt + braces)
+          const criticalAssets = [
+            "https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/splide-core.min.css",
+            "https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/css/themes/splide-default.min.css",
+            "https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.css",
+            "https://harpoonproductions.github.io/shorthand_utilities/dummy-magazine/style.css",
+            "https://harpoonproductions.github.io/shorthand_utilities/dummy-magazine/script_scroll_low_no_nav.js",
+            "https://harpoonproductions.github.io/shorthand_utilities/dummy-magazine/script_scroll_low_no_nav.css",
+          ];
+          criticalAssets.forEach((u) => assets.add(u));
+
+          console.log("[PWA] Sending PWA_ASSETS with", assets.size, "urls");
+
+          ready.active?.postMessage({
+            type: "PWA_ASSETS",
+            assets: [...assets],
+          });
+        } else {
+          console.log("[PWA] Not standalone/tab override – no deep precache");
+        }
+      } catch (e) {
+        console.warn("[PWA] SW register failed", e);
+      }
+    });
+  }
 </script>
 
 <!-- OneSignal (v16, PWA-only init) -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script
+  src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+  defer
+></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function (OneSignal) {
@@ -47,11 +180,13 @@
     }
 
     // 1) Decide if we're in PWA context
-    const dmStandalone   = window.matchMedia("(display-mode: standalone)").matches;
-    const iosStandalone  = window.navigator.standalone === true;
+    const dmStandalone = window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches;
+    const iosStandalone = window.navigator.standalone === true;
     const helperStandalone = window.__isStandalone === true;
-    const hasPwaParam    = window.location.search.includes("source=pwa");
-    const debugOverride  = window.location.search.includes("source=pwa-debug");
+    const hasPwaParam = window.location.search.includes("source=pwa");
+    const debugOverride = window.location.search.includes("source=pwa-debug");
 
     const isPwaContext =
       dmStandalone ||
@@ -62,14 +197,19 @@
 
     console.log("[OneSignal] debug display-mode standalone =", dmStandalone);
     console.log("[OneSignal] debug navigator.standalone    =", iosStandalone);
-    console.log("[OneSignal] debug window.__isStandalone   =", helperStandalone);
+    console.log(
+      "[OneSignal] debug window.__isStandalone   =",
+      helperStandalone
+    );
     console.log("[OneSignal] debug ?source=pwa             =", hasPwaParam);
     console.log("[OneSignal] debug ?source=pwa-debug       =", debugOverride);
     console.log("[OneSignal] isPwaContext                  =", isPwaContext);
 
     // 2) CRITICAL: Don't even initialise OneSignal outside the PWA
     if (!isPwaContext) {
-      console.info("[OneSignal] Not PWA context, skipping ALL OneSignal init + prompts");
+      console.info(
+        "[OneSignal] Not PWA context, skipping ALL OneSignal init + prompts"
+      );
       return;
     }
 
@@ -98,10 +238,13 @@
 
     // 3) Read current permission
     const browserPerm =
-      typeof Notification !== "undefined" ? Notification.permission : "unsupported";
+      typeof Notification !== "undefined"
+        ? Notification.permission
+        : "unsupported";
     console.log("[OneSignal] Notification.permission (before) =", browserPerm);
 
-    const alreadyDecided = browserPerm === "granted" || browserPerm === "denied";
+    const alreadyDecided =
+      browserPerm === "granted" || browserPerm === "denied";
 
     // 4) Use OneSignal slidedown / permission only if not yet decided
     try {
@@ -111,11 +254,23 @@
           // You can remove `force` for production to avoid re-nagging
           force: true,
         });
-      } else if (!alreadyDecided && initOk && OneSignal.Notifications?.requestPermission) {
-        console.log("[OneSignal] Calling OneSignal.Notifications.requestPermission()…");
+      } else if (
+        !alreadyDecided &&
+        initOk &&
+        OneSignal.Notifications?.requestPermission
+      ) {
+        console.log(
+          "[OneSignal] Calling OneSignal.Notifications.requestPermission()…"
+        );
         await OneSignal.Notifications.requestPermission();
-      } else if (!alreadyDecided && typeof Notification !== "undefined" && Notification.requestPermission) {
-        console.log("[OneSignal] Falling back to native Notification.requestPermission()…");
+      } else if (
+        !alreadyDecided &&
+        typeof Notification !== "undefined" &&
+        Notification.requestPermission
+      ) {
+        console.log(
+          "[OneSignal] Falling back to native Notification.requestPermission()…"
+        );
         await Notification.requestPermission();
       } else {
         console.log(
@@ -127,7 +282,9 @@
     }
 
     const afterPerm =
-      typeof Notification !== "undefined" ? Notification.permission : "unsupported";
+      typeof Notification !== "undefined"
+        ? Notification.permission
+        : "unsupported";
     console.log("[OneSignal] Notification.permission (after) =", afterPerm);
 
     // 5) Foreground notification handling (optional sugar)
@@ -143,97 +300,13 @@
   });
 </script>
 
-
-
-
-
-<!-- Service Worker @ root: single registration; start heavy work only in PWA -->
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const reg = await navigator.serviceWorker.register("/service-worker.js", {
-        updateViaCache: "none",
-      });
-
-      // Try to grab a fresh version of the SW in the background
-      reg.update().catch(() => {});
-
-      const ready = await navigator.serviceWorker.ready;
-
-      // Helper: schedule the REAL deep sitemap precache
-      function scheduleBackgroundPrecache() {
-        const kickOff = () => {
-          navigator.serviceWorker.ready.then((r) => {
-            r.active?.postMessage({ type: "PWA_START_PRECACHE" });
-          });
-        };
-
-        // Prefer not to compete with initial rendering / scripting
-        if ("requestIdleCallback" in window) {
-          requestIdleCallback(kickOff, { timeout: 20000 }); // max 20s delay
-        } else {
-          // Fallback: simple timeout after first paint etc.
-          setTimeout(kickOff, 20000);
-        }
-      }
-
-      if (window.__isStandalone) {
-        // If SW already controls this page (return visit)
-        if (navigator.serviceWorker.controller) {
-          scheduleBackgroundPrecache();
-        } else {
-          // First launch: wait until the SW takes control, then schedule
-          navigator.serviceWorker.addEventListener("controllerchange", () => {
-            scheduleBackgroundPrecache();
-          });
-        }
-
-        // Still OK to send current page's assets early so the *first* page
-        // itself becomes offlineable quickly, without hammering the network.
-        const assets = new Set();
-        const push = (u) => {
-          try {
-            assets.add(new URL(u, location.href).toString());
-          } catch {}
-        };
-
-        document
-          .querySelectorAll(
-            'link[rel="stylesheet"], link[rel="preload"][as], script[src], img[src], source[srcset], video[src], audio[src]'
-          )
-          .forEach((el) => {
-            if (el.href) push(el.href);
-            if (el.src) push(el.src);
-            if (el.srcset)
-              el.srcset
-                .split(",")
-                .forEach((s) => push(s.trim().split(" ")[0]));
-          });
-
-        // Also cache the "root" landing page
-        assets.add(new URL("/", location.origin).toString());
-
-        ready.active?.postMessage({
-          type: "PWA_ASSETS",
-          assets: [...assets],
-        });
-      }
-    } catch (e) {
-      console.warn("[PWA] SW register failed", e);
-    }
-  });
-}
-</script>
-
-
 <!-- Install banner: shows on website; suppressed inside PWA -->
 <script>
-(function(){
-  if (window.__isStandalone) return; // don't show inside installed app
+  (function () {
+    if (window.__isStandalone) return; // don't show inside installed app
 
-  const style = document.createElement('style');
-  style.textContent = `
+    const style = document.createElement("style");
+    style.textContent = `
     .pwa-banner{position:fixed;left:0;right:0;bottom:0;z-index:99999;display:none;
       background:#111;color:#fff;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
     .pwa-banner-inner{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center}
@@ -248,11 +321,11 @@ if ("serviceWorker" in navigator) {
       .pwa-banner .close{color:#111;border-color:#111}
     }
   `;
-  document.head.appendChild(style);
+    document.head.appendChild(style);
 
-  const wrap = document.createElement('div');
-  wrap.className = 'pwa-banner';
-  wrap.innerHTML = `
+    const wrap = document.createElement("div");
+    wrap.className = "pwa-banner";
+    wrap.innerHTML = `
     <div class="pwa-banner-inner" role="dialog" aria-live="polite" aria-label="Install app">
       <img src="/icons/icon-192.png" alt="">
       <div class="txt" id="pwa-banner-text"></div>
@@ -261,65 +334,75 @@ if ("serviceWorker" in navigator) {
         <button class="close" id="pwa-banner-close" aria-label="Dismiss">Close</button>
       </div>
     </div>`;
-  document.addEventListener('DOMContentLoaded', () => document.body.appendChild(wrap));
+    document.addEventListener("DOMContentLoaded", () =>
+      document.body.appendChild(wrap)
+    );
 
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  let deferredPrompt = null;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    let deferredPrompt = null;
 
-  function showOnce() {
-    if (localStorage.getItem('pwaInstallDismissed') === '1') return;
-    wrap.style.display = 'block';
-  }
-  function hide() {
-    wrap.style.display = 'none';
-    localStorage.setItem('pwaInstallDismissed', '1');
-  }
+    function showOnce() {
+      if (localStorage.getItem("pwaInstallDismissed") === "1") return;
+      wrap.style.display = "block";
+    }
+    function hide() {
+      wrap.style.display = "none";
+      localStorage.setItem("pwaInstallDismissed", "1");
+    }
 
-  if (isIOS) {
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('pwa-banner-text').textContent =
-        'On iOS: tap Share, then “Add to Home Screen” to install.';
-      const cta = document.getElementById('pwa-banner-cta');
-      cta.textContent = 'Got it';
-      cta.onclick = hide;
-      document.getElementById('pwa-banner-close').onclick = hide;
+    if (isIOS) {
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("pwa-banner-text").textContent =
+          "On iOS: tap Share, then “Add to Home Screen” to install.";
+        const cta = document.getElementById("pwa-banner-cta");
+        cta.textContent = "Got it";
+        cta.onclick = hide;
+        document.getElementById("pwa-banner-close").onclick = hide;
+        showOnce();
+      });
+      return;
+    }
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById("pwa-banner-text").textContent =
+        "Install this app for quick, offline access.";
+      const cta = document.getElementById("pwa-banner-cta");
+      cta.textContent = "Install";
+      cta.onclick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        try {
+          await deferredPrompt.userChoice;
+        } finally {
+          deferredPrompt = null;
+          hide();
+        }
+      };
+      document.getElementById("pwa-banner-close").onclick = hide;
       showOnce();
     });
-    return;
-  }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('pwa-banner-text').textContent = 'Install this app for quick, offline access.';
-    const cta = document.getElementById('pwa-banner-cta');
-    cta.textContent = 'Install';
-    cta.onclick = async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      try { await deferredPrompt.userChoice; } finally { deferredPrompt = null; hide(); }
-    };
-    document.getElementById('pwa-banner-close').onclick = hide;
-    showOnce();
-  });
-})();
+  })();
 </script>
 
 <!-- PWA toasts: progress & “new content” — with debug logging -->
 <script>
   (function () {
-    // For debugging, allow ?source=pwa-debug to turn this on in a normal tab.
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true ||
-      window.location.search.includes("source=pwa-debug");
+      window.location.search.includes("source=pwa-debug") ||
+      window.location.search.includes("source=pwa");
 
     if (!isStandalone) {
-      console.info("[PWA] Toast listener disabled (not standalone / no ?source=pwa-debug)");
+      console.info(
+        "[PWA] Toast listener disabled (not standalone / no ?source=pwa[-debug])"
+      );
       return;
     }
 
-    function toast(text, withButton) {
+    function toast(text, withButton, options = {}) {
       const el = document.createElement("div");
       el.className = "pwa-toast";
       el.style.cssText =
@@ -330,15 +413,28 @@ if ("serviceWorker" in navigator) {
         el.style.border = "1px solid #e5e5e5";
       }
       el.textContent = text;
+
       if (withButton) {
         const btn = document.createElement("button");
-        btn.textContent = "Refresh";
+        btn.textContent = options.buttonLabel || "Refresh";
         btn.style.marginLeft = "8px";
-        btn.onclick = () => location.reload();
+        btn.onclick = options.buttonOnClick || (() => location.reload());
         el.appendChild(btn);
       }
+
+      if (options.persistent) {
+        el.dataset.persistent = "true";
+      }
+
       document.body.appendChild(el);
-      setTimeout(() => el.remove(), withButton ? 10000 : 2500);
+
+      // Auto-remove only non-persistent, no-button toasts
+      if (!el.dataset.persistent && !withButton) {
+        setTimeout(() => el.remove(), 2500);
+      } else if (withButton && !options.persistent) {
+        setTimeout(() => el.remove(), 10000);
+      }
+
       return el;
     }
 
@@ -351,31 +447,35 @@ if ("serviceWorker" in navigator) {
 
     navigator.serviceWorker.addEventListener("message", (e) => {
       console.log("[PWA msg from SW]", e.data);
-      const { type, done, total, reason, from } = e.data || {};
+      const { type, done, total, reason, pages } = e.data || {};
 
       if (type === "PWA_PRECACHE_PROGRESS") {
-        if (!progressEl) progressEl = toast(`Caching pages… ${done}/${total}`, false);
-        else progressEl.textContent = `Caching pages… ${done}/${total}`;
+        if (!progressEl) {
+          progressEl = toast(`Caching pages… ${done}/${total}`, false, {
+            persistent: true,
+          });
+        } else {
+          progressEl.textContent = `Caching pages… ${done}/${total}`;
+        }
       }
 
       if (type === "PWA_PRECACHE_DONE") {
         progressEl?.remove();
         progressEl = null;
-        toast("All pages cached for offline use", false);
-      }
-
-      if (type === "PWA_CONTENT_UPDATED") {
-        toast("New content downloaded — refresh to see it", true);
+        toast("All selected pages cached for offline use", false);
       }
 
       if (type === "PWA_PRECACHE_ERROR") {
         toast("Caching error: " + (reason || "Unknown"), false);
       }
 
+      if (type === "PWA_CONTENT_UPDATED") {
+        toast("New content downloaded — refresh to see it", true);
+      }
+
       if (type === "PWA_DEBUG_PAGES") {
-        console.log("[PWA DEBUG_PAGES]", e.data);
+        console.log("[PWA DEBUG_PAGES] First pages:", pages);
       }
     });
   })();
 </script>
-
