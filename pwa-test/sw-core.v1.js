@@ -6,7 +6,7 @@
    - Same-origin path allowlist (for /assets, etc.)
 */
 
-const CORE_VERSION = "1.6.5";
+const CORE_VERSION = "1.6.7";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -215,6 +215,12 @@ async function fetchSitemapPages() {
       .filter(isCacheableURL);
 
     const unique = Array.from(new Set(rebased));
+
+    console.log("[PWA] urlsFromSitemap:", urlsFromSitemap.length);
+    console.log("[PWA] rebased unique:", unique.length);
+
+    // IMPORTANT: for now, return ALL of them:
+    return unique;
 
     if (!unique.length) {
       try {
@@ -442,7 +448,11 @@ let _started = false;
 async function startBackgroundWork() {
   if (_started) return;
   _started = true;
+  console.log("[PWA] startBackgroundWork begin");
+
   const pages = await fetchSitemapPages();
+  console.log("[PWA] pages length from sitemap:", pages.length);
+
   await deepPrecachePages(pages, { revalidate: true, prune: true });
   scheduleSitemapRefresh();
 }

@@ -1,7 +1,7 @@
 // /service-worker.js  (root PWA worker)
 
 const CORE_URL =
-  "https://harpoonproductions.github.io/shorthand_utilities/pwa-test/sw-core.v1.js?v=1.6.2";
+  "https://harpoonproductions.github.io/shorthand_utilities/pwa-test/sw-core.v1.js";
 
 try {
   importScripts(CORE_URL); // caching / routing core (sw-core.v1.js)
