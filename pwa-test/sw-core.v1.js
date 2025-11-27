@@ -6,7 +6,7 @@
    - Same-origin path allowlist (for /assets, etc.)
 */
 
-const CORE_VERSION = "1.6.7";
+const CORE_VERSION = "1.6.8";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -90,6 +90,7 @@ const ALLOW_ORIGINS = [
   "https://d3js.org",
   "https://fonts.googleapis.com",
   "https://fonts.gstatic.com",
+  "https://hpn-edn.s3.eu-west-2.amazonaws.com",
 ];
 
 /* Same-origin path allowlist (outside SCOPE_PATH) */
@@ -101,6 +102,24 @@ const SAME_ORIGIN_PATH_ALLOWLIST = [
   "/project/",
 ];
 
+const NAV_ASSETS_ALWAYS = [
+  // Core Shorthand static bundles on dummy-magazine.com
+  "https://dummy-magazine.com/static/story.539906.min.js",
+  "https://dummy-magazine.com/static/project.539906.min.js",
+  "https://dummy-magazine.com/static/footer.539906.min.js",
+
+  // Shorthand project scripts on S3 (rebased site still uses them)
+  "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/project.js",
+  "https://hpn-edn.s3.eu-west-2.amazonaws.com/dummy-magazine/static/project-search.539906.min.js",
+
+  // Slider libs for the nav UI
+  "https://cdnjs.cloudflare.com/ajax/libs/splidejs/4.1.4/js/splide.min.js",
+  "https://cdn.jsdelivr.net/npm/glider-js@1.7.8/glider.min.js",
+
+  // Your custom nav widget script
+  "https://harpoonproductions.github.io/shorthand_utilities/dummy-magazine/script_scroll_low_no_nav.js",
+];
+
 // Optionally keep URLs even if not rediscovered
 const KEEP_URL_PATTERNS = [
   // /\/icons\/pwa-promo\.png$/
@@ -109,6 +128,32 @@ const KEEP_URL_PATTERNS = [
 const isHTML = (req) =>
   req.mode === "navigate" || req.destination === "document";
 const isStatic = (req) => STATIC_DESTS.includes(req.destination);
+
+function isPageCandidate(u) {
+  try {
+    const url = new URL(u);
+
+    // 1) Drop the SW and sitemap
+    if (url.pathname === "/service-worker.js") return false;
+    if (url.pathname === "/sitemap.xml") return false;
+
+    // 2) Drop the special PWA query variants
+    if (url.searchParams.has("source")) return false; // e.g. ?source=pwa
+
+    // 3) Optionally, only keep "edition" / "dummy-" type paths:
+    //    this is optional, but you can tighten it if you want:
+    // if (!url.pathname.includes("front-page") &&
+    //     !url.pathname.includes("dummy-") &&
+    //     !url.pathname.includes("edition-") &&
+    //     !url.pathname.includes("archive-page")) {
+    //   return false;
+    // }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function isCacheableURL(u) {
   try {
@@ -212,73 +257,17 @@ async function fetchSitemapPages() {
 
     const rebased = urlsFromSitemap
       .map(normalisePageURL)
-      .filter(isCacheableURL);
+      .filter(isCacheableURL)
+      .filter(isPageCandidate); // <---- NEW
 
     const unique = Array.from(new Set(rebased));
 
     console.log("[PWA] urlsFromSitemap:", urlsFromSitemap.length);
-    console.log("[PWA] rebased unique:", unique.length);
+    console.log("[PWA] rebased unique (pages only):", unique.length);
 
-    // IMPORTANT: for now, return ALL of them:
     return unique;
-
-    if (!unique.length) {
-      try {
-        const cs = await clients.matchAll({
-          type: "window",
-          includeUncontrolled: true,
-        });
-        cs.forEach((c) =>
-          c.postMessage({
-            type: "PWA_PRECACHE_ERROR",
-            reason: "No cacheable pages discovered from sitemap",
-            sitemap: SITEMAP_URL,
-          })
-        );
-      } catch (e) {
-        /* non-fatal */
-      }
-      return [];
-    }
-
-    // NEW: only aggressively precache the first N pages
-    // unique.sort((a) => /dummy-1-front-page/.test(a));
-    const selected = unique;
-    // .slice(0, MAX_PAGES_FIRST_RUN);
-
-    // Tell any page listeners what we're about to cache
-    try {
-      const cs = await clients.matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      });
-      cs.forEach((c) =>
-        c.postMessage({
-          type: "PWA_DEBUG_PAGES",
-          pages: selected,
-        })
-      );
-    } catch (e) {
-      /* non-fatal */
-    }
-
-    return selected;
   } catch (e) {
-    try {
-      const cs = await clients.matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      });
-      cs.forEach((c) =>
-        c.postMessage({
-          type: "PWA_PRECACHE_ERROR",
-          reason: "Sitemap fetch failed: " + (e && e.message),
-          sitemap: SITEMAP_URL,
-        })
-      );
-    } catch (e2) {
-      /* non-fatal */
-    }
+    // existing error handling
     return [];
   }
 }

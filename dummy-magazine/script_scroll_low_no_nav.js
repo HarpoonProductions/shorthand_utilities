@@ -31,7 +31,8 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
 
 (function () {
   let currentPageIndex = null;
-  var logoUrl = "https://hpn-edn.s3-eu-west-2.amazonaws.com/dummy-magazine/project/assets/t9FCF4AhAO/dumm1.png";
+  var logoUrl =
+    "https://hpn-edn.s3-eu-west-2.amazonaws.com/dummy-magazine/project/assets/t9FCF4AhAO/dumm1.png";
   var logoUrlInner =
     "https://hpn-edn.s3-eu-west-2.amazonaws.com/dummy-magazine/project/assets/t9FCF4AhAO/dumm1.png";
 
@@ -409,7 +410,9 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
     false
   );
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initCustomNavOnce() {
+    if (window.__CUSTOM_NAV_INITIALISED) return;
+    window.__CUSTOM_NAV_INITIALISED = true;
     const maxAttempts = 50;
     let attempts = 0;
 
@@ -632,5 +635,11 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
     };
 
     const pollingInterval = setInterval(pollForElement, 200);
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCustomNavOnce);
+  } else {
+    initCustomNavOnce();
+  }
 })();
