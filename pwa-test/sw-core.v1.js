@@ -6,7 +6,7 @@
    - Same-origin path allowlist (for /assets, etc.)
 */
 
-const CORE_VERSION = "1.6.4";
+const CORE_VERSION = "1.6.5";
 const HTML_CACHE = `html-${CORE_VERSION}`;
 const ASSET_CACHE = `assets-${CORE_VERSION}`;
 const META_CACHE = `meta-${CORE_VERSION}`;
@@ -236,8 +236,9 @@ async function fetchSitemapPages() {
     }
 
     // NEW: only aggressively precache the first N pages
-    unique.sort((a) => /dummy-1-front-page/.test(a));
-    const selected = unique.slice(0, MAX_PAGES_FIRST_RUN);
+    // unique.sort((a) => /dummy-1-front-page/.test(a));
+    const selected = unique;
+    // .slice(0, MAX_PAGES_FIRST_RUN);
 
     // Tell any page listeners what we're about to cache
     try {
