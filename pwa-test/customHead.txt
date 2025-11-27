@@ -27,9 +27,7 @@
     window.navigator.standalone === true;
 </script>
 
-<!-- OneSignal (permission gated to PWA only) -->
-<!-- OneSignal (permission gated to PWA only, with domain sanity-check) -->
-<!-- OneSignal (v16, PWA-gated, without getPermissionStatus) -->
+<!-- OneSignal (v16, PWA-only init) -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -37,6 +35,7 @@
     const expectedOrigin = "https://dummy-magazine.com";
     const currentOrigin = window.location.origin;
 
+    // 0) Origin sanity check
     if (currentOrigin !== expectedOrigin) {
       console.warn(
         "[OneSignal] Skipping init. Expected origin:",
@@ -47,41 +46,54 @@
       return;
     }
 
-    const dmStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    const iosStandalone = window.navigator.standalone === true;
+    // 1) Decide if we're in PWA context
+    const dmStandalone   = window.matchMedia("(display-mode: standalone)").matches;
+    const iosStandalone  = window.navigator.standalone === true;
     const helperStandalone = window.__isStandalone === true;
-    const debugOverride = window.location.search.includes("source=pwa-debug");
+    const hasPwaParam    = window.location.search.includes("source=pwa");
+    const debugOverride  = window.location.search.includes("source=pwa-debug");
+
+    const isPwaContext =
+      dmStandalone ||
+      iosStandalone ||
+      helperStandalone ||
+      hasPwaParam ||
+      debugOverride;
 
     console.log("[OneSignal] debug display-mode standalone =", dmStandalone);
     console.log("[OneSignal] debug navigator.standalone    =", iosStandalone);
     console.log("[OneSignal] debug window.__isStandalone   =", helperStandalone);
+    console.log("[OneSignal] debug ?source=pwa             =", hasPwaParam);
     console.log("[OneSignal] debug ?source=pwa-debug       =", debugOverride);
+    console.log("[OneSignal] isPwaContext                  =", isPwaContext);
 
-    const isPwaContext =
-      helperStandalone || dmStandalone || iosStandalone || debugOverride;
+    // 2) CRITICAL: Don't even initialise OneSignal outside the PWA
+    if (!isPwaContext) {
+      console.info("[OneSignal] Not PWA context, skipping ALL OneSignal init + prompts");
+      return;
+    }
 
-    console.log("[OneSignal] isPwaContext =", isPwaContext);
-    console.log("[OneSignal] init starting on", currentOrigin);
-
-    // Optional, but handy while we’re still tweaking things
+    // From here on, we are in PWA (or debug override)
     OneSignal.Debug.setLogLevel("debug");
 
     let initOk = false;
 
-    // 1) Init OneSignal (don’t throw away the whole flow if it fails)
     try {
       const appId = "81c48753-9d1c-4306-8bdd-968ecbb5a27d";
-      await OneSignal.init({ appId });
+
+      await OneSignal.init({
+        appId,
+        // Tie OneSignal to your dedicated SW scope
+        serviceWorkerConfig: {
+          path: "/push/onesignal/OneSignalSDKWorker.js",
+          scope: "/push/onesignal/",
+        },
+      });
+
       initOk = true;
       console.log("[OneSignal] init completed successfully");
     } catch (e) {
       console.error("[OneSignal] init error", e);
-    }
-
-    // 2) Only *ask* for permission inside the PWA (or debug override)
-    if (!isPwaContext) {
-      console.info("[OneSignal] Not PWA context, skipping permission request");
-      return;
     }
 
     // 3) Read current permission
@@ -89,17 +101,14 @@
       typeof Notification !== "undefined" ? Notification.permission : "unsupported";
     console.log("[OneSignal] Notification.permission (before) =", browserPerm);
 
-    // For v16, OneSignal.Notifications.permission is a boolean-ish,
-    // but we mostly care if the browser says "default" or "granted/denied".
     const alreadyDecided = browserPerm === "granted" || browserPerm === "denied";
 
-    // 4) Use OneSignal slidedown if possible and permission not yet decided
+    // 4) Use OneSignal slidedown / permission only if not yet decided
     try {
       if (!alreadyDecided && initOk && OneSignal.Slidedown) {
         console.log("[OneSignal] Showing OneSignal slidedown prompt…");
         await OneSignal.Slidedown.promptPush({
-          // While testing, force will show it even if OneSignal thinks it has
-          // shown a prompt recently. Remove or set false for production.
+          // You can remove `force` for production to avoid re-nagging
           force: true,
         });
       } else if (!alreadyDecided && initOk && OneSignal.Notifications?.requestPermission) {
@@ -133,6 +142,7 @@
     }
   });
 </script>
+
 
 
 
