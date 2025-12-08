@@ -2,9 +2,9 @@
 (function () {
   let currentPageIndex = null;
   var logoUrl =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag33/cavmag_logo_edition33.jpg";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag34/cavmag_logo_edition34.jpg";
   var logoUrlInner =
-    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag33/cavmag_wide_edition33.jpg";
+    "https://harpn.s3.eu-west-2.amazonaws.com/cavmag/cavmag34/cavmag_wide_edition34.jpg";
 
   function extractLinks() {
     const links = [];
@@ -31,7 +31,7 @@
 
         if (!isCurrent) {
           const pathname = window.location.pathname;
-          const clean = pathname.replace("/cavmag-33", "");  /* giles dont forget this */
+          const clean = pathname.replace("/cavmag-34", "");  /* giles dont forget this */
           const check = new RegExp(clean, "gi");
           isCurrent = clean !== "/index.html" && check.test(href);
         }
