@@ -35,6 +35,7 @@
             .replace("/cavmag-34" /* giles dont forget this */, "")
             .replace("/index.html", "");
           const check = new RegExp(clean, "gi");
+          console.log(clean, href);
           isCurrent = clean !== "/index.html" && check.test(href);
         }
 
