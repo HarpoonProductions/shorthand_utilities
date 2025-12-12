@@ -1,0 +1,17 @@
+.carousel-custom-control {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  cursor: pointer;
+  background: transparent;
+  zindex: 2;
+}
+
+.carousel-custom-control-left {
+  left: 0;
+}
+
+.carousel-custom-control-right {
+  right: 0;
+}
