@@ -25,13 +25,16 @@
           isCurrent = true;
         } else {
           const page = window.location.href.split("/")[4];
-          const hrefTest = "../../" + page + "/index.html";
+          const hrefTest = "../" + page + "/index.html";
           isCurrent = href === hrefTest;
         }
 
         if (!isCurrent) {
           const pathname = window.location.pathname;
-          const clean = pathname.replace("/cavmag-34", "");  /* giles dont forget this */
+          const clean = pathname.replace(
+            "/cavmag-34",
+            ""
+          ); /* giles dont forget this */
           const check = new RegExp(clean, "gi");
           isCurrent = clean !== "/index.html" && check.test(href);
         }
