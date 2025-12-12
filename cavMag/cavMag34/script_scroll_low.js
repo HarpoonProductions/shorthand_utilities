@@ -31,10 +31,9 @@
 
         if (!isCurrent) {
           const pathname = window.location.pathname;
-          const clean = pathname.replace(
-            "/cavmag-34",
-            ""
-          ); /* giles dont forget this */
+          const clean = pathname
+            .replace("/cavmag-34" /* giles dont forget this */, "")
+            .replace("/index.html", "");
           const check = new RegExp(clean, "gi");
           isCurrent = clean !== "/index.html" && check.test(href);
         }
