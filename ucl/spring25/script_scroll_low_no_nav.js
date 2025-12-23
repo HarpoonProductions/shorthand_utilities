@@ -60,7 +60,7 @@ function pollForCards(list, minCount = 2, timeout = 5000, interval = 100) {
 
         if (!isCurrent) {
           const pathname = window.location.pathname;
-          const clean = pathname.replace("/autumn-2025", "");
+          const clean = pathname.replace("/spring-2025", "");
           const check = new RegExp(clean, "gi");
           isCurrent = clean !== "/index.html" && check.test(href);
         }
