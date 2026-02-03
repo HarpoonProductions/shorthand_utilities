@@ -1,4 +1,4 @@
-(function () {
+/* (function () {
   const origTo = window.scrollTo;
   const origInto = Element.prototype.scrollIntoView;
 
@@ -14,6 +14,7 @@
     return origInto.apply(this, args);
   };
 })();
+*/
 
 function updateResultButtonText(current, total) {
   var button = document.getElementById("result-inner");
