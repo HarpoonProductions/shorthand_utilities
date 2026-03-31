@@ -873,133 +873,84 @@ setTimeout(() => {
   console.log("MutationObserver script initialized successfully");
 })();
 
-// ─── EARLY PLACEHOLDER — set synchronously so any old TabOrderManager
-// DOMContentLoaded handler sees it and skips instantiation ────────────────────
-if (!window.tabOrderManager) {
-  window.tabOrderManager = { _placeholder: true };
-}
-
-// ─── TabOrderManager ─────────────────────────────────────────────────────────
-
 class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
-    this.navObserver = null;
     this.bodyObserver = null;
-    this._updating = false;
-    this._tabbing = false;
-    this._tabTimer = null;
-
-    this.FOCUS_BLOCK_SELECTORS = [
-      ".project-search-button",
-      ".project-search-delete-btn",
-      ".Navigation__hamburger",
-    ];
-
-    this.EXCLUDE_FROM_SWEEP = [
+    this.SEARCH_SELECTORS = [
       ".project-search-input",
       ".project-search-delete-btn",
       ".project-search-button",
+      ".project-search-sideBar input",
+      ".project-search-sideBar button",
     ];
-
     this.init();
   }
 
-  // ─── Bootstrap ─────────────────────────────────────────────────────────────
+  // ─── Bootstrap ────────────────────────────────────────────────────────────
 
   init() {
     this.addFocusStyles();
-    this.installFocusIntercept();
     this.waitForNav(() => {
-      this.updateTabOrder("init");
+      this.updateTabOrder();
       this.attachObservers();
     });
   }
 
+  /**
+   * Poll until the nav element exists (guards against late-loading widgets
+   * like OneSignal banners that can inject focusable elements after DOMContentLoaded).
+   */
   waitForNav(cb, attempts = 0) {
     const nav = document.querySelector("#navigation, nav");
-    if (nav || attempts > 30) cb();
-    else setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
+    if (nav || attempts > 30) {
+      cb();
+    } else {
+      setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
+    }
   }
-
-  // ─── Focus intercept ───────────────────────────────────────────────────────
-
-  installFocusIntercept() {
-    if (HTMLElement.prototype._tabOrderInterceptInstalled) return;
-    HTMLElement.prototype._tabOrderInterceptInstalled = true;
-
-    const self = this;
-    const originalFocus = HTMLElement.prototype.focus;
-
-    document.addEventListener(
-      "keydown",
-      (e) => {
-        if (e.key !== "Tab") return;
-        self._tabbing = true;
-        clearTimeout(self._tabTimer);
-        self._tabTimer = setTimeout(() => {
-          self._tabbing = false;
-        }, 600);
-      },
-      true
-    );
-
-    HTMLElement.prototype.focus = function (options) {
-      if (
-        self._tabbing &&
-        self.FOCUS_BLOCK_SELECTORS.some((sel) => this.matches?.(sel))
-      ) {
-        console.log("[TabOrder] blocked .focus() on", this.className);
-        return;
-      }
-      return originalFocus.call(this, options);
-    };
-  }
-
-  // ─── Observers ─────────────────────────────────────────────────────────────
 
   attachObservers() {
-    this.bodyObserver = new MutationObserver(() => {
-      if (this._updating || this._tabbing) return;
-      this.scheduleRefresh(400, "bodyObserver");
-    });
+    // Re-run whenever children are added/removed from  (cookie banners,
+    // modals, OneSignal prompts appearing or being dismissed).
+    this.bodyObserver = new MutationObserver(() => this.scheduleRefresh(400));
     this.bodyObserver.observe(document.body, {
       childList: true,
-      subtree: false,
+      subtree: false, // only direct children of body
     });
 
-    const nav = document.querySelector("#navigation, nav");
-    if (nav) {
-      this.navObserver = new MutationObserver(() => {
-        if (this._updating || this._tabbing) return;
-        this.scheduleRefresh(200, "navObserver");
-      });
-      this.navObserver.observe(nav, {
-        childList: true,
-        subtree: true,
-        attributes: false,
-      });
-    }
-
+    // Re-run after any toggle that opens/closes sections.
     document.addEventListener("click", (e) => {
-      const trigger = e.target.closest(
-        ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
-      );
-      if (trigger) this.scheduleRefresh(350, "click");
+      if (
+        e.target.closest(
+          ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
+        )
+      ) {
+        this.scheduleRefresh(350);
+      }
+    });
+
+    // Safety net: if focus somehow lands on something with tabindex="-1"
+    // (shouldn't happen, but just in case) kick a refresh.
+    document.addEventListener("focusin", (e) => {
+      if (e.target.getAttribute("tabindex") === "-1") {
+        console.warn(
+          "[TabOrderManager] focus landed on tabindex=-1 element:",
+          e.target
+        );
+        this.scheduleRefresh(50);
+      }
     });
   }
 
-  scheduleRefresh(delay, triggeredBy = "unknown") {
-    if (this._tabbing) return;
+  scheduleRefresh(delay = 150) {
     clearTimeout(this.refreshTimer);
-    this.refreshTimer = setTimeout(
-      () => this.updateTabOrder(triggeredBy),
-      delay
-    );
+    this.refreshTimer = setTimeout(() => this.updateTabOrder(), delay);
   }
 
-  // ─── Visibility ────────────────────────────────────────────────────────────
+  // ─── Visibility helpers ────────────────────────────────────────────────────
 
+  /** Check the element itself AND every ancestor for display:none / visibility:hidden */
   isFullyVisible(el) {
     if (!el) return false;
     let node = el;
@@ -1017,250 +968,361 @@ class TabOrderManager {
     return r.width > 0 && r.height > 0;
   }
 
-  isExcludedFromSweep(el) {
-    return this.EXCLUDE_FROM_SWEEP.some(
-      (sel) => el.matches?.(sel) || el.closest?.(sel)
+  isSearchRelated(el) {
+    return this.SEARCH_SELECTORS.some(
+      (sel) => el.matches(sel) || el.closest(sel)
     );
   }
 
-  // ─── Ceremony section lookup ────────────────────────────────────────────────
-  // Converts the button text into search keys, trying progressively
-  // broader queries until a .showing section is found.
-  //
-  // Example button text: "10.30  Faculty of Natural Sciences"
-  //   timeKey:    "1030"
-  //   facultyKey: "natural" (first meaningful word after stripping stopwords)
+  // ─── Core tab-order builder ────────────────────────────────────────────────
 
-  getOpenSectionForToggle(wrapper) {
-    const btn = wrapper.querySelector("button");
-    const rawText = (btn?.textContent ?? "").replace(/\s+/g, " ").trim();
-
-    // Extract time → "1030"
-    const timeKey = rawText.replace(/[^0-9]/g, "").slice(0, 4);
-
-    // Extract a faculty slug — take the longest word after the time portion
-    // that isn't a stopword, lowercase it
-    const STOPWORDS = new Set([
-      "of",
-      "the",
-      "and",
-      "for",
-      "in",
-      "a",
-      "faculty",
-      "ceremony",
-      "school",
-    ]);
-    const facultySlug =
-      rawText
-        .split(/\s+/)
-        .filter(
-          (w) =>
-            w.length > 2 && !STOPWORDS.has(w.toLowerCase()) && !/^\d/.test(w)
-        )
-        .map((w) => w.toLowerCase().replace(/[^a-z]/g, ""))
-        .find((w) => w.length > 3) ?? "";
-
-    // Strategy 1: match both time + faculty keyword in section id
-    if (timeKey && facultySlug) {
-      const el = document.querySelector(
-        `.showing[id*="${timeKey}"][id*="${facultySlug}"]`
-      );
-      if (el) {
-        console.log(`[TabOrder] "${rawText}" → #${el.id} (time+faculty match)`);
-        return el;
-      }
-    }
-
-    // Strategy 2: time only — but skip if we already assigned this section
-    // (tracked by caller via handledSections WeakSet)
-    if (timeKey) {
-      const el = document.querySelector(`.showing[id*="${timeKey}"]`);
-      if (el) {
-        console.log(`[TabOrder] "${rawText}" → #${el.id} (time-only match)`);
-        return el;
-      }
-    }
-
-    // Strategy 3: any .showing section that contains this button's text
-    // (catches cases where section ID uses a hash rather than time)
-    if (rawText.length > 4) {
-      const allShowing = document.querySelectorAll(".showing");
-      for (const sec of allShowing) {
-        if (sec.id && sec.id.length > 0) {
-          console.log(`[TabOrder] "${rawText}" → fallback #${sec.id}`);
-          return sec;
-        }
-      }
-    }
-
-    console.log(`[TabOrder] "${rawText}" → no section found`);
-    return null;
-  }
-
-  // ─── Core ──────────────────────────────────────────────────────────────────
-
-  updateTabOrder(triggeredBy = "unknown") {
-    this._updating = true;
-
+  updateTabOrder() {
+    // 1. Zero-out every currently focusable element so nothing is
+    //    accidentally reachable via natural DOM order.
     document
-      .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
+      .querySelectorAll(
+        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
       .forEach((el) => el.setAttribute("tabindex", "-1"));
 
     let idx = 1;
-    const assigned = new WeakSet();
-
     const assign = (el) => {
-      if (!el || assigned.has(el) || !this.isFullyVisible(el)) return;
-      el.setAttribute("tabindex", String(idx++));
-      assigned.add(el);
+      if (el && this.isFullyVisible(el)) {
+        el.setAttribute("tabindex", String(idx++));
+      }
     };
 
-    // 1. Logo
-    assign(document.querySelector(".Theme-Logo a"));
+    // ── 2. Logo ──────────────────────────────────────────────────────────────
+    const logo = document.querySelector(".Theme-Logo a");
+    assign(logo);
 
-    // 2. Nav
+    // ── 3. Navigation ────────────────────────────────────────────────────────
     const navLinks = Array.from(
       document.querySelectorAll(
         "#navigation .Theme-NavigationLink, nav .Theme-NavigationLink"
       )
     );
 
-    let ceremonyBtn = null;
+    let ceremonyLink = null;
     let memoryLink = null;
+    const regularLinks = [];
 
     navLinks.forEach((el) => {
       const text = el.textContent.trim();
-      if (
-        el.classList.contains("customCaretNew") ||
-        text.includes("Ceremony")
-      ) {
-        ceremonyBtn = el;
-      } else if (text.includes("Memories")) {
+      if (text.includes("Ceremony guides")) {
+        ceremonyLink = el;
+      } else if (text.includes("Memories of Commemoration Day")) {
         memoryLink = el;
       } else {
-        assign(el);
+        regularLinks.push(el);
       }
     });
 
-    if (ceremonyBtn) {
-      assign(ceremonyBtn);
-      const dropdown = ceremonyBtn
-        .closest("li")
-        ?.querySelector(".Navigation__dropdown, .dropdown-content");
-      if (dropdown && this.isFullyVisible(dropdown)) {
-        dropdown.querySelectorAll("a[href]").forEach(assign);
+    // Regular nav links first
+    regularLinks.forEach(assign);
+
+    // Ceremony guides link → its toggle button → open sub-panel links
+    if (ceremonyLink) {
+      assign(ceremonyLink);
+      const toggleBtn = ceremonyLink.nextElementSibling;
+      if (toggleBtn?.classList.contains("Navigation__button")) {
+        assign(toggleBtn);
+        // If the sub-panel is currently open, include its links
+        const panel =
+          toggleBtn.nextElementSibling ??
+          ceremonyLink.closest("li")?.querySelector(".Navigation__dropdown");
+        if (panel && this.isFullyVisible(panel)) {
+          panel.querySelectorAll("a[href]").forEach(assign);
+        }
       }
     }
 
+    // Memory link after ceremony
     if (memoryLink) assign(memoryLink);
 
-    // 3. Search — always
-    assign(document.querySelector(".project-search-input"));
-    assign(document.querySelector(".project-search-delete-btn"));
+    // ── 4. Ceremony toggle buttons (always present) ───────────────────────────
+    document.querySelectorAll(".time-toggle button").forEach(assign);
 
-    // 4. Ceremony toggles interleaved with their open sections
-    const toggleWrappers = document.querySelectorAll(".time-toggle");
-    const handledSections = new WeakSet();
+    // ── 5. Content inside OPEN ceremony sections ──────────────────────────────
+    document.querySelectorAll(".showing").forEach((section) => {
+      section
+        .querySelectorAll("a[href], button, input, select, textarea")
+        .forEach((el) => {
+          // Explicitly skip search-related controls — they're handled below.
+          if (!this.isSearchRelated(el)) {
+            assign(el);
+          }
+        });
+    });
 
-    if (toggleWrappers.length) {
-      toggleWrappers.forEach((wrapper) => {
-        assign(wrapper.querySelector("button"));
-
-        const section = this.getOpenSectionForToggle(wrapper);
-        if (section && !handledSections.has(section)) {
-          handledSections.add(section);
-          section
-            .querySelectorAll("a[href], button, input, select, textarea")
-            .forEach((el) => {
-              if (!this.isExcludedFromSweep(el)) assign(el);
-            });
-        }
-      });
-
-      // Any .showing sections not yet handled (e.g. no matching toggle)
-      document.querySelectorAll(".showing").forEach((section) => {
-        if (handledSections.has(section)) return;
-        section
-          .querySelectorAll("a[href], button, input, select, textarea")
-          .forEach((el) => {
-            if (!this.isExcludedFromSweep(el)) assign(el);
-          });
-      });
-    } else {
-      document.querySelectorAll(".showing").forEach((section) => {
-        section
-          .querySelectorAll("a[href], button, input, select, textarea")
-          .forEach((el) => {
-            if (!this.isExcludedFromSweep(el)) assign(el);
-          });
-      });
+    // ── 6. Search bar — only if its section is open ───────────────────────────
+    const searchInput = document.querySelector(".project-search-input");
+    if (searchInput && searchInput.closest(".showing")) {
+      assign(searchInput);
+      // Delete / submit buttons in the same bar
+      document
+        .querySelectorAll(".project-search-delete-btn, .project-search-button")
+        .forEach(assign);
     }
 
-    // 5. OneTrust / cookie banner
+    // ── 7. Cookie / consent banners at body root (if present & visible) ───────
     const banner = document.querySelector(
-      "#onetrust-consent-sdk, #onetrust-banner-sdk, " +
-        "#onesignal-slidedown-container, .cookie-banner"
+      "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
     );
     if (banner && this.isFullyVisible(banner)) {
       banner.querySelectorAll("button, a[href]").forEach(assign);
     }
 
-    this._updating = false;
-    console.log(`[TabOrder] ${triggeredBy} → ${idx - 1} element(s) assigned`);
+    console.log(
+      `[TabOrderManager] Tab order updated — ${idx - 1} tabbable element(s)`
+    );
   }
 
-  // ─── Styles ─────────────────────────────────────────────────────────────────
+  // ─── Styles ───────────────────────────────────────────────────────────────
 
   addFocusStyles() {
     if (document.getElementById("tab-manager-styles")) return;
     const style = document.createElement("style");
     style.id = "tab-manager-styles";
     style.textContent = `
-      *:focus                   { outline: none !important; }
-      *:focus-visible           { box-shadow: 0 0 0 4px #b90072 inset !important;
-                                  outline: none !important; border-radius: 4px; }
-      a:focus-visible,
-      button:focus-visible,
-      input:focus-visible,
-      select:focus-visible,
-      textarea:focus-visible,
-      [tabindex]:focus-visible  { box-shadow: 0 0 0 4px #b90072 inset !important;
-                                  outline: none !important; }
+      *:focus                       { outline: none !important; }
+      *:focus-visible               { box-shadow: 0 0 0 4px #b90072 inset !important;
+                                      outline: none !important; border-radius: 4px; }
+      a:focus-visible, button:focus-visible,
+      input:focus-visible, select:focus-visible,
+      textarea:focus-visible, [tabindex]:focus-visible
+                                    { box-shadow: 0 0 0 4px #b90072 inset !important;
+                                      outline: none !important; }
     `;
     document.head.appendChild(style);
   }
 }
 
-// ─── Instantiation ────────────────────────────────────────────────────────────
-
-const _initTabOrderManager = () => {
-  window.tabOrderManager = new TabOrderManager();
-};
+// ─── Initialise ─────────────────────────────────────────────────────────────
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", _initTabOrderManager);
+  document.addEventListener("DOMContentLoaded", () => {
+    window.tabOrderManager = new TabOrderManager();
+  });
 } else {
-  _initTabOrderManager();
+  window.tabOrderManager = new TabOrderManager();
 }
 
-// ─── Debug helpers ────────────────────────────────────────────────────────────
-
-window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder("manual");
-
+// Public helpers (unchanged API)
+window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
 window.testFocus = () => {
-  const all = document.querySelectorAll('[tabindex]:not([tabindex="-1"])');
-  console.log(`[testFocus] ${all.length} managed element(s):`);
-  all.forEach((el, i) => {
-    if (i < 5) console.log(`  [${el.getAttribute("tabindex")}]`, el);
+  const el = document.querySelector('[tabindex="2"]');
+  if (el) {
+    el.focus();
+    console.log("Focused:", document.activeElement);
+  }
+};
+
+// class TabOrderManager {
+//   constructor() {
+//     this.init();
+//   }
+
+//   init() {
+//     // Add Imperial focus styles
+//     this.addFocusStyles();
+//     // Initial tab order setup
+//     setTimeout(() => this.updateTabOrder(), 100);
+//     // Refresh when ceremony sections are toggled
+//     document.addEventListener("click", (e) => {
+//       if (e.target.closest(".time-toggle")) {
+//         setTimeout(() => this.updateTabOrder(), 350);
+//       }
+//     });
+//     // Log tab events for debugging
+//     document.addEventListener("keydown", (e) => {
+//       if (e.key === "Tab") {
+//         console.log("Tab pressed. Current focus:", document.activeElement);
+//       }
+//     });
+//   }
+
+//   addFocusStyles() {
+//     const style = document.createElement("style");
+//     style.textContent = `
+//       *:focus {
+//         outline: none !important;
+//       }
+
+//       *:focus-visible {
+//         box-shadow: 0 0 0 4px #b90072 inset !important;
+//         outline: none !important;
+//         border-radius: 4px;
+//       }
+
+//       a:focus-visible,
+//       button:focus-visible,
+//       input:focus-visible,
+//       select:focus-visible,
+//       textarea:focus-visible,
+//       [tabindex]:focus-visible {
+//         box-shadow: 0 0 0 4px #b90072 inset !important;
+//         outline: none !important;
+//       }
+//     `;
+//     document.head.appendChild(style);
+//   }
+
+//   updateTabOrder() {
+//     console.log("=== Updating tab order ===");
+
+//     // Remove all tabindex attributes (except -1)
+//     document
+//       .querySelectorAll('[tabindex]:not([tabindex="-1"])')
+//       .forEach((el) => {
+//         el.removeAttribute("tabindex");
+//       });
+
+//     let tabIndex = 1; // Start at 1 instead of 0
+
+//     // 1. Imperial Logo
+//     const logo = document.querySelector(".Theme-Logo a");
+//     if (logo) {
+//       logo.setAttribute("tabindex", String(tabIndex++));
+//       console.log("Logo set to tabindex: 1");
+//     }
+
+//     // 2. Try to find ALL navigation links directly
+//     const allNavLinks = document.querySelectorAll(
+//       "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
+//     );
+
+//     const newNavs = [];
+
+//     let memory;
+//     let ceremony;
+
+//     allNavLinks.forEach((link) => {
+//       if (
+//         !link.textContent
+//           .trim()
+//           .includes("Memories of Commemoration Day 2025") &&
+//         !link.textContent.trim().includes("Ceremony guides")
+//       ) {
+//         newNavs.push(link);
+//       }
+//       if (link.textContent.trim().includes("Ceremony guides")) {
+//         ceremony = link;
+//       } else {
+//         memory = link;
+//       }
+//     });
+
+//     newNavs.forEach((link) => {
+//       link.setAttribute("tabindex", String(tabIndex++));
+//       console.log(
+//         `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+//       );
+//     });
+
+//     // 3. Find Explore more span separately
+//     const dropdownSpan = document.querySelector(
+//       "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
+//     );
+
+//     if (ceremony && ceremony.textContent.trim() === "Ceremony guides") {
+//       ceremony.setAttribute("tabindex", String(tabIndex++));
+
+//       // And its button
+//       const exploreBtn = ceremony.nextElementSibling;
+//       if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
+//         exploreBtn.setAttribute("tabindex", String(tabIndex++));
+//         console.log(`custom dropdown 0 button - tabindex ${tabIndex - 1}`);
+//       }
+//     }
+
+//     if (dropdownSpan && dropdownSpan.textContent.trim() === "Explore more") {
+//       dropdownSpan.setAttribute("tabindex", "-1");
+
+//       // And its button
+//       return;
+//       const exploreBtn = dropdownSpan.nextElementSibling;
+//       if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
+//         exploreBtn.setAttribute("tabindex", String(tabIndex++));
+//         console.log(`custom dropdown 1 button - tabindex ${tabIndex - 1}`);
+//       }
+//     }
+
+//     memory.setAttribute("tabindex", String(tabIndex++));
+
+//     // 4. Ceremony buttons
+//     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
+//     ceremonyButtons.forEach((button, i) => {
+//       button.setAttribute("tabindex", String(tabIndex++));
+//     });
+
+//     // 5. Content in expanded ceremony sections
+//     const showingSections = document.querySelectorAll(".showing");
+//     showingSections.forEach((section) => {
+//       const links = section.querySelectorAll("a[href]");
+//       const buttons = section.querySelectorAll("button");
+//       const inputs = section.querySelectorAll("input, select, textarea");
+
+//       [...links, ...buttons, ...inputs].forEach((el) => {
+//         if (this.isVisible(el) && !el.hasAttribute("tabindex")) {
+//           el.setAttribute("tabindex", String(tabIndex++));
+//         }
+//       });
+//     });
+
+//     // Log all elements with tabindex
+//     const allTabbable = document.querySelectorAll(
+//       '[tabindex]:not([tabindex="-1"])'
+//     );
+
+//     // Log first 10 for debugging
+//     allTabbable.forEach((el, i) => {
+//       if (i < 10) {
+//         const text =
+//           el.textContent?.trim().substring(0, 30) ||
+//           el.getAttribute("aria-label") ||
+//           el.tagName;
+//         console.log(
+//           `  ${el.getAttribute("tabindex")}: ${el.tagName} - "${text}"`
+//         );
+//       }
+//     });
+//   }
+
+//   isVisible(element) {
+//     if (!element) return false;
+//     const rect = element.getBoundingClientRect();
+//     const style = window.getComputedStyle(element);
+//     return (
+//       rect.width > 0 &&
+//       rect.height > 0 &&
+//       style.display !== "none" &&
+//       style.visibility !== "hidden"
+//     );
+//   }
+// }
+
+// Initialize
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.tabOrderManager = new TabOrderManager();
   });
-  const first = document.querySelector('[tabindex="1"]');
-  if (first) {
-    first.focus();
-    console.log("[testFocus] focused:", document.activeElement);
-  } else {
-    console.warn(
-      "[testFocus] no element with tabindex=1 found — tabindexes may have been wiped after last run"
-    );
+} else {
+  window.tabOrderManager = new TabOrderManager();
+}
+
+// Manual refresh
+window.refreshTabOrder = function () {
+  if (window.tabOrderManager) {
+    window.tabOrderManager.updateTabOrder();
+  }
+};
+
+// Test function to check what's focusable
+window.testFocus = function () {
+  const elements = document.querySelectorAll('[tabindex="2"]');
+  if (elements.length > 0) {
+    elements[0].focus();
+    console.log("Active element after focus:", document.activeElement);
   }
 };
