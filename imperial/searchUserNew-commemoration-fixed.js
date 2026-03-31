@@ -873,57 +873,87 @@ setTimeout(() => {
   console.log("MutationObserver script initialized successfully");
 })();
 
+// ─── TabOrderManager — DEBUG BUILD ──────────────────────────────────────────
+// Every significant event is console.log'd with a timestamp and call source.
+// Share the full output so we can see exactly what fires and in what order.
+
 class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
     this.navObserver = null;
     this.bodyObserver = null;
+    this._tabbing = false;
+    this._tabTimer = null;
+    this._runCount = 0; // how many times updateTabOrder has run
+    this._updating = false; // true while updateTabOrder is executing
 
-    // Elements the platform forcibly focuses — we intercept and drop those calls
-    // while the user is tabbing. Add any extra selectors here.
     this.FOCUS_BLOCK_SELECTORS = [
       ".project-search-button",
       ".project-search-delete-btn",
     ];
 
-    // Elements assigned explicitly (excluded from the .showing sweep)
     this.EXCLUDE_FROM_SWEEP = [
       ".project-search-input",
       ".project-search-delete-btn",
       ".project-search-button",
     ];
 
-    this._tabbing = false; // true for 500ms after each Tab press
-    this._tabTimer = null;
-
+    this._log("constructor", "TabOrderManager created");
     this.init();
   }
 
-  // ─── Bootstrap ─────────────────────────────────────────────────────────────
+  // ─── Logging ────────────────────────────────────────────────────────────────
+
+  _ts() {
+    return `+${(performance.now() / 1000).toFixed(3)}s`;
+  }
+
+  _log(source, msg, extra) {
+    if (extra !== undefined) {
+      console.log(`[TabOrder ${this._ts()}] [${source}] ${msg}`, extra);
+    } else {
+      console.log(`[TabOrder ${this._ts()}] [${source}] ${msg}`);
+    }
+  }
+
+  _warn(source, msg, extra) {
+    if (extra !== undefined) {
+      console.warn(`[TabOrder ${this._ts()}] [${source}] ⚠ ${msg}`, extra);
+    } else {
+      console.warn(`[TabOrder ${this._ts()}] [${source}] ⚠ ${msg}`);
+    }
+  }
+
+  // ─── Bootstrap ──────────────────────────────────────────────────────────────
 
   init() {
+    this._log("init", "starting — readyState: " + document.readyState);
     this.addFocusStyles();
     this.installFocusIntercept();
     this.waitForNav(() => {
-      this.updateTabOrder();
+      this._log("init", "nav found, running first updateTabOrder");
+      this.updateTabOrder("init");
       this.attachObservers();
     });
   }
 
   waitForNav(cb, attempts = 0) {
     const nav = document.querySelector("#navigation, nav");
-    if (nav || attempts > 30) {
+    if (nav) {
+      this._log("waitForNav", `nav found after ${attempts} attempt(s)`);
+      cb();
+    } else if (attempts > 30) {
+      this._warn(
+        "waitForNav",
+        "nav never found after 30 attempts — proceeding anyway"
+      );
       cb();
     } else {
       setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
     }
   }
 
-  // ─── Focus intercept ───────────────────────────────────────────────────────
-  //
-  // project.607142.min.js calls HTMLElement.focus() on .project-search-button
-  // in response to focusout events on the search panel. We intercept at the
-  // prototype level and silently drop those calls while the user is tabbing.
+  // ─── Focus intercept ────────────────────────────────────────────────────────
 
   installFocusIntercept() {
     const self = this;
@@ -935,8 +965,12 @@ class TabOrderManager {
         if (e.key !== "Tab") return;
         self._tabbing = true;
         clearTimeout(self._tabTimer);
-        // Keep the flag live for 500 ms — enough for any synchronous focus()
-        // call triggered by the platform's focusout handler to be intercepted.
+        self._log(
+          "keydown",
+          `Tab${e.shiftKey ? "+Shift" : ""} — active: ${self._describeEl(
+            document.activeElement
+          )}`
+        );
         self._tabTimer = setTimeout(() => {
           self._tabbing = false;
         }, 500);
@@ -945,66 +979,142 @@ class TabOrderManager {
     );
 
     HTMLElement.prototype.focus = function (options) {
-      if (
+      const blocked =
         self._tabbing &&
-        self.FOCUS_BLOCK_SELECTORS.some((sel) => this.matches?.(sel))
-      ) {
-        console.log(
-          "[TabOrder] Blocked programmatic .focus() on",
-          this,
-          "during tab navigation"
-        );
-        return; // drop the call
+        self.FOCUS_BLOCK_SELECTORS.some((sel) => this.matches?.(sel));
+
+      if (blocked) {
+        self._warn("focusIntercept", `BLOCKED programmatic .focus() on`, this);
+        return;
       }
+
+      // Log ALL .focus() calls during tabbing so we can see what else fires
+      if (self._tabbing) {
+        self._log(
+          "focusIntercept",
+          `allowed .focus() on ${self._describeEl(this)}`
+        );
+      }
+
       return originalFocus.call(this, options);
     };
+
+    this._log("installFocusIntercept", "prototype override installed");
   }
 
-  // ─── Observers ─────────────────────────────────────────────────────────────
+  // ─── Observers ──────────────────────────────────────────────────────────────
 
   attachObservers() {
-    // Shallow observer on body — catches cookie banners / modals appended at root
-    this.bodyObserver = new MutationObserver(() => this.scheduleRefresh(400));
+    // Body observer — shallow, for banners injected at root
+    this.bodyObserver = new MutationObserver((mutations) => {
+      if (this._updating) {
+        this._log(
+          "bodyObserver",
+          "fired DURING updateTabOrder — skipping (self-triggered)"
+        );
+        return;
+      }
+      const summary = mutations
+        .map(
+          (m) =>
+            `${m.type} on <${m.target.tagName?.toLowerCase()}#${
+              m.target.id || "?"
+            }> ` +
+            `added:${m.addedNodes.length} removed:${m.removedNodes.length}`
+        )
+        .join(" | ");
+      this._log(
+        "bodyObserver",
+        "fired → scheduling refresh. mutations: " + summary
+      );
+      this.scheduleRefresh(400, "bodyObserver");
+    });
     this.bodyObserver.observe(document.body, {
       childList: true,
       subtree: false,
     });
+    this._log(
+      "attachObservers",
+      "bodyObserver attached (childList, subtree:false)"
+    );
 
-    // Deep observer on the nav — catches the platform re-rendering nav links
-    // after our initial reset (which is why they showed tabindex: not set)
+    // Nav observer — watches for platform re-renders of nav links
+    // IMPORTANT: observes attributes:false to avoid self-triggering when we
+    // set tabindex on nav elements.
     const nav = document.querySelector("#navigation, nav");
     if (nav) {
-      this.navObserver = new MutationObserver(() => this.scheduleRefresh(200));
+      this.navObserver = new MutationObserver((mutations) => {
+        if (this._updating) {
+          this._log(
+            "navObserver",
+            "fired DURING updateTabOrder — skipping (self-triggered)"
+          );
+          return;
+        }
+        const summary = mutations
+          .map(
+            (m) =>
+              `${m.type} on <${m.target.tagName?.toLowerCase()}` +
+              `.${[...m.target.classList].slice(0, 2).join(".")}> ` +
+              `added:${m.addedNodes.length} removed:${m.removedNodes.length}`
+          )
+          .join(" | ");
+        this._log(
+          "navObserver",
+          "fired → scheduling refresh. mutations: " + summary
+        );
+        this.scheduleRefresh(200, "navObserver");
+      });
       this.navObserver.observe(nav, {
         childList: true,
-        subtree: true, // must be true to catch nested re-renders
-        attributes: false,
+        subtree: true,
+        attributes: false, // ← critical: don't watch attribute changes or we
+        //   re-trigger when we set tabindex ourselves
       });
+      this._log(
+        "attachObservers",
+        "navObserver attached (childList+subtree, attributes:false)"
+      );
+    } else {
+      this._warn("attachObservers", "no nav element found for navObserver");
     }
 
-    // Refresh after any interactive toggle
+    // Click observer — toggles open/close sections
     document.addEventListener("click", (e) => {
-      if (
-        e.target.closest(
-          ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
-        )
-      ) {
-        this.scheduleRefresh(350);
+      const trigger = e.target.closest(
+        ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
+      );
+      if (trigger) {
+        this._log(
+          "click",
+          `toggle click on ${this._describeEl(trigger)} → scheduling refresh`
+        );
+        this.scheduleRefresh(
+          350,
+          "click:" + (trigger.className || trigger.tagName)
+        );
       }
     });
 
-    // NOTE: the focusin safety-net that called scheduleRefresh(50) has been
-    // intentionally removed. It was triggering updateTabOrder() mid-tab which
-    // reset the active element's tabindex to -1, causing the platform's
-    // focusout handler to fire and call .focus() back on the search button.
+    this._log("attachObservers", "click listener attached");
   }
 
-  scheduleRefresh(delay = 150) {
+  scheduleRefresh(delay, triggeredBy = "unknown") {
+    this._log(
+      "scheduleRefresh",
+      `delay=${delay}ms triggered by: ${triggeredBy}`
+    );
     clearTimeout(this.refreshTimer);
-    this.refreshTimer = setTimeout(() => this.updateTabOrder(), delay);
+    this.refreshTimer = setTimeout(() => {
+      this._log(
+        "scheduleRefresh",
+        `timer fired (triggered by: ${triggeredBy})`
+      );
+      this.updateTabOrder(triggeredBy);
+    }, delay);
   }
 
-  // ─── Visibility ────────────────────────────────────────────────────────────
+  // ─── Visibility ─────────────────────────────────────────────────────────────
 
   isFullyVisible(el) {
     if (!el) return false;
@@ -1015,8 +1125,9 @@ class TabOrderManager {
         s.display === "none" ||
         s.visibility === "hidden" ||
         s.opacity === "0"
-      )
+      ) {
         return false;
+      }
       node = node.parentElement;
     }
     const r = el.getBoundingClientRect();
@@ -1029,29 +1140,72 @@ class TabOrderManager {
     );
   }
 
-  // ─── Core ──────────────────────────────────────────────────────────────────
+  _describeEl(el) {
+    if (!el || el === document.body) return "(body)";
+    const tag = el.tagName?.toLowerCase() ?? "?";
+    const id = el.id ? `#${el.id}` : "";
+    const cls =
+      typeof el.className === "string"
+        ? "." + el.className.trim().split(/\s+/).slice(0, 3).join(".")
+        : "";
+    const ti = el.getAttribute?.("tabindex") ?? "unset";
+    const txt = (el.textContent ?? "").trim().slice(0, 30);
+    return `${tag}${id}${cls} [tabindex:${ti}] "${txt}"`;
+  }
 
-  updateTabOrder() {
-    // Reset ALL naturally focusable elements to -1 so nothing leaks through.
+  // ─── Core ────────────────────────────────────────────────────────────────────
+
+  updateTabOrder(triggeredBy = "unknown") {
+    this._runCount++;
+    const run = this._runCount;
+    this._log("updateTabOrder", `▶ RUN #${run} triggered by: ${triggeredBy}`);
+
+    this._updating = true;
+
+    // Log all currently-tabbable elements BEFORE the reset so we can see
+    // what we're about to wipe
+    const before = document.querySelectorAll('[tabindex]:not([tabindex="-1"])');
+    this._log(
+      "updateTabOrder",
+      `  before reset: ${before.length} element(s) with positive tabindex`
+    );
+
+    // Reset
     document
       .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
       .forEach((el) => el.setAttribute("tabindex", "-1"));
 
+    this._log("updateTabOrder", `  reset complete`);
+
     let idx = 1;
-    const assign = (el) => {
+    const assign = (el, label) => {
       if (el && this.isFullyVisible(el)) {
-        el.setAttribute("tabindex", String(idx++));
+        el.setAttribute("tabindex", String(idx));
+        this._log(
+          "updateTabOrder",
+          `  [${idx}] ${label ?? ""} ${this._describeEl(el)}`
+        );
+        idx++;
+      } else if (el) {
+        this._log(
+          "updateTabOrder",
+          `  [skip — not visible] ${label ?? ""} ${this._describeEl(el)}`
+        );
       }
     };
 
-    // ── 1. Logo ─────────────────────────────────────────────────────────────
-    assign(document.querySelector(".Theme-Logo a"));
+    // 1. Logo
+    assign(document.querySelector(".Theme-Logo a"), "LOGO");
 
-    // ── 2. Nav ──────────────────────────────────────────────────────────────
+    // 2. Nav
     const navLinks = Array.from(
       document.querySelectorAll(
         "#navigation .Theme-NavigationLink, nav .Theme-NavigationLink"
       )
+    );
+    this._log(
+      "updateTabOrder",
+      `  found ${navLinks.length} .Theme-NavigationLink elements`
     );
 
     let ceremonyLink = null;
@@ -1067,71 +1221,123 @@ class TabOrderManager {
       } else if (text.includes("Memories of Commemoration Day")) {
         memoryLink = el;
       } else {
-        assign(el);
+        assign(el, "NAV");
       }
     });
 
     if (ceremonyLink) {
-      assign(ceremonyLink);
+      assign(ceremonyLink, "NAV:ceremony-link");
       const toggleBtn = ceremonyLink.nextElementSibling;
       if (toggleBtn?.classList.contains("Navigation__button")) {
-        assign(toggleBtn);
+        assign(toggleBtn, "NAV:ceremony-toggle");
         const panel =
           toggleBtn.nextElementSibling ??
           ceremonyLink.closest("li")?.querySelector(".Navigation__dropdown");
         if (panel && this.isFullyVisible(panel)) {
-          panel.querySelectorAll("a[href]").forEach(assign);
+          this._log(
+            "updateTabOrder",
+            "  ceremony sub-panel is open — assigning links"
+          );
+          panel
+            .querySelectorAll("a[href]")
+            .forEach((a) => assign(a, "NAV:ceremony-panel"));
+        } else {
+          this._log(
+            "updateTabOrder",
+            "  ceremony sub-panel is closed — skipping"
+          );
         }
+      } else {
+        this._warn(
+          "updateTabOrder",
+          "  ceremony link has no .Navigation__button sibling"
+        );
       }
     }
 
-    if (memoryLink) assign(memoryLink);
+    if (memoryLink) assign(memoryLink, "NAV:memory-link");
 
-    // ── 3. Search bar — always ───────────────────────────────────────────────
-    assign(document.querySelector(".project-search-input"));
-    assign(document.querySelector(".project-search-delete-btn"));
+    // 3. Search — always
+    assign(document.querySelector(".project-search-input"), "SEARCH:input");
+    assign(
+      document.querySelector(".project-search-delete-btn"),
+      "SEARCH:delete-btn"
+    );
 
-    // ── 4. Ceremony buttons interleaved with their open sections ─────────────
+    // 4. Ceremony toggles interleaved with open sections
     const toggleWrappers = document.querySelectorAll(".time-toggle");
+    this._log(
+      "updateTabOrder",
+      `  found ${toggleWrappers.length} .time-toggle wrapper(s)`
+    );
 
     if (toggleWrappers.length) {
-      toggleWrappers.forEach((wrapper) => {
-        assign(wrapper.querySelector("button"));
+      toggleWrappers.forEach((wrapper, i) => {
+        const btn = wrapper.querySelector("button");
+        assign(btn, `CEREMONY[${i}]:toggle-btn`);
 
-        // Find the panel associated with this toggle
         let section =
           wrapper.nextElementSibling ??
           wrapper.closest(".ceremony-block")?.querySelector(".showing") ??
           wrapper.parentElement?.querySelector(".showing");
 
-        if (section?.classList.contains("showing")) {
-          section
-            .querySelectorAll("a[href], button, input, select, textarea")
-            .forEach((el) => {
-              if (!this.isExcludedFromSweep(el)) assign(el);
+        if (section) {
+          const isOpen = section.classList.contains("showing");
+          this._log(
+            "updateTabOrder",
+            `  CEREMONY[${i}] section found: <${section.tagName?.toLowerCase()}` +
+              `.${[...section.classList].slice(0, 3).join(".")}> open:${isOpen}`
+          );
+          if (isOpen) {
+            const items = section.querySelectorAll(
+              "a[href], button, input, select, textarea"
+            );
+            items.forEach((el) => {
+              if (!this.isExcludedFromSweep(el)) {
+                assign(el, `CEREMONY[${i}]:content`);
+              }
             });
+          }
+        } else {
+          this._warn(
+            "updateTabOrder",
+            `  CEREMONY[${i}] — no associated section found`
+          );
         }
       });
     } else {
-      // Fallback if no .time-toggle wrappers found
+      this._warn(
+        "updateTabOrder",
+        "  no .time-toggle found — falling back to .showing sweep"
+      );
       document.querySelectorAll(".showing").forEach((section) => {
         section
           .querySelectorAll("a[href], button, input, select, textarea")
           .forEach((el) => {
-            if (!this.isExcludedFromSweep(el)) assign(el);
+            if (!this.isExcludedFromSweep(el)) assign(el, "SHOWING-FALLBACK");
           });
       });
     }
 
-    // ── 5. Cookie / consent banners ──────────────────────────────────────────
+    // 5. Banners
     const banner = document.querySelector(
       "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
     );
     if (banner && this.isFullyVisible(banner)) {
-      banner.querySelectorAll("button, a[href]").forEach(assign);
+      this._log("updateTabOrder", "  banner found — assigning buttons");
+      banner
+        .querySelectorAll("button, a[href]")
+        .forEach((el) => assign(el, "BANNER"));
     }
 
-    console.log(`[TabOrderManager] ${idx - 1} tabbable elements assigned.`);
+    this._updating = false;
+
+    this._log(
+      "updateTabOrder",
+      `◀ RUN #${run} DONE — ${
+        idx - 1
+      } element(s) assigned. triggered by: ${triggeredBy}`
+    );
   }
 
   // ─── Styles ─────────────────────────────────────────────────────────────────
@@ -1166,7 +1372,7 @@ if (document.readyState === "loading") {
   window.tabOrderManager = new TabOrderManager();
 }
 
-window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
+window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder("manual");
 window.testFocus = () => {
   const el = document.querySelector('[tabindex="2"]');
   if (el) {
