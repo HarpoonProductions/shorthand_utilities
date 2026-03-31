@@ -873,6 +873,14 @@ setTimeout(() => {
   console.log("MutationObserver script initialized successfully");
 })();
 
+// ─── EARLY PLACEHOLDER — set synchronously so any old TabOrderManager
+// DOMContentLoaded handler sees it and skips instantiation ────────────────────
+if (!window.tabOrderManager) {
+  window.tabOrderManager = { _placeholder: true };
+}
+
+// ─── TabOrderManager ─────────────────────────────────────────────────────────
+
 class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
@@ -929,8 +937,6 @@ class TabOrderManager {
         if (e.key !== "Tab") return;
         self._tabbing = true;
         clearTimeout(self._tabTimer);
-        // Keep flag live for 600ms — covers the async focus() calls that fire
-        // after Tab keydown
         self._tabTimer = setTimeout(() => {
           self._tabbing = false;
         }, 600);
@@ -984,13 +990,7 @@ class TabOrderManager {
   }
 
   scheduleRefresh(delay, triggeredBy = "unknown") {
-    // Never reset tabindex while the user is mid-tab — it drops focus
-    if (this._tabbing) {
-      console.log(
-        `[TabOrder] scheduleRefresh blocked — user is tabbing (${triggeredBy})`
-      );
-      return;
-    }
+    if (this._tabbing) return;
     clearTimeout(this.refreshTimer);
     this.refreshTimer = setTimeout(
       () => this.updateTabOrder(triggeredBy),
@@ -1009,9 +1009,8 @@ class TabOrderManager {
         s.display === "none" ||
         s.visibility === "hidden" ||
         s.opacity === "0"
-      ) {
+      )
         return false;
-      }
       node = node.parentElement;
     }
     const r = el.getBoundingClientRect();
@@ -1025,54 +1024,78 @@ class TabOrderManager {
   }
 
   // ─── Ceremony section lookup ────────────────────────────────────────────────
-  // .showing is applied to Theme-Section elements throughout the page, not
-  // siblings of .time-toggle. We match by extracting the time from the button
-  // text ("10.30" → "1030") and looking for a .showing section whose id
-  // contains that string.
+  // Converts the button text into search keys, trying progressively
+  // broader queries until a .showing section is found.
+  //
+  // Example button text: "10.30  Faculty of Natural Sciences"
+  //   timeKey:    "1030"
+  //   facultyKey: "natural" (first meaningful word after stripping stopwords)
 
   getOpenSectionForToggle(wrapper) {
     const btn = wrapper.querySelector("button");
-    const rawTime = (btn?.textContent ?? "").trim();
-    // "10.30" → "1030",  "13.45" → "1345"
-    const timeKey = rawTime.replace(/[^0-9]/g, "").slice(0, 4);
+    const rawText = (btn?.textContent ?? "").replace(/\s+/g, " ").trim();
 
-    if (timeKey) {
-      // Look for a .showing element whose id contains the time key
-      const matched = document.querySelector(`.showing[id*="${timeKey}"]`);
-      if (matched) {
-        console.log(
-          `[TabOrder] ceremony "${rawTime}" → matched section #${matched.id}`
-        );
-        return matched;
-      }
+    // Extract time → "1030"
+    const timeKey = rawText.replace(/[^0-9]/g, "").slice(0, 4);
 
-      // Also check sections that CONTAIN a .showing child with matching id
-      const inner = document.querySelector(`[id*="${timeKey}"] .showing`);
-      if (inner) {
-        console.log(
-          `[TabOrder] ceremony "${rawTime}" → matched inner .showing inside [id*="${timeKey}"]`
-        );
-        return inner;
+    // Extract a faculty slug — take the longest word after the time portion
+    // that isn't a stopword, lowercase it
+    const STOPWORDS = new Set([
+      "of",
+      "the",
+      "and",
+      "for",
+      "in",
+      "a",
+      "faculty",
+      "ceremony",
+      "school",
+    ]);
+    const facultySlug =
+      rawText
+        .split(/\s+/)
+        .filter(
+          (w) =>
+            w.length > 2 && !STOPWORDS.has(w.toLowerCase()) && !/^\d/.test(w)
+        )
+        .map((w) => w.toLowerCase().replace(/[^a-z]/g, ""))
+        .find((w) => w.length > 3) ?? "";
+
+    // Strategy 1: match both time + faculty keyword in section id
+    if (timeKey && facultySlug) {
+      const el = document.querySelector(
+        `.showing[id*="${timeKey}"][id*="${facultySlug}"]`
+      );
+      if (el) {
+        console.log(`[TabOrder] "${rawText}" → #${el.id} (time+faculty match)`);
+        return el;
       }
     }
 
-    return null;
-  }
+    // Strategy 2: time only — but skip if we already assigned this section
+    // (tracked by caller via handledSections WeakSet)
+    if (timeKey) {
+      const el = document.querySelector(`.showing[id*="${timeKey}"]`);
+      if (el) {
+        console.log(`[TabOrder] "${rawText}" → #${el.id} (time-only match)`);
+        return el;
+      }
+    }
 
-  // Collect ALL open .showing sections (used as a fallback and for sections
-  // that don't match a specific toggle)
-  getAllOpenSectionContent() {
-    const els = [];
-    document.querySelectorAll(".showing").forEach((section) => {
-      section
-        .querySelectorAll("a[href], button, input, select, textarea")
-        .forEach((el) => {
-          if (!this.isExcludedFromSweep(el) && this.isFullyVisible(el)) {
-            els.push(el);
-          }
-        });
-    });
-    return els;
+    // Strategy 3: any .showing section that contains this button's text
+    // (catches cases where section ID uses a hash rather than time)
+    if (rawText.length > 4) {
+      const allShowing = document.querySelectorAll(".showing");
+      for (const sec of allShowing) {
+        if (sec.id && sec.id.length > 0) {
+          console.log(`[TabOrder] "${rawText}" → fallback #${sec.id}`);
+          return sec;
+        }
+      }
+    }
+
+    console.log(`[TabOrder] "${rawText}" → no section found`);
+    return null;
   }
 
   // ─── Core ──────────────────────────────────────────────────────────────────
@@ -1080,7 +1103,6 @@ class TabOrderManager {
   updateTabOrder(triggeredBy = "unknown") {
     this._updating = true;
 
-    // Reset
     document
       .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
       .forEach((el) => el.setAttribute("tabindex", "-1"));
@@ -1137,7 +1159,7 @@ class TabOrderManager {
     assign(document.querySelector(".project-search-input"));
     assign(document.querySelector(".project-search-delete-btn"));
 
-    // 4. Ceremony buttons, each immediately followed by its open section
+    // 4. Ceremony toggles interleaved with their open sections
     const toggleWrappers = document.querySelectorAll(".time-toggle");
     const handledSections = new WeakSet();
 
@@ -1146,7 +1168,7 @@ class TabOrderManager {
         assign(wrapper.querySelector("button"));
 
         const section = this.getOpenSectionForToggle(wrapper);
-        if (section) {
+        if (section && !handledSections.has(section)) {
           handledSections.add(section);
           section
             .querySelectorAll("a[href], button, input, select, textarea")
@@ -1156,7 +1178,7 @@ class TabOrderManager {
         }
       });
 
-      // Catch any .showing sections not matched to a specific toggle
+      // Any .showing sections not yet handled (e.g. no matching toggle)
       document.querySelectorAll(".showing").forEach((section) => {
         if (handledSections.has(section)) return;
         section
@@ -1166,14 +1188,19 @@ class TabOrderManager {
           });
       });
     } else {
-      // No .time-toggle at all — just sweep every open section
-      this.getAllOpenSectionContent().forEach(assign);
+      document.querySelectorAll(".showing").forEach((section) => {
+        section
+          .querySelectorAll("a[href], button, input, select, textarea")
+          .forEach((el) => {
+            if (!this.isExcludedFromSweep(el)) assign(el);
+          });
+      });
     }
 
     // 5. OneTrust / cookie banner
     const banner = document.querySelector(
       "#onetrust-consent-sdk, #onetrust-banner-sdk, " +
-        "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
+        "#onesignal-slidedown-container, .cookie-banner"
     );
     if (banner && this.isFullyVisible(banner)) {
       banner.querySelectorAll("button, a[href]").forEach(assign);
@@ -1205,24 +1232,36 @@ class TabOrderManager {
   }
 }
 
-// ─── Singleton ────────────────────────────────────────────────────────────────
+// ─── Instantiation ────────────────────────────────────────────────────────────
 
-if (!window.tabOrderManager) {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      window.tabOrderManager = new TabOrderManager();
-    });
-  } else {
-    window.tabOrderManager = new TabOrderManager();
-  }
+const _initTabOrderManager = () => {
+  window.tabOrderManager = new TabOrderManager();
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", _initTabOrderManager);
+} else {
+  _initTabOrderManager();
 }
 
+// ─── Debug helpers ────────────────────────────────────────────────────────────
+
 window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder("manual");
+
 window.testFocus = () => {
-  const el = document.querySelector('[tabindex="1"]');
-  if (el) {
-    el.focus();
-    console.log("Focused:", document.activeElement);
+  const all = document.querySelectorAll('[tabindex]:not([tabindex="-1"])');
+  console.log(`[testFocus] ${all.length} managed element(s):`);
+  all.forEach((el, i) => {
+    if (i < 5) console.log(`  [${el.getAttribute("tabindex")}]`, el);
+  });
+  const first = document.querySelector('[tabindex="1"]');
+  if (first) {
+    first.focus();
+    console.log("[testFocus] focused:", document.activeElement);
+  } else {
+    console.warn(
+      "[testFocus] no element with tabindex=1 found — tabindexes may have been wiped after last run"
+    );
   }
 };
 
