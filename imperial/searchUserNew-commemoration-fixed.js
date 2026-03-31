@@ -1332,3 +1332,128 @@ window.testFocus = function () {
     console.log("Active element after focus:", document.activeElement);
   }
 };
+
+(function () {
+  "use strict";
+
+  let _lastFocused = null;
+  let _focusCount = 0;
+
+  function getAncestorPath(el) {
+    const parts = [];
+    let node = el.parentElement;
+    let depth = 0;
+    while (node && node !== document.body && depth < 6) {
+      const id = node.id ? `#${node.id}` : "";
+      const cls =
+        node.className && typeof node.className === "string"
+          ? "." + node.className.trim().split(/\s+/).join(".")
+          : "";
+      parts.unshift(node.tagName.toLowerCase() + id + cls);
+      node = node.parentElement;
+      depth++;
+    }
+    return parts.join(" > ") || "(direct child of body)";
+  }
+
+  function describeEl(el) {
+    if (!el || el === document.body || el === document.documentElement) {
+      return "(no element / body)";
+    }
+
+    const tag = el.tagName.toLowerCase();
+    const id = el.id ? `#${el.id}` : "";
+    const cls =
+      el.className && typeof el.className === "string"
+        ? "." + el.className.trim().split(/\s+/).slice(0, 4).join(".")
+        : "";
+    const tabindex = el.getAttribute("tabindex") ?? "not set";
+    const text = (el.textContent ?? "")
+      .trim()
+      .slice(0, 50)
+      .replace(/\s+/g, " ");
+    const href = el.href ? ` href="${el.href.slice(0, 60)}"` : "";
+    const name = el.name ? ` name="${el.name}"` : "";
+    const type = el.type ? ` type="${el.type}"` : "";
+
+    return `${tag}${id}${cls}${href}${name}${type}  |  tabindex: ${tabindex}  |  text: "${text}"`;
+  }
+
+  document.addEventListener(
+    "focusin",
+    function (e) {
+      const el = e.target;
+
+      // Skip body / document itself
+      if (!el || el === document.body || el === document.documentElement)
+        return;
+
+      _focusCount++;
+
+      const isSame = el === _lastFocused;
+      const tabindex = el.getAttribute("tabindex");
+      const isNeg = tabindex === "-1";
+      const isUnset = tabindex === null;
+      const isNatural = tabindex === null || tabindex === "0";
+
+      const flag = isNeg
+        ? "🚨 TABINDEX -1 — likely trap"
+        : isUnset
+        ? "⚠️  NO TABINDEX — natural order"
+        : isSame
+        ? "🔁 REPEATED — possible loop"
+        : "✅ managed";
+
+      console.groupCollapsed(
+        `[FocusLog #${_focusCount}] ${flag}  →  ${describeEl(el)}`
+      );
+      console.log("Element:   ", el);
+      console.log("tabindex:  ", tabindex ?? "(not set)");
+      console.log("ancestors: ", getAncestorPath(el));
+      console.log("event:     ", e);
+
+      if (isNeg || isNatural) {
+        console.warn(
+          "⬆ This element is outside the managed tab order. " +
+            "It may be receiving focus via the browser's natural fallback. " +
+            "Add it to EXCLUDE_SELECTORS or assign it explicitly in updateTabOrder()."
+        );
+        // Print computed styles that could explain why it's reachable
+        const s = window.getComputedStyle(el);
+        console.log("display:    ", s.display);
+        console.log("visibility:", s.visibility);
+        console.log("opacity:   ", s.opacity);
+        console.log("pointer-events:", s.pointerEvents);
+      }
+
+      if (isSame) {
+        console.warn(
+          "⬆ Focus returned to the same element twice in a row — " +
+            "classic sign of a focus trap."
+        );
+      }
+
+      console.groupEnd();
+
+      _lastFocused = el;
+    },
+    true // capture phase — fires before any component's own focusin handler
+  );
+
+  // Also catch Tab keystrokes so you can see BEFORE and AFTER in sequence
+  document.addEventListener(
+    "keydown",
+    function (e) {
+      if (e.key !== "Tab") return;
+      console.log(
+        `[FocusLog] Tab${e.shiftKey ? "+Shift" : ""} pressed. ` +
+          `Current: ${describeEl(document.activeElement)}`
+      );
+    },
+    true
+  );
+
+  console.info(
+    "[FocusLogger] Active — open DevTools console and start tabbing."
+  );
+})();
