@@ -873,326 +873,330 @@ setTimeout(() => {
   console.log("MutationObserver script initialized successfully");
 })();
 
-// ─── Singleton guard — prevents double-init if script tag loads twice ────────
-if (window.tabOrderManager) {
-  console.warn("[TabOrder] already initialised — skipping duplicate instance");
-  // export public API from existing instance and bail
-  window.refreshTabOrder = () =>
-    window.tabOrderManager.updateTabOrder("manual");
-} else {
-  class TabOrderManager {
-    constructor() {
-      this.refreshTimer = null;
-      this.navObserver = null;
-      this.bodyObserver = null;
-      this._tabbing = false;
-      this._tabTimer = null;
+// ─── TabOrderManager ─────────────────────────────────────────────────────────
+// Class defined unconditionally so DOMContentLoaded callbacks can reference it.
+// Only the *instantiation* is singleton-guarded.
 
-      // All selectors whose programmatic .focus() calls should be dropped
-      // while the user is actively tabbing.
-      this.FOCUS_BLOCK_SELECTORS = [
-        ".project-search-button",
-        ".project-search-delete-btn",
-        ".Navigation__hamburger", // ← platform bounces focus here then back to search
-      ];
+class TabOrderManager {
+  constructor() {
+    this.refreshTimer = null;
+    this.navObserver = null;
+    this.bodyObserver = null;
+    this._updating = false;
+    this._tabbing = false;
+    this._tabTimer = null;
 
-      this.EXCLUDE_FROM_SWEEP = [
-        ".project-search-input",
-        ".project-search-delete-btn",
-        ".project-search-button",
-      ];
+    this.FOCUS_BLOCK_SELECTORS = [
+      ".project-search-button",
+      ".project-search-delete-btn",
+      ".Navigation__hamburger",
+    ];
 
-      this.init();
+    this.EXCLUDE_FROM_SWEEP = [
+      ".project-search-input",
+      ".project-search-delete-btn",
+      ".project-search-button",
+    ];
+
+    this.init();
+  }
+
+  // ─── Bootstrap ─────────────────────────────────────────────────────────────
+
+  init() {
+    this.addFocusStyles();
+    this.installFocusIntercept();
+    this.waitForNav(() => {
+      this.updateTabOrder("init");
+      this.attachObservers();
+    });
+  }
+
+  waitForNav(cb, attempts = 0) {
+    const nav = document.querySelector("#navigation, nav");
+    if (nav || attempts > 30) {
+      cb();
+    } else {
+      setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
     }
+  }
 
-    // ─── Bootstrap ─────────────────────────────────────────────────────────────
+  // ─── Focus intercept ───────────────────────────────────────────────────────
 
-    init() {
-      this.addFocusStyles();
-      this.installFocusIntercept();
-      this.waitForNav(() => {
-        this.updateTabOrder("init");
-        this.attachObservers();
-      });
-    }
+  installFocusIntercept() {
+    // Guard: don't re-install if already done by a previous instance
+    if (HTMLElement.prototype._tabOrderInterceptInstalled) return;
+    HTMLElement.prototype._tabOrderInterceptInstalled = true;
 
-    waitForNav(cb, attempts = 0) {
-      const nav = document.querySelector("#navigation, nav");
-      if (nav || attempts > 30) {
-        cb();
-      } else {
-        setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
+    const self = this;
+    const originalFocus = HTMLElement.prototype.focus;
+
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key !== "Tab") return;
+        self._tabbing = true;
+        clearTimeout(self._tabTimer);
+        self._tabTimer = setTimeout(() => {
+          self._tabbing = false;
+        }, 500);
+      },
+      true
+    );
+
+    HTMLElement.prototype.focus = function (options) {
+      if (
+        self._tabbing &&
+        self.FOCUS_BLOCK_SELECTORS.some((sel) => this.matches?.(sel))
+      ) {
+        console.log(
+          "[TabOrder] blocked .focus() on",
+          this.className,
+          "during tab"
+        );
+        return;
       }
-    }
+      return originalFocus.call(this, options);
+    };
+  }
 
-    // ─── Focus intercept ───────────────────────────────────────────────────────
+  // ─── Observers ─────────────────────────────────────────────────────────────
 
-    installFocusIntercept() {
-      const self = this;
-      const originalFocus = HTMLElement.prototype.focus;
+  attachObservers() {
+    this.bodyObserver = new MutationObserver(() => {
+      if (this._updating) return;
+      this.scheduleRefresh(400, "bodyObserver");
+    });
+    this.bodyObserver.observe(document.body, {
+      childList: true,
+      subtree: false,
+    });
 
-      document.addEventListener(
-        "keydown",
-        (e) => {
-          if (e.key !== "Tab") return;
-          self._tabbing = true;
-          clearTimeout(self._tabTimer);
-          self._tabTimer = setTimeout(() => {
-            self._tabbing = false;
-          }, 500);
-        },
-        true
-      );
-
-      HTMLElement.prototype.focus = function (options) {
-        if (
-          self._tabbing &&
-          self.FOCUS_BLOCK_SELECTORS.some((sel) => this.matches?.(sel))
-        ) {
-          console.log(
-            "[TabOrder] blocked .focus() on",
-            this.className,
-            "during tab"
-          );
-          return;
-        }
-        return originalFocus.call(this, options);
-      };
-    }
-
-    // ─── Observers ─────────────────────────────────────────────────────────────
-
-    attachObservers() {
-      this._updating = false;
-
-      // Shallow body observer — cookie banners, modals appended at root
-      this.bodyObserver = new MutationObserver(() => {
+    const nav = document.querySelector("#navigation, nav");
+    if (nav) {
+      this.navObserver = new MutationObserver(() => {
         if (this._updating) return;
-        this.scheduleRefresh(400, "bodyObserver");
+        this.scheduleRefresh(200, "navObserver");
       });
-      this.bodyObserver.observe(document.body, {
+      this.navObserver.observe(nav, {
         childList: true,
-        subtree: false,
-      });
-
-      // Nav observer — platform re-renders nav links after initial load
-      const nav = document.querySelector("#navigation, nav");
-      if (nav) {
-        this.navObserver = new MutationObserver(() => {
-          if (this._updating) return;
-          this.scheduleRefresh(200, "navObserver");
-        });
-        this.navObserver.observe(nav, {
-          childList: true,
-          subtree: true,
-          attributes: false, // must stay false — we set tabindex on nav children
-        });
-      }
-
-      // Refresh after section toggles
-      document.addEventListener("click", (e) => {
-        const trigger = e.target.closest(
-          ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
-        );
-        if (trigger) this.scheduleRefresh(350, "click");
+        subtree: true,
+        attributes: false,
       });
     }
 
-    scheduleRefresh(delay, triggeredBy = "unknown") {
-      clearTimeout(this.refreshTimer);
-      this.refreshTimer = setTimeout(
-        () => this.updateTabOrder(triggeredBy),
-        delay
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest(
+        ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
       );
-    }
+      if (trigger) this.scheduleRefresh(350, "click");
+    });
+  }
 
-    // ─── Visibility ────────────────────────────────────────────────────────────
+  scheduleRefresh(delay, triggeredBy = "unknown") {
+    clearTimeout(this.refreshTimer);
+    this.refreshTimer = setTimeout(
+      () => this.updateTabOrder(triggeredBy),
+      delay
+    );
+  }
 
-    isFullyVisible(el) {
-      if (!el) return false;
-      let node = el;
-      while (node && node !== document.documentElement) {
-        const s = window.getComputedStyle(node);
-        if (
-          s.display === "none" ||
-          s.visibility === "hidden" ||
-          s.opacity === "0"
-        ) {
-          return false;
-        }
-        node = node.parentElement;
+  // ─── Visibility ────────────────────────────────────────────────────────────
+
+  isFullyVisible(el) {
+    if (!el) return false;
+    let node = el;
+    while (node && node !== document.documentElement) {
+      const s = window.getComputedStyle(node);
+      if (
+        s.display === "none" ||
+        s.visibility === "hidden" ||
+        s.opacity === "0"
+      ) {
+        return false;
       }
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0;
+      node = node.parentElement;
     }
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
 
-    isExcludedFromSweep(el) {
-      return this.EXCLUDE_FROM_SWEEP.some(
-        (sel) => el.matches?.(sel) || el.closest?.(sel)
+  isExcludedFromSweep(el) {
+    return this.EXCLUDE_FROM_SWEEP.some(
+      (sel) => el.matches?.(sel) || el.closest?.(sel)
+    );
+  }
+
+  // ─── Ceremony section finder ────────────────────────────────────────────────
+  // Logs every candidate it tries so we can see exactly what the DOM looks like.
+
+  findOpenCeremonySection(wrapper, index) {
+    const candidates = [];
+
+    const check = (label, el) => {
+      if (!el) return null;
+      const s = window.getComputedStyle(el);
+      const open =
+        el.classList.contains("showing") ||
+        el.classList.contains("active") ||
+        s.display === "inline";
+      candidates.push(
+        `  ${label}: <${el.tagName.toLowerCase()}.${[...el.classList]
+          .slice(0, 3)
+          .join(".")}> display:${s.display} open:${open}`
       );
-    }
+      return open ? el : null;
+    };
 
-    // ─── Ceremony section finder ────────────────────────────────────────────────
-    //
-    // The platform doesn't put the open panel as a direct sibling of .time-toggle.
-    // We try a sequence of strategies, widening the search until we find a panel
-    // that is open (display:inline or .showing class).
-
-    findOpenCeremonySection(toggleWrapper) {
-      const isOpen = (el) => {
-        if (!el) return false;
-        const style = window.getComputedStyle(el);
-        return (
-          el.classList.contains("showing") ||
-          el.classList.contains("active") ||
-          style.display === "inline" ||
-          style.display === "block"
-        );
-      };
-
-      // Strategy 1: direct next sibling of the wrapper
-      const sib = toggleWrapper.nextElementSibling;
-      if (sib && isOpen(sib)) return sib;
-
-      // Strategy 2: next sibling of the wrapper's parent
-      const parentSib = toggleWrapper.parentElement?.nextElementSibling;
-      if (parentSib && isOpen(parentSib)) return parentSib;
-
-      // Strategy 3: any .panel sibling within the same parent
-      const siblings = toggleWrapper.parentElement
-        ? Array.from(toggleWrapper.parentElement.children)
-        : [];
-      for (const s of siblings) {
-        if (s !== toggleWrapper && s.classList.contains("panel") && isOpen(s)) {
-          return s;
-        }
-      }
-
-      // Strategy 4: walk up to the nearest .accordion-group / section and
-      // look for any open .panel or .showing inside it
-      let ancestor = toggleWrapper.parentElement?.parentElement;
-      for (let depth = 0; ancestor && depth < 4; depth++) {
-        const panel = ancestor.querySelector(".panel, .showing");
-        if (panel && isOpen(panel)) return panel;
-        ancestor = ancestor.parentElement;
-      }
-
-      return null;
-    }
-
-    // ─── Core ──────────────────────────────────────────────────────────────────
-
-    updateTabOrder(triggeredBy = "unknown") {
-      this._updating = true;
-
-      // Reset everything
-      document
-        .querySelectorAll(
-          "a[href], button, input, select, textarea, [tabindex]"
-        )
-        .forEach((el) => el.setAttribute("tabindex", "-1"));
-
-      let idx = 1;
-      const assign = (el) => {
-        if (el && this.isFullyVisible(el)) {
-          el.setAttribute("tabindex", String(idx++));
-        }
-      };
-
-      // ── 1. Logo ──────────────────────────────────────────────────────────────
-      assign(document.querySelector(".Theme-Logo a"));
-
-      // ── 2. Nav ───────────────────────────────────────────────────────────────
-      const navLinks = Array.from(
-        document.querySelectorAll(
-          "#navigation .Theme-NavigationLink, nav .Theme-NavigationLink"
-        )
-      );
-
-      let ceremonyBtn = null; // the button.customCaretNew itself
-      let memoryLink = null;
-
-      navLinks.forEach((el) => {
-        const text = el.textContent.trim();
-        // "Ceremony Guides" IS the button (button.customCaretNew.Theme-NavigationLink)
-        if (
-          el.classList.contains("customCaretNew") ||
-          text.includes("Ceremony")
-        ) {
-          ceremonyBtn = el;
-        } else if (text.includes("Memories")) {
-          memoryLink = el;
-        } else {
-          assign(el);
-        }
-      });
-
-      // Assign ceremony button, then its open dropdown links (if any)
-      if (ceremonyBtn) {
-        assign(ceremonyBtn);
-        const li = ceremonyBtn.closest("li");
-        const dropdown = li?.querySelector(
-          ".Navigation__dropdown, .dropdown-content"
-        );
-        if (dropdown && this.isFullyVisible(dropdown)) {
-          dropdown.querySelectorAll("a[href]").forEach(assign);
-        }
-      }
-
-      if (memoryLink) assign(memoryLink);
-
-      // ── 3. Search bar — always ───────────────────────────────────────────────
-      assign(document.querySelector(".project-search-input"));
-      assign(document.querySelector(".project-search-delete-btn"));
-
-      // ── 4. Ceremony toggle buttons, each followed by their open section ───────
-      const toggleWrappers = document.querySelectorAll(".time-toggle");
-
-      if (toggleWrappers.length) {
-        toggleWrappers.forEach((wrapper) => {
-          assign(wrapper.querySelector("button"));
-          const section = this.findOpenCeremonySection(wrapper);
-          if (section) {
-            section
-              .querySelectorAll("a[href], button, input, select, textarea")
-              .forEach((el) => {
-                if (!this.isExcludedFromSweep(el)) assign(el);
-              });
+    const found =
+      check("nextSibling of wrapper", wrapper.nextElementSibling) ||
+      check(
+        "nextSibling of wrapper.parent",
+        wrapper.parentElement?.nextElementSibling
+      ) ||
+      (() => {
+        // Any .panel sibling inside wrapper's parent
+        const siblings = wrapper.parentElement
+          ? Array.from(wrapper.parentElement.children)
+          : [];
+        for (const s of siblings) {
+          if (s !== wrapper) {
+            const result = check("panel sibling", s);
+            if (result) return result;
           }
-        });
+        }
+        return null;
+      })() ||
+      (() => {
+        // Walk up ancestors
+        let ancestor = wrapper.parentElement?.parentElement;
+        for (let d = 0; ancestor && d < 5; d++) {
+          const panel = ancestor.querySelector(".panel, .showing");
+          if (panel) {
+            const result = check(`ancestor[${d}] .panel/.showing`, panel);
+            if (result) return result;
+          }
+          ancestor = ancestor.parentElement;
+        }
+        return null;
+      })();
+
+    console.log(
+      `[TabOrder] CEREMONY[${index}] section search — found: ${
+        found ? "YES" : "NO"
+      }\n` + candidates.join("\n")
+    );
+
+    return found;
+  }
+
+  // ─── Core ──────────────────────────────────────────────────────────────────
+
+  updateTabOrder(triggeredBy = "unknown") {
+    this._updating = true;
+
+    document
+      .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
+      .forEach((el) => el.setAttribute("tabindex", "-1"));
+
+    let idx = 1;
+    const assign = (el) => {
+      if (el && this.isFullyVisible(el)) {
+        el.setAttribute("tabindex", String(idx++));
+      }
+    };
+
+    // 1. Logo
+    assign(document.querySelector(".Theme-Logo a"));
+
+    // 2. Nav
+    const navLinks = Array.from(
+      document.querySelectorAll(
+        "#navigation .Theme-NavigationLink, nav .Theme-NavigationLink"
+      )
+    );
+
+    let ceremonyBtn = null;
+    let memoryLink = null;
+
+    navLinks.forEach((el) => {
+      const text = el.textContent.trim();
+      if (
+        el.classList.contains("customCaretNew") ||
+        text.includes("Ceremony")
+      ) {
+        ceremonyBtn = el;
+      } else if (text.includes("Memories")) {
+        memoryLink = el;
       } else {
-        // Fallback: no .time-toggle found
-        document.querySelectorAll(".showing, .panel").forEach((section) => {
-          const s = window.getComputedStyle(section);
-          if (s.display === "none") return;
+        assign(el);
+      }
+    });
+
+    if (ceremonyBtn) {
+      assign(ceremonyBtn);
+      const li = ceremonyBtn.closest("li");
+      const dropdown = li?.querySelector(
+        ".Navigation__dropdown, .dropdown-content"
+      );
+      if (dropdown && this.isFullyVisible(dropdown)) {
+        dropdown.querySelectorAll("a[href]").forEach(assign);
+      }
+    }
+
+    if (memoryLink) assign(memoryLink);
+
+    // 3. Search — always
+    assign(document.querySelector(".project-search-input"));
+    assign(document.querySelector(".project-search-delete-btn"));
+
+    // 4. Ceremony toggles + open sections interleaved
+    const toggleWrappers = document.querySelectorAll(".time-toggle");
+
+    if (toggleWrappers.length) {
+      toggleWrappers.forEach((wrapper, i) => {
+        assign(wrapper.querySelector("button"));
+        const section = this.findOpenCeremonySection(wrapper, i);
+        if (section) {
           section
             .querySelectorAll("a[href], button, input, select, textarea")
             .forEach((el) => {
               if (!this.isExcludedFromSweep(el)) assign(el);
             });
-        });
-      }
-
-      // ── 5. Cookie / OneTrust banner ──────────────────────────────────────────
-      const banner = document.querySelector(
-        "#onetrust-consent-sdk, #onetrust-banner-sdk, " +
-          "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
-      );
-      if (banner && this.isFullyVisible(banner)) {
-        banner.querySelectorAll("button, a[href]").forEach(assign);
-      }
-
-      this._updating = false;
-      console.log(`[TabOrder] ${triggeredBy} → ${idx - 1} element(s) assigned`);
+        }
+      });
+    } else {
+      // Fallback
+      document.querySelectorAll(".showing, .panel").forEach((section) => {
+        if (window.getComputedStyle(section).display === "none") return;
+        section
+          .querySelectorAll("a[href], button, input, select, textarea")
+          .forEach((el) => {
+            if (!this.isExcludedFromSweep(el)) assign(el);
+          });
+      });
     }
 
-    // ─── Styles ─────────────────────────────────────────────────────────────────
+    // 5. OneTrust / cookie banner
+    const banner = document.querySelector(
+      "#onetrust-consent-sdk, #onetrust-banner-sdk, " +
+        "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
+    );
+    if (banner && this.isFullyVisible(banner)) {
+      banner.querySelectorAll("button, a[href]").forEach(assign);
+    }
 
-    addFocusStyles() {
-      if (document.getElementById("tab-manager-styles")) return;
-      const style = document.createElement("style");
-      style.id = "tab-manager-styles";
-      style.textContent = `
+    this._updating = false;
+    console.log(`[TabOrder] ${triggeredBy} → ${idx - 1} element(s) assigned`);
+  }
+
+  // ─── Styles ─────────────────────────────────────────────────────────────────
+
+  addFocusStyles() {
+    if (document.getElementById("tab-manager-styles")) return;
+    const style = document.createElement("style");
+    style.id = "tab-manager-styles";
+    style.textContent = `
       *:focus                   { outline: none !important; }
       *:focus-visible           { box-shadow: 0 0 0 4px #b90072 inset !important;
                                   outline: none !important; border-radius: 4px; }
@@ -1204,12 +1208,13 @@ if (window.tabOrderManager) {
       [tabindex]:focus-visible  { box-shadow: 0 0 0 4px #b90072 inset !important;
                                   outline: none !important; }
     `;
-      document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
   }
+}
 
-  // ─── Init (inside singleton guard) ───────────────────────────────────────────
+// ─── Singleton instantiation ──────────────────────────────────────────────────
 
+if (!window.tabOrderManager) {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       window.tabOrderManager = new TabOrderManager();
@@ -1217,17 +1222,16 @@ if (window.tabOrderManager) {
   } else {
     window.tabOrderManager = new TabOrderManager();
   }
+}
 
-  window.refreshTabOrder = () =>
-    window.tabOrderManager?.updateTabOrder("manual");
-  window.testFocus = () => {
-    const el = document.querySelector('[tabindex="2"]');
-    if (el) {
-      el.focus();
-      console.log("Focused:", document.activeElement);
-    }
-  };
-} // end singleton guard
+window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder("manual");
+window.testFocus = () => {
+  const el = document.querySelector('[tabindex="2"]');
+  if (el) {
+    el.focus();
+    console.log("Focused:", document.activeElement);
+  }
+};
 
 // class TabOrderManager {
 //   constructor() {
