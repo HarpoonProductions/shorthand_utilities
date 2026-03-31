@@ -875,187 +875,432 @@ setTimeout(() => {
 
 class TabOrderManager {
   constructor() {
+    this.refreshTimer = null;
+    this.bodyObserver = null;
+    this.SEARCH_SELECTORS = [
+      ".project-search-input",
+      ".project-search-delete-btn",
+      ".project-search-button",
+      ".project-search-sideBar input",
+      ".project-search-sideBar button",
+    ];
     this.init();
   }
 
+  // ─── Bootstrap ────────────────────────────────────────────────────────────
+
   init() {
-    // // Add Imperial focus styles
-    // this.addFocusStyles();
-    // // Initial tab order setup
-    // setTimeout(() => this.updateTabOrder(), 100);
-    // // Refresh when ceremony sections are toggled
-    // document.addEventListener("click", (e) => {
-    //   if (e.target.closest(".time-toggle")) {
-    //     setTimeout(() => this.updateTabOrder(), 350);
-    //   }
-    // });
-    // // Log tab events for debugging
-    // document.addEventListener("keydown", (e) => {
-    //   if (e.key === "Tab") {
-    //     console.log("Tab pressed. Current focus:", document.activeElement);
-    //   }
-    // });
+    this.addFocusStyles();
+    this.waitForNav(() => {
+      this.updateTabOrder();
+      this.attachObservers();
+    });
   }
 
+  /**
+   * Poll until the nav element exists (guards against late-loading widgets
+   * like OneSignal banners that can inject focusable elements after DOMContentLoaded).
+   */
+  waitForNav(cb, attempts = 0) {
+    const nav = document.querySelector("#navigation, nav");
+    if (nav || attempts > 30) {
+      cb();
+    } else {
+      setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
+    }
+  }
+
+  attachObservers() {
+    // Re-run whenever children are added/removed from  (cookie banners,
+    // modals, OneSignal prompts appearing or being dismissed).
+    this.bodyObserver = new MutationObserver(() => this.scheduleRefresh(400));
+    this.bodyObserver.observe(document.body, {
+      childList: true,
+      subtree: false, // only direct children of body
+    });
+
+    // Re-run after any toggle that opens/closes sections.
+    document.addEventListener("click", (e) => {
+      if (
+        e.target.closest(
+          ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
+        )
+      ) {
+        this.scheduleRefresh(350);
+      }
+    });
+
+    // Safety net: if focus somehow lands on something with tabindex="-1"
+    // (shouldn't happen, but just in case) kick a refresh.
+    document.addEventListener("focusin", (e) => {
+      if (e.target.getAttribute("tabindex") === "-1") {
+        console.warn(
+          "[TabOrderManager] focus landed on tabindex=-1 element:",
+          e.target
+        );
+        this.scheduleRefresh(50);
+      }
+    });
+  }
+
+  scheduleRefresh(delay = 150) {
+    clearTimeout(this.refreshTimer);
+    this.refreshTimer = setTimeout(() => this.updateTabOrder(), delay);
+  }
+
+  // ─── Visibility helpers ────────────────────────────────────────────────────
+
+  /** Check the element itself AND every ancestor for display:none / visibility:hidden */
+  isFullyVisible(el) {
+    if (!el) return false;
+    let node = el;
+    while (node && node !== document.documentElement) {
+      const s = window.getComputedStyle(node);
+      if (
+        s.display === "none" ||
+        s.visibility === "hidden" ||
+        s.opacity === "0"
+      )
+        return false;
+      node = node.parentElement;
+    }
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
+  isSearchRelated(el) {
+    return this.SEARCH_SELECTORS.some(
+      (sel) => el.matches(sel) || el.closest(sel)
+    );
+  }
+
+  // ─── Core tab-order builder ────────────────────────────────────────────────
+
+  updateTabOrder() {
+    // 1. Zero-out every currently focusable element so nothing is
+    //    accidentally reachable via natural DOM order.
+    document
+      .querySelectorAll(
+        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      .forEach((el) => el.setAttribute("tabindex", "-1"));
+
+    let idx = 1;
+    const assign = (el) => {
+      if (el && this.isFullyVisible(el)) {
+        el.setAttribute("tabindex", String(idx++));
+      }
+    };
+
+    // ── 2. Logo ──────────────────────────────────────────────────────────────
+    const logo = document.querySelector(".Theme-Logo a");
+    assign(logo);
+
+    // ── 3. Navigation ────────────────────────────────────────────────────────
+    const navLinks = Array.from(
+      document.querySelectorAll(
+        "#navigation .Theme-NavigationLink, nav .Theme-NavigationLink"
+      )
+    );
+
+    let ceremonyLink = null;
+    let memoryLink = null;
+    const regularLinks = [];
+
+    navLinks.forEach((el) => {
+      const text = el.textContent.trim();
+      if (text.includes("Ceremony guides")) {
+        ceremonyLink = el;
+      } else if (text.includes("Memories of Commemoration Day")) {
+        memoryLink = el;
+      } else {
+        regularLinks.push(el);
+      }
+    });
+
+    // Regular nav links first
+    regularLinks.forEach(assign);
+
+    // Ceremony guides link → its toggle button → open sub-panel links
+    if (ceremonyLink) {
+      assign(ceremonyLink);
+      const toggleBtn = ceremonyLink.nextElementSibling;
+      if (toggleBtn?.classList.contains("Navigation__button")) {
+        assign(toggleBtn);
+        // If the sub-panel is currently open, include its links
+        const panel =
+          toggleBtn.nextElementSibling ??
+          ceremonyLink.closest("li")?.querySelector(".Navigation__dropdown");
+        if (panel && this.isFullyVisible(panel)) {
+          panel.querySelectorAll("a[href]").forEach(assign);
+        }
+      }
+    }
+
+    // Memory link after ceremony
+    if (memoryLink) assign(memoryLink);
+
+    // ── 4. Ceremony toggle buttons (always present) ───────────────────────────
+    document.querySelectorAll(".time-toggle button").forEach(assign);
+
+    // ── 5. Content inside OPEN ceremony sections ──────────────────────────────
+    document.querySelectorAll(".showing").forEach((section) => {
+      section
+        .querySelectorAll("a[href], button, input, select, textarea")
+        .forEach((el) => {
+          // Explicitly skip search-related controls — they're handled below.
+          if (!this.isSearchRelated(el)) {
+            assign(el);
+          }
+        });
+    });
+
+    // ── 6. Search bar — only if its section is open ───────────────────────────
+    const searchInput = document.querySelector(".project-search-input");
+    if (searchInput && searchInput.closest(".showing")) {
+      assign(searchInput);
+      // Delete / submit buttons in the same bar
+      document
+        .querySelectorAll(".project-search-delete-btn, .project-search-button")
+        .forEach(assign);
+    }
+
+    // ── 7. Cookie / consent banners at body root (if present & visible) ───────
+    const banner = document.querySelector(
+      "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
+    );
+    if (banner && this.isFullyVisible(banner)) {
+      banner.querySelectorAll("button, a[href]").forEach(assign);
+    }
+
+    console.log(
+      `[TabOrderManager] Tab order updated — ${idx - 1} tabbable element(s)`
+    );
+  }
+
+  // ─── Styles ───────────────────────────────────────────────────────────────
+
   addFocusStyles() {
+    if (document.getElementById("tab-manager-styles")) return;
     const style = document.createElement("style");
+    style.id = "tab-manager-styles";
     style.textContent = `
-      *:focus {
-        outline: none !important;
-      }
-       
-      *:focus-visible {
-        box-shadow: 0 0 0 4px #b90072 inset !important;
-        outline: none !important;
-        border-radius: 4px;
-      }
-      
-      a:focus-visible,
-      button:focus-visible,
-      input:focus-visible,
-      select:focus-visible,
-      textarea:focus-visible,
-      [tabindex]:focus-visible {
-        box-shadow: 0 0 0 4px #b90072 inset !important;
-        outline: none !important;
-      }
+      *:focus                       { outline: none !important; }
+      *:focus-visible               { box-shadow: 0 0 0 4px #b90072 inset !important;
+                                      outline: none !important; border-radius: 4px; }
+      a:focus-visible, button:focus-visible,
+      input:focus-visible, select:focus-visible,
+      textarea:focus-visible, [tabindex]:focus-visible
+                                    { box-shadow: 0 0 0 4px #b90072 inset !important;
+                                      outline: none !important; }
     `;
     document.head.appendChild(style);
   }
-
-  updateTabOrder() {
-    console.log("=== Updating tab order ===");
-
-    // Remove all tabindex attributes (except -1)
-    document
-      .querySelectorAll('[tabindex]:not([tabindex="-1"])')
-      .forEach((el) => {
-        el.removeAttribute("tabindex");
-      });
-
-    let tabIndex = 1; // Start at 1 instead of 0
-
-    // 1. Imperial Logo
-    const logo = document.querySelector(".Theme-Logo a");
-    if (logo) {
-      logo.setAttribute("tabindex", String(tabIndex++));
-      console.log("Logo set to tabindex: 1");
-    }
-
-    // 2. Try to find ALL navigation links directly
-    const allNavLinks = document.querySelectorAll(
-      "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
-    );
-
-    const newNavs = [];
-
-    let memory;
-    let ceremony;
-
-    allNavLinks.forEach((link) => {
-      if (
-        !link.textContent
-          .trim()
-          .includes("Memories of Commemoration Day 2025") &&
-        !link.textContent.trim().includes("Ceremony guides")
-      ) {
-        newNavs.push(link);
-      }
-      if (link.textContent.trim().includes("Ceremony guides")) {
-        ceremony = link;
-      } else {
-        memory = link;
-      }
-    });
-
-    newNavs.forEach((link) => {
-      link.setAttribute("tabindex", String(tabIndex++));
-      console.log(
-        `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
-      );
-    });
-
-    // 3. Find Explore more span separately
-    const dropdownSpan = document.querySelector(
-      "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
-    );
-
-    if (ceremony && ceremony.textContent.trim() === "Ceremony guides") {
-      ceremony.setAttribute("tabindex", String(tabIndex++));
-
-      // And its button
-      const exploreBtn = ceremony.nextElementSibling;
-      if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
-        exploreBtn.setAttribute("tabindex", String(tabIndex++));
-        console.log(`custom dropdown 0 button - tabindex ${tabIndex - 1}`);
-      }
-    }
-
-    if (dropdownSpan && dropdownSpan.textContent.trim() === "Explore more") {
-      dropdownSpan.setAttribute("tabindex", "-1");
-
-      // And its button
-      return;
-      const exploreBtn = dropdownSpan.nextElementSibling;
-      if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
-        exploreBtn.setAttribute("tabindex", String(tabIndex++));
-        console.log(`custom dropdown 1 button - tabindex ${tabIndex - 1}`);
-      }
-    }
-
-    memory.setAttribute("tabindex", String(tabIndex++));
-
-    // 4. Ceremony buttons
-    const ceremonyButtons = document.querySelectorAll(".time-toggle button");
-    ceremonyButtons.forEach((button, i) => {
-      button.setAttribute("tabindex", String(tabIndex++));
-    });
-
-    // 5. Content in expanded ceremony sections
-    const showingSections = document.querySelectorAll(".showing");
-    showingSections.forEach((section) => {
-      const links = section.querySelectorAll("a[href]");
-      const buttons = section.querySelectorAll("button");
-      const inputs = section.querySelectorAll("input, select, textarea");
-
-      [...links, ...buttons, ...inputs].forEach((el) => {
-        if (this.isVisible(el) && !el.hasAttribute("tabindex")) {
-          el.setAttribute("tabindex", String(tabIndex++));
-        }
-      });
-    });
-
-    // Log all elements with tabindex
-    const allTabbable = document.querySelectorAll(
-      '[tabindex]:not([tabindex="-1"])'
-    );
-
-    // Log first 10 for debugging
-    allTabbable.forEach((el, i) => {
-      if (i < 10) {
-        const text =
-          el.textContent?.trim().substring(0, 30) ||
-          el.getAttribute("aria-label") ||
-          el.tagName;
-        console.log(
-          `  ${el.getAttribute("tabindex")}: ${el.tagName} - "${text}"`
-        );
-      }
-    });
-  }
-
-  isVisible(element) {
-    if (!element) return false;
-    const rect = element.getBoundingClientRect();
-    const style = window.getComputedStyle(element);
-    return (
-      rect.width > 0 &&
-      rect.height > 0 &&
-      style.display !== "none" &&
-      style.visibility !== "hidden"
-    );
-  }
 }
+
+// ─── Initialise ─────────────────────────────────────────────────────────────
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.tabOrderManager = new TabOrderManager();
+  });
+} else {
+  window.tabOrderManager = new TabOrderManager();
+}
+
+// Public helpers (unchanged API)
+window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
+window.testFocus = () => {
+  const el = document.querySelector('[tabindex="2"]');
+  if (el) {
+    el.focus();
+    console.log("Focused:", document.activeElement);
+  }
+};
+
+// class TabOrderManager {
+//   constructor() {
+//     this.init();
+//   }
+
+//   init() {
+//     // Add Imperial focus styles
+//     this.addFocusStyles();
+//     // Initial tab order setup
+//     setTimeout(() => this.updateTabOrder(), 100);
+//     // Refresh when ceremony sections are toggled
+//     document.addEventListener("click", (e) => {
+//       if (e.target.closest(".time-toggle")) {
+//         setTimeout(() => this.updateTabOrder(), 350);
+//       }
+//     });
+//     // Log tab events for debugging
+//     document.addEventListener("keydown", (e) => {
+//       if (e.key === "Tab") {
+//         console.log("Tab pressed. Current focus:", document.activeElement);
+//       }
+//     });
+//   }
+
+//   addFocusStyles() {
+//     const style = document.createElement("style");
+//     style.textContent = `
+//       *:focus {
+//         outline: none !important;
+//       }
+
+//       *:focus-visible {
+//         box-shadow: 0 0 0 4px #b90072 inset !important;
+//         outline: none !important;
+//         border-radius: 4px;
+//       }
+
+//       a:focus-visible,
+//       button:focus-visible,
+//       input:focus-visible,
+//       select:focus-visible,
+//       textarea:focus-visible,
+//       [tabindex]:focus-visible {
+//         box-shadow: 0 0 0 4px #b90072 inset !important;
+//         outline: none !important;
+//       }
+//     `;
+//     document.head.appendChild(style);
+//   }
+
+//   updateTabOrder() {
+//     console.log("=== Updating tab order ===");
+
+//     // Remove all tabindex attributes (except -1)
+//     document
+//       .querySelectorAll('[tabindex]:not([tabindex="-1"])')
+//       .forEach((el) => {
+//         el.removeAttribute("tabindex");
+//       });
+
+//     let tabIndex = 1; // Start at 1 instead of 0
+
+//     // 1. Imperial Logo
+//     const logo = document.querySelector(".Theme-Logo a");
+//     if (logo) {
+//       logo.setAttribute("tabindex", String(tabIndex++));
+//       console.log("Logo set to tabindex: 1");
+//     }
+
+//     // 2. Try to find ALL navigation links directly
+//     const allNavLinks = document.querySelectorAll(
+//       "#navigation a.Theme-NavigationLink, nav a.Theme-NavigationLink"
+//     );
+
+//     const newNavs = [];
+
+//     let memory;
+//     let ceremony;
+
+//     allNavLinks.forEach((link) => {
+//       if (
+//         !link.textContent
+//           .trim()
+//           .includes("Memories of Commemoration Day 2025") &&
+//         !link.textContent.trim().includes("Ceremony guides")
+//       ) {
+//         newNavs.push(link);
+//       }
+//       if (link.textContent.trim().includes("Ceremony guides")) {
+//         ceremony = link;
+//       } else {
+//         memory = link;
+//       }
+//     });
+
+//     newNavs.forEach((link) => {
+//       link.setAttribute("tabindex", String(tabIndex++));
+//       console.log(
+//         `Nav link "${link.textContent.trim()}" - tabindex ${tabIndex - 1}`
+//       );
+//     });
+
+//     // 3. Find Explore more span separately
+//     const dropdownSpan = document.querySelector(
+//       "#navigation span.Theme-NavigationLink, nav span.Theme-NavigationLink"
+//     );
+
+//     if (ceremony && ceremony.textContent.trim() === "Ceremony guides") {
+//       ceremony.setAttribute("tabindex", String(tabIndex++));
+
+//       // And its button
+//       const exploreBtn = ceremony.nextElementSibling;
+//       if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
+//         exploreBtn.setAttribute("tabindex", String(tabIndex++));
+//         console.log(`custom dropdown 0 button - tabindex ${tabIndex - 1}`);
+//       }
+//     }
+
+//     if (dropdownSpan && dropdownSpan.textContent.trim() === "Explore more") {
+//       dropdownSpan.setAttribute("tabindex", "-1");
+
+//       // And its button
+//       return;
+//       const exploreBtn = dropdownSpan.nextElementSibling;
+//       if (exploreBtn && exploreBtn.classList.contains("Navigation__button")) {
+//         exploreBtn.setAttribute("tabindex", String(tabIndex++));
+//         console.log(`custom dropdown 1 button - tabindex ${tabIndex - 1}`);
+//       }
+//     }
+
+//     memory.setAttribute("tabindex", String(tabIndex++));
+
+//     // 4. Ceremony buttons
+//     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
+//     ceremonyButtons.forEach((button, i) => {
+//       button.setAttribute("tabindex", String(tabIndex++));
+//     });
+
+//     // 5. Content in expanded ceremony sections
+//     const showingSections = document.querySelectorAll(".showing");
+//     showingSections.forEach((section) => {
+//       const links = section.querySelectorAll("a[href]");
+//       const buttons = section.querySelectorAll("button");
+//       const inputs = section.querySelectorAll("input, select, textarea");
+
+//       [...links, ...buttons, ...inputs].forEach((el) => {
+//         if (this.isVisible(el) && !el.hasAttribute("tabindex")) {
+//           el.setAttribute("tabindex", String(tabIndex++));
+//         }
+//       });
+//     });
+
+//     // Log all elements with tabindex
+//     const allTabbable = document.querySelectorAll(
+//       '[tabindex]:not([tabindex="-1"])'
+//     );
+
+//     // Log first 10 for debugging
+//     allTabbable.forEach((el, i) => {
+//       if (i < 10) {
+//         const text =
+//           el.textContent?.trim().substring(0, 30) ||
+//           el.getAttribute("aria-label") ||
+//           el.tagName;
+//         console.log(
+//           `  ${el.getAttribute("tabindex")}: ${el.tagName} - "${text}"`
+//         );
+//       }
+//     });
+//   }
+
+//   isVisible(element) {
+//     if (!element) return false;
+//     const rect = element.getBoundingClientRect();
+//     const style = window.getComputedStyle(element);
+//     return (
+//       rect.width > 0 &&
+//       rect.height > 0 &&
+//       style.display !== "none" &&
+//       style.visibility !== "hidden"
+//     );
+//   }
+// }
 
 // Initialize
 if (document.readyState === "loading") {
@@ -1081,27 +1326,3 @@ window.testFocus = function () {
     console.log("Active element after focus:", document.activeElement);
   }
 };
-
-const style = document.createElement("style");
-style.textContent = `
-      *:focus {
-        outline: none !important;
-      }
-       
-      *:focus-visible {
-        box-shadow: 0 0 0 4px #b90072 inset !important;
-        outline: none !important;
-        border-radius: 4px;
-      }
-      
-      a:focus-visible,
-      button:focus-visible,
-      input:focus-visible,
-      select:focus-visible,
-      textarea:focus-visible,
-      [tabindex]:focus-visible {
-        box-shadow: 0 0 0 4px #b90072 inset !important;
-        outline: none !important;
-      }
-    `;
-document.head.appendChild(style);
