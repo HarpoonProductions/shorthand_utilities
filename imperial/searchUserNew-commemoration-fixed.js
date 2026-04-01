@@ -152,7 +152,11 @@ function processListItem(li) {
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/7f547269-7abd-44bc-94bd-c0cae69b796e/index.html" ||
       link.href ===
-        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html"
+        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html" ||
+      link.href ===
+        "https://graduation-programmes.imperial.ac.uk/316491d8-9b0f-4025-a292-7530a553ec3a/index.html" ||
+      link.href ===
+        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html"
     ) {
       const input = document.querySelector(".project-search-input");
       const name = input ? input.value : "";
