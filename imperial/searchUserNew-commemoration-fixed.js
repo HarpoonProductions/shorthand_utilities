@@ -156,7 +156,8 @@ function processListItem(li) {
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/316491d8-9b0f-4025-a292-7530a553ec3a/index.html" ||
       link.href ===
-        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html"
+        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html" ||
+      link.href === "index.html"
     ) {
       const input = document.querySelector(".project-search-input");
       const name = input ? input.value : "";
