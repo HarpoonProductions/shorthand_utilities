@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update Search Placeholder
   const projectInput = document.querySelector(".Theme-ProjectInput");
-  if (projectInput) projectInput.setAttribute("placeholder", "Search Name");
+  if (projectInput) projectInput.setAttribute("placeholder", "Search name");
 
   // accordion logic
   const accordions = document.querySelectorAll(".accordion");
