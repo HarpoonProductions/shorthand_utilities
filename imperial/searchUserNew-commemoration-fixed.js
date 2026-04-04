@@ -1213,7 +1213,7 @@ class TabOrderManager {
     }
 
     // ── (7) On-page search input ─────────────────────────────────────────────
-    // const pageSearchInput = document.querySelector("#inputField1");
+    const pageSearchInput = document.querySelector("#inputField1");
     this.log(
       `Page search input (#inputField1): exists=${!!pageSearchInput}, visible=${
         pageSearchInput ? this.isVisible(pageSearchInput) : "N/A"
