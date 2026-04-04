@@ -781,6 +781,45 @@ setTimeout(() => {
 }, 500);
 
 (function () {
+  const SELECTOR = '[data-project-search-sidebar="true"]';
+  const ACTIVE_CLASS = "project-search--isActive";
+  const POLL_INTERVAL_MS = 200;
+  const TIMEOUT_MS = 30000;
+
+  function applyInert(el) {
+    if (el.classList.contains(ACTIVE_CLASS)) {
+      el.removeAttribute("inert");
+    } else {
+      el.setAttribute("inert", "");
+    }
+  }
+
+  function init(el) {
+    // Set initial state
+    applyInert(el);
+
+    // Watch for class changes
+    const observer = new MutationObserver(() => applyInert(el));
+    observer.observe(el, { attributeFilter: ["class"] });
+  }
+
+  // Poll for element existence
+  const start = performance.now();
+  const interval = setInterval(() => {
+    const el = document.querySelector(SELECTOR);
+    if (el) {
+      clearInterval(interval);
+      init(el);
+      return;
+    }
+    if (performance.now() - start >= TIMEOUT_MS) {
+      clearInterval(interval);
+      console.warn("[search-inert] Timed out waiting for", SELECTOR);
+    }
+  }, POLL_INTERVAL_MS);
+})();
+
+(function () {
   "use strict";
 
   // Get the elements
