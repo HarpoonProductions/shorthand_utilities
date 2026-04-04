@@ -1026,7 +1026,7 @@ class TabOrderManager {
     };
 
     // ── (1) Logo ─────────────────────────────────────────────────────────────
-    assign(document.querySelector(".Theme-Logo a"));
+    assign(document.querySelector(".Project-Header--left .Theme-Logo a"));
 
     // ── (2)–(5) Navigation items in DOM order ────────────────────────────────
     // Walk through top-level <li> items in the nav list so we respect
@@ -1093,9 +1093,7 @@ class TabOrderManager {
 
     // ── (7) On-page search input (the one mirroring the header search) ───────
     // This is typically an input outside the header. Adjust selector as needed.
-    const pageSearchInput = document.querySelector(
-      ".page-search-input, #page-search, [data-page-search] input"
-    );
+    const pageSearchInput = document.querySelector("#inputField1");
     if (pageSearchInput) {
       assign(pageSearchInput);
     }
