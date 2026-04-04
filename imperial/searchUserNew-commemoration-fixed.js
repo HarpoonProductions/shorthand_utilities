@@ -922,17 +922,104 @@ class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
     this.bodyObserver = null;
+    this.DEBUG = true; // ← flip to false to silence logging
     this.init();
+  }
+
+  // ─── Logging ──────────────────────────────────────────────────────────────
+
+  log(msg, ...args) {
+    if (this.DEBUG) console.log(`[TAB] ${msg}`, ...args);
+  }
+  warn(msg, ...args) {
+    if (this.DEBUG) console.warn(`[TAB] ${msg}`, ...args);
+  }
+  group(label) {
+    if (this.DEBUG) console.groupCollapsed(`[TAB] ${label}`);
+  }
+  groupEnd() {
+    if (this.DEBUG) console.groupEnd();
+  }
+
+  /** Compact description of an element for logs */
+  describe(el) {
+    if (!el) return "(null)";
+    const tag = el.tagName.toLowerCase();
+    const id = el.id ? `#${el.id}` : "";
+    const cls =
+      el.className && typeof el.className === "string"
+        ? "." + el.className.trim().split(/\s+/).slice(0, 2).join(".")
+        : "";
+    const text = el.textContent?.trim().slice(0, 30) || "";
+    return `<${tag}${id}${cls}> "${text}"`;
   }
 
   // ─── Bootstrap ────────────────────────────────────────────────────────────
 
   init() {
     this.addFocusStyles();
+    this.addFocusTracker(); // ← monitors every focus change
     this.waitForNav(() => {
       this.updateTabOrder();
       this.attachObservers();
     });
+  }
+
+  /**
+   * Global focus tracker — logs every focus/blur event so you can see
+   * exactly what gains focus and when.
+   */
+  addFocusTracker() {
+    document.addEventListener(
+      "focusin",
+      (e) => {
+        const ti = e.target.getAttribute("tabindex");
+        const tag = this.describe(e.target);
+        const nativelyFocusable = /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/i.test(
+          e.target.tagName
+        );
+        this.log(
+          `FOCUS → ${tag}  tabindex=${ti}  nativelyFocusable=${nativelyFocusable}`
+        );
+
+        // Flag the trap: if tabindex is -1 but element got focus anyway
+        if (ti === "-1") {
+          this.warn(
+            `⚠️  FOCUS LANDED ON tabindex="-1" element! This means something ` +
+              `is programmatically calling .focus() or the element is natively ` +
+              `focusable and the browser is ignoring tabindex for click/autofocus.`,
+            e.target
+          );
+          console.trace("[TAB] Stack trace for unexpected focus:");
+        }
+      },
+      true
+    );
+
+    document.addEventListener(
+      "focusout",
+      (e) => {
+        this.log(`BLUR  ← ${this.describe(e.target)}`);
+      },
+      true
+    );
+
+    // Catch Tab key presses to log what the browser is about to do
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Tab") {
+          const current = document.activeElement;
+          const ti = current?.getAttribute("tabindex");
+          this.log(
+            `TAB pressed (shift=${e.shiftKey}) while on ${this.describe(
+              current
+            )} tabindex=${ti}`
+          );
+        }
+      },
+      true
+    );
   }
 
   waitForNav(cb, attempts = 0) {
@@ -951,7 +1038,6 @@ class TabOrderManager {
       subtree: false,
     });
 
-    // Also observe the nav for dropdown open/close changes
     const nav = document.querySelector("#navigation");
     if (nav) {
       new MutationObserver(() => this.scheduleRefresh(200)).observe(nav, {
@@ -971,7 +1057,6 @@ class TabOrderManager {
       }
     });
 
-    // Also listen for keydown on buttons (Enter/Space can toggle dropdowns)
     document.addEventListener("keydown", (e) => {
       if (
         (e.key === "Enter" || e.key === " ") &&
@@ -1011,116 +1096,265 @@ class TabOrderManager {
   // ─── Core tab-order builder ────────────────────────────────────────────────
 
   updateTabOrder() {
-    // 1. Reset everything to -1 so we have full control
-    document
-      .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
-      .forEach((el) => el.setAttribute("tabindex", "-1"));
+    this.group("updateTabOrder()");
+    const t0 = performance.now();
+
+    // 1. Reset everything to -1
+    const allFocusable = document.querySelectorAll(
+      "a[href], button, input, select, textarea, [tabindex]"
+    );
+    this.log(`Resetting ${allFocusable.length} elements to tabindex="-1"`);
+    allFocusable.forEach((el) => el.setAttribute("tabindex", "-1"));
+
+    // Track assignments for the summary table
+    const assignments = [];
 
     let idx = 1;
-    const assign = (el) => {
+    const assign = (el, label) => {
       if (el && this.isVisible(el)) {
-        el.setAttribute("tabindex", String(idx++));
+        el.setAttribute("tabindex", String(idx));
+        assignments.push({
+          order: idx,
+          label: label || "",
+          element: this.describe(el),
+          tabindex: idx,
+        });
+        idx++;
         return true;
+      } else if (el) {
+        this.log(`  SKIPPED (not visible): ${this.describe(el)} [${label}]`);
       }
       return false;
     };
 
     // ── (1) Logo ─────────────────────────────────────────────────────────────
-    assign(document.querySelector(".Project-Header--left .Theme-Logo a"));
+    assign(
+      document.querySelector(".Project-Header--left .Theme-Logo a"),
+      "1: Logo"
+    );
 
     // ── (2)–(5) Navigation items in DOM order ────────────────────────────────
-    // Walk through top-level <li> items in the nav list so we respect
-    // the actual order rather than relying on fragile text matching.
     const navItems = document.querySelectorAll(
       "#navigation > .Navigation__itemList > .Navigation__item"
     );
+    this.log(`Found ${navItems.length} top-level nav <li> items`);
 
-    navItems.forEach((li) => {
-      // Each <li> can contain:
-      //   - A plain <a> link  (e.g. "Graduation Days 2026", "Memories of…")
-      //   - A <button> that toggles a dropdown (e.g. "Ceremony Guides", "Explore more")
-      //   - Sometimes both a hidden <span> and a <button> ("Explore more")
-
-      // Find the primary interactive element — prefer a visible <a>, else a visible <button>
+    navItems.forEach((li, i) => {
       const link = li.querySelector(":scope > a.Theme-NavigationLink");
       const button = li.querySelector(":scope > button.Theme-NavigationLink");
 
-      if (link && this.isVisible(link)) {
-        // Simple link (Graduation Days 2026, Memories of…)
-        assign(link);
-      } else if (button && this.isVisible(button)) {
-        // Dropdown toggle (Ceremony Guides, Explore more)
-        assign(button);
+      this.log(
+        `  Nav item ${i}: link=${this.describe(link)}, button=${this.describe(
+          button
+        )}`
+      );
 
-        // Check if the dropdown is currently open
+      if (link && this.isVisible(link)) {
+        assign(link, `Nav link ${i}`);
+      } else if (button && this.isVisible(button)) {
+        assign(button, `Nav button ${i}`);
+
         const isExpanded = button.getAttribute("aria-expanded") === "true";
+        this.log(`    aria-expanded=${isExpanded}`);
 
         if (isExpanded) {
-          // Look for the dropdown panel — could be a custom-dropdown div
-          // or a Navigation__subMenu ul
           const dropdown =
             li.querySelector(".custom-dropdown") ||
             li.querySelector(".Navigation__subMenu");
 
+          this.log(
+            `    Dropdown: ${this.describe(dropdown)}, visible=${
+              dropdown ? this.isVisible(dropdown) : "N/A"
+            }`
+          );
+
           if (dropdown && this.isVisible(dropdown)) {
-            dropdown
-              .querySelectorAll("a[href], button")
-              .forEach((child) => assign(child));
+            dropdown.querySelectorAll("a[href], button").forEach((child) => {
+              assign(child, `Nav dropdown child`);
+            });
           }
         }
+      } else {
+        this.warn(`  Nav item ${i}: NO visible link or button found in <li>`);
       }
     });
 
-    // ── (6) Search icon button (in header, outside nav) ──────────────────────
-    assign(document.querySelector(".project-search-button"));
+    // ── (6) Search icon button ───────────────────────────────────────────────
+    assign(document.querySelector(".project-search-button"), "6: Search icon");
 
-    // ── (6a) Search panel input (if the search sidebar is open) ──────────────
+    // ── (6a) Search panel ────────────────────────────────────────────────────
     const searchSidebar = document.querySelector(
       "[data-project-search-sidebar]"
     );
-    if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
-      // Panel is open
-      assign(searchSidebar.querySelector(".project-search-input"));
+    const sidebarInert = searchSidebar?.hasAttribute("inert");
+    this.log(
+      `Search sidebar: exists=${!!searchSidebar}, inert=${sidebarInert}`
+    );
+
+    if (searchSidebar && !sidebarInert) {
+      assign(
+        searchSidebar.querySelector(".project-search-input"),
+        "6a: Sidebar search input"
+      );
       const deleteBtn = searchSidebar.querySelector(
         ".project-search-delete-btn"
       );
       if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
-        assign(deleteBtn);
+        assign(deleteBtn, "6a: Sidebar delete btn");
       }
-      assign(searchSidebar.querySelector(".project-search-enter-btn"));
-      assign(searchSidebar.querySelector(".project-search-close-button"));
+      assign(
+        searchSidebar.querySelector(".project-search-enter-btn"),
+        "6a: Sidebar enter btn"
+      );
+      assign(
+        searchSidebar.querySelector(".project-search-close-button"),
+        "6a: Sidebar close btn"
+      );
     }
 
-    // ── (7) On-page search input (the one mirroring the header search) ───────
-    // This is typically an input outside the header. Adjust selector as needed.
+    // ── (7) On-page search input ─────────────────────────────────────────────
     const pageSearchInput = document.querySelector("#inputField1");
+    this.log(
+      `Page search input (#inputField1): exists=${!!pageSearchInput}, visible=${
+        pageSearchInput ? this.isVisible(pageSearchInput) : "N/A"
+      }`
+    );
     if (pageSearchInput) {
-      assign(pageSearchInput);
+      assign(pageSearchInput, "7: Page search input");
     }
 
     // ── (8) Ceremony toggle buttons ──────────────────────────────────────────
     const ceremonyButtons = document.querySelectorAll(".time-toggle button");
-    ceremonyButtons.forEach((btn) => assign(btn));
+    this.log(`Found ${ceremonyButtons.length} ceremony toggle buttons`);
+    ceremonyButtons.forEach((btn, i) => {
+      assign(btn, `8: Ceremony btn ${i}`);
+    });
 
-    // ── (8a) Contents of the open ceremony ───────────────────────────────────
-    // Find whichever ceremony section is currently open/showing
+    // ── (8a) Open ceremony contents ──────────────────────────────────────────
     const openCeremony = document.querySelector(
       ".showing, [data-ceremony].open, .ceremony-section.active"
     );
+    this.log(
+      `Open ceremony section: ${
+        openCeremony ? this.describe(openCeremony) : "NONE"
+      }`
+    );
+
     if (openCeremony) {
-      openCeremony
-        .querySelectorAll("a[href], button, input, select, textarea")
-        .forEach((el) => {
-          // Skip elements we've already indexed (e.g. if the page search
-          // input happens to live inside a ceremony section)
-          if (el.getAttribute("tabindex") !== "-1") return;
-          assign(el);
-        });
+      const innerEls = openCeremony.querySelectorAll(
+        "a[href], button, input, select, textarea"
+      );
+      this.log(
+        `  Found ${innerEls.length} focusable elements inside open ceremony`
+      );
+      innerEls.forEach((el) => {
+        if (el.getAttribute("tabindex") !== "-1") {
+          this.log(
+            `  SKIPPED (already assigned): ${this.describe(
+              el
+            )} tabindex=${el.getAttribute("tabindex")}`
+          );
+          return;
+        }
+        assign(el, "8a: Ceremony content");
+      });
     }
 
-    console.log(
-      `[TabOrderManager] Tab order updated — ${idx - 1} tabbable element(s)`
-    );
+    // ── Summary ──────────────────────────────────────────────────────────────
+    const elapsed = (performance.now() - t0).toFixed(1);
+    this.log(`Assigned ${idx - 1} elements in ${elapsed}ms`);
+
+    if (this.DEBUG && assignments.length > 0) {
+      console.table(assignments);
+    }
+
+    // ── Sanity checks ────────────────────────────────────────────────────────
+    this.runSanityChecks();
+
+    this.groupEnd();
+  }
+
+  /**
+   * Post-update checks to flag common problems.
+   */
+  runSanityChecks() {
+    this.group("Sanity checks");
+
+    // Check 1: Visible natively-focusable elements left at tabindex=-1
+    const unmanaged = [];
+    document
+      .querySelectorAll("a[href], button, input, select, textarea")
+      .forEach((el) => {
+        const ti = el.getAttribute("tabindex");
+        if (ti === "-1" && this.isVisible(el)) {
+          unmanaged.push(el);
+        }
+      });
+
+    if (unmanaged.length > 0) {
+      this.warn(
+        `${unmanaged.length} visible natively-focusable element(s) have tabindex="-1". ` +
+          `These WON'T be in tab order but CAN still be focused by click or .focus() calls.`
+      );
+      if (unmanaged.length <= 20) {
+        unmanaged.forEach((el) => {
+          this.log(`  Unmanaged: ${this.describe(el)}`);
+        });
+      }
+    } else {
+      this.log("✓ No visible natively-focusable elements left unmanaged.");
+    }
+
+    // Check 2: autofocus attributes
+    const autofocused = document.querySelectorAll("[autofocus]");
+    if (autofocused.length > 0) {
+      this.warn(
+        `⚠️  Found ${autofocused.length} element(s) with 'autofocus' attribute!`
+      );
+      autofocused.forEach((el) =>
+        this.log(`  Autofocus: ${this.describe(el)}`)
+      );
+    }
+
+    // Check 3: Is anything currently focused that shouldn't be?
+    const active = document.activeElement;
+    if (
+      active &&
+      active !== document.body &&
+      active !== document.documentElement
+    ) {
+      const ti = active.getAttribute("tabindex");
+      this.log(`Currently focused: ${this.describe(active)} tabindex=${ti}`);
+      if (ti === "-1") {
+        this.warn(
+          `⚠️  Active element has tabindex="-1" — focus is on an element outside the tab order!`
+        );
+      }
+    }
+
+    // Check 4: Duplicate tabindex values
+    const seen = new Map();
+    document
+      .querySelectorAll('[tabindex]:not([tabindex="-1"])')
+      .forEach((el) => {
+        const val = el.getAttribute("tabindex");
+        if (seen.has(val)) {
+          this.warn(
+            `Duplicate tabindex="${val}": ${this.describe(
+              seen.get(val)
+            )} AND ${this.describe(el)}`
+          );
+        }
+        seen.set(val, el);
+      });
+
+    // Check 5: Look for scripts or event listeners that might call .focus()
+    // We can't detect listeners, but we CAN check for inline onfocus/autofocus
+    document.querySelectorAll("[onfocus]").forEach((el) => {
+      this.warn(`⚠️  Element has inline onfocus handler: ${this.describe(el)}`);
+    });
+
+    this.groupEnd();
   }
 
   // ─── Focus styles ─────────────────────────────────────────────────────────
@@ -1153,16 +1387,44 @@ if (document.readyState === "loading") {
   window.tabOrderManager = new TabOrderManager();
 }
 
-// Public helpers
+// ─── Public helpers ─────────────────────────────────────────────────────────
+
 window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
+
 window.testFocus = () => {
   const els = document.querySelectorAll('[tabindex]:not([tabindex="-1"])');
   console.table(
     Array.from(els).map((el) => ({
       tabindex: el.getAttribute("tabindex"),
       tag: el.tagName,
-      text: el.textContent.trim().slice(0, 40),
+      id: el.id || "",
+      classes:
+        el.className?.toString().trim().split(/\s+/).slice(0, 3).join(" ") ||
+        "",
+      text: el.textContent?.trim().slice(0, 40) || "",
       visible: window.tabOrderManager?.isVisible(el),
     }))
   );
+};
+
+/**
+ * Simulate tabbing through the entire order without moving focus.
+ * Call window.simulateTabOrder() in the console.
+ */
+window.simulateTabOrder = () => {
+  const els = Array.from(
+    document.querySelectorAll('[tabindex]:not([tabindex="-1"])')
+  ).sort(
+    (a, b) =>
+      parseInt(a.getAttribute("tabindex")) -
+      parseInt(b.getAttribute("tabindex"))
+  );
+  console.log(`[TAB] Simulated tab order (${els.length} stops):`);
+  els.forEach((el, i) => {
+    const ti = el.getAttribute("tabindex");
+    const tag = el.tagName.toLowerCase();
+    const id = el.id ? `#${el.id}` : "";
+    const text = el.textContent?.trim().slice(0, 50) || "";
+    console.log(`  ${i + 1}. [tabindex=${ti}] <${tag}${id}> "${text}"`);
+  });
 };
