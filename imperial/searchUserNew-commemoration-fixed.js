@@ -922,13 +922,6 @@ class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
     this.bodyObserver = null;
-    this.SEARCH_SELECTORS = [
-      ".project-search-input",
-      ".project-search-delete-btn",
-      ".project-search-button",
-      ".project-search-sideBar input",
-      ".project-search-sideBar button",
-    ];
     this.init();
   }
 
@@ -942,10 +935,6 @@ class TabOrderManager {
     });
   }
 
-  /**
-   * Poll until the nav element exists (guards against late-loading widgets
-   * like OneSignal banners that can inject focusable elements after DOMContentLoaded).
-   */
   waitForNav(cb, attempts = 0) {
     const nav = document.querySelector("#navigation, nav");
     if (nav || attempts > 30) {
@@ -956,34 +945,41 @@ class TabOrderManager {
   }
 
   attachObservers() {
-    // Re-run whenever children are added/removed from  (cookie banners,
-    // modals, OneSignal prompts appearing or being dismissed).
     this.bodyObserver = new MutationObserver(() => this.scheduleRefresh(400));
     this.bodyObserver.observe(document.body, {
       childList: true,
-      subtree: false, // only direct children of body
+      subtree: false,
     });
 
-    // Re-run after any toggle that opens/closes sections.
+    // Also observe the nav for dropdown open/close changes
+    const nav = document.querySelector("#navigation");
+    if (nav) {
+      new MutationObserver(() => this.scheduleRefresh(200)).observe(nav, {
+        attributes: true,
+        subtree: true,
+        attributeFilter: ["aria-expanded", "style", "class"],
+      });
+    }
+
     document.addEventListener("click", (e) => {
       if (
         e.target.closest(
-          ".time-toggle, .accordion, .Navigation__button, .project-search-delete-btn"
+          ".time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button"
         )
       ) {
         this.scheduleRefresh(350);
       }
     });
 
-    // Safety net: if focus somehow lands on something with tabindex="-1"
-    // (shouldn't happen, but just in case) kick a refresh.
-    document.addEventListener("focusin", (e) => {
-      if (e.target.getAttribute("tabindex") === "-1") {
-        console.warn(
-          "[TabOrderManager] focus landed on tabindex=-1 element:",
-          e.target
-        );
-        this.scheduleRefresh(50);
+    // Also listen for keydown on buttons (Enter/Space can toggle dropdowns)
+    document.addEventListener("keydown", (e) => {
+      if (
+        (e.key === "Enter" || e.key === " ") &&
+        e.target.closest(
+          ".Navigation__button, .time-toggle button, .project-search-button"
+        )
+      ) {
+        this.scheduleRefresh(350);
       }
     });
   }
@@ -995,8 +991,7 @@ class TabOrderManager {
 
   // ─── Visibility helpers ────────────────────────────────────────────────────
 
-  /** Check the element itself AND every ancestor for display:none / visibility:hidden */
-  isFullyVisible(el) {
+  isVisible(el) {
     if (!el) return false;
     let node = el;
     while (node && node !== document.documentElement) {
@@ -1013,109 +1008,116 @@ class TabOrderManager {
     return r.width > 0 && r.height > 0;
   }
 
-  isSearchRelated(el) {
-    return this.SEARCH_SELECTORS.some(
-      (sel) => el.matches(sel) || el.closest(sel)
-    );
-  }
-
   // ─── Core tab-order builder ────────────────────────────────────────────────
 
   updateTabOrder() {
-    // 1. Zero-out every currently focusable element so nothing is
-    //    accidentally reachable via natural DOM order.
+    // 1. Reset everything to -1 so we have full control
     document
-      .querySelectorAll(
-        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      )
+      .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
       .forEach((el) => el.setAttribute("tabindex", "-1"));
 
     let idx = 1;
     const assign = (el) => {
-      if (el && this.isFullyVisible(el)) {
+      if (el && this.isVisible(el)) {
         el.setAttribute("tabindex", String(idx++));
+        return true;
       }
+      return false;
     };
 
-    // ── 2. Logo ──────────────────────────────────────────────────────────────
-    const logo = document.querySelector(".Theme-Logo a");
-    assign(logo);
+    // ── (1) Logo ─────────────────────────────────────────────────────────────
+    assign(document.querySelector(".Theme-Logo a"));
 
-    // ── 3. Navigation ────────────────────────────────────────────────────────
-    const navLinks = Array.from(
-      document.querySelectorAll(
-        "#navigation .Theme-NavigationLink, nav .Theme-NavigationLink"
-      )
+    // ── (2)–(5) Navigation items in DOM order ────────────────────────────────
+    // Walk through top-level <li> items in the nav list so we respect
+    // the actual order rather than relying on fragile text matching.
+    const navItems = document.querySelectorAll(
+      "#navigation > .Navigation__itemList > .Navigation__item"
     );
 
-    let ceremonyLink = null;
-    let memoryLink = null;
-    const regularLinks = [];
+    navItems.forEach((li) => {
+      // Each <li> can contain:
+      //   - A plain <a> link  (e.g. "Graduation Days 2026", "Memories of…")
+      //   - A <button> that toggles a dropdown (e.g. "Ceremony Guides", "Explore more")
+      //   - Sometimes both a hidden <span> and a <button> ("Explore more")
 
-    navLinks.forEach((el) => {
-      const text = el.textContent.trim();
-      if (text.includes("Ceremony guides")) {
-        ceremonyLink = el;
-      } else if (text.includes("Memories of Commemoration Day")) {
-        memoryLink = el;
-      } else {
-        regularLinks.push(el);
-      }
-    });
+      // Find the primary interactive element — prefer a visible <a>, else a visible <button>
+      const link = li.querySelector(":scope > a.Theme-NavigationLink");
+      const button = li.querySelector(":scope > button.Theme-NavigationLink");
 
-    // Regular nav links first
-    regularLinks.forEach(assign);
+      if (link && this.isVisible(link)) {
+        // Simple link (Graduation Days 2026, Memories of…)
+        assign(link);
+      } else if (button && this.isVisible(button)) {
+        // Dropdown toggle (Ceremony Guides, Explore more)
+        assign(button);
 
-    // Ceremony guides link → its toggle button → open sub-panel links
-    if (ceremonyLink) {
-      assign(ceremonyLink);
-      const toggleBtn = ceremonyLink.nextElementSibling;
-      if (toggleBtn?.classList.contains("Navigation__button")) {
-        assign(toggleBtn);
-        // If the sub-panel is currently open, include its links
-        const panel =
-          toggleBtn.nextElementSibling ??
-          ceremonyLink.closest("li")?.querySelector(".Navigation__dropdown");
-        if (panel && this.isFullyVisible(panel)) {
-          panel.querySelectorAll("a[href]").forEach(assign);
+        // Check if the dropdown is currently open
+        const isExpanded = button.getAttribute("aria-expanded") === "true";
+
+        if (isExpanded) {
+          // Look for the dropdown panel — could be a custom-dropdown div
+          // or a Navigation__subMenu ul
+          const dropdown =
+            li.querySelector(".custom-dropdown") ||
+            li.querySelector(".Navigation__subMenu");
+
+          if (dropdown && this.isVisible(dropdown)) {
+            dropdown
+              .querySelectorAll("a[href], button")
+              .forEach((child) => assign(child));
+          }
         }
       }
-    }
-
-    // Memory link after ceremony
-    if (memoryLink) assign(memoryLink);
-
-    // ── 4. Ceremony toggle buttons (always present) ───────────────────────────
-    document.querySelectorAll(".time-toggle button").forEach(assign);
-
-    // ── 5. Content inside OPEN ceremony sections ──────────────────────────────
-    document.querySelectorAll(".showing").forEach((section) => {
-      section
-        .querySelectorAll("a[href], button, input, select, textarea")
-        .forEach((el) => {
-          // Explicitly skip search-related controls — they're handled below.
-          if (!this.isSearchRelated(el)) {
-            assign(el);
-          }
-        });
     });
 
-    // ── 6. Search bar — only if its section is open ───────────────────────────
-    const searchInput = document.querySelector(".project-search-input");
-    if (searchInput && searchInput.closest(".showing")) {
-      assign(searchInput);
-      // Delete / submit buttons in the same bar
-      document
-        .querySelectorAll(".project-search-delete-btn, .project-search-button")
-        .forEach(assign);
+    // ── (6) Search icon button (in header, outside nav) ──────────────────────
+    assign(document.querySelector(".project-search-button"));
+
+    // ── (6a) Search panel input (if the search sidebar is open) ──────────────
+    const searchSidebar = document.querySelector(
+      "[data-project-search-sidebar]"
+    );
+    if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
+      // Panel is open
+      assign(searchSidebar.querySelector(".project-search-input"));
+      const deleteBtn = searchSidebar.querySelector(
+        ".project-search-delete-btn"
+      );
+      if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
+        assign(deleteBtn);
+      }
+      assign(searchSidebar.querySelector(".project-search-enter-btn"));
+      assign(searchSidebar.querySelector(".project-search-close-button"));
     }
 
-    // ── 7. Cookie / consent banners at body root (if present & visible) ───────
-    const banner = document.querySelector(
-      "#onesignal-slidedown-container, .cookie-banner, [class*='consent']"
+    // ── (7) On-page search input (the one mirroring the header search) ───────
+    // This is typically an input outside the header. Adjust selector as needed.
+    const pageSearchInput = document.querySelector(
+      ".page-search-input, #page-search, [data-page-search] input"
     );
-    if (banner && this.isFullyVisible(banner)) {
-      banner.querySelectorAll("button, a[href]").forEach(assign);
+    if (pageSearchInput) {
+      assign(pageSearchInput);
+    }
+
+    // ── (8) Ceremony toggle buttons ──────────────────────────────────────────
+    const ceremonyButtons = document.querySelectorAll(".time-toggle button");
+    ceremonyButtons.forEach((btn) => assign(btn));
+
+    // ── (8a) Contents of the open ceremony ───────────────────────────────────
+    // Find whichever ceremony section is currently open/showing
+    const openCeremony = document.querySelector(
+      ".showing, [data-ceremony].open, .ceremony-section.active"
+    );
+    if (openCeremony) {
+      openCeremony
+        .querySelectorAll("a[href], button, input, select, textarea")
+        .forEach((el) => {
+          // Skip elements we've already indexed (e.g. if the page search
+          // input happens to live inside a ceremony section)
+          if (el.getAttribute("tabindex") !== "-1") return;
+          assign(el);
+        });
     }
 
     console.log(
@@ -1123,7 +1125,7 @@ class TabOrderManager {
     );
   }
 
-  // ─── Styles ───────────────────────────────────────────────────────────────
+  // ─── Focus styles ─────────────────────────────────────────────────────────
 
   addFocusStyles() {
     if (document.getElementById("tab-manager-styles")) return;
@@ -1153,12 +1155,16 @@ if (document.readyState === "loading") {
   window.tabOrderManager = new TabOrderManager();
 }
 
-// Public helpers (unchanged API)
+// Public helpers
 window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
 window.testFocus = () => {
-  const el = document.querySelector('[tabindex="2"]');
-  if (el) {
-    el.focus();
-    console.log("Focused:", document.activeElement);
-  }
+  const els = document.querySelectorAll('[tabindex]:not([tabindex="-1"])');
+  console.table(
+    Array.from(els).map((el) => ({
+      tabindex: el.getAttribute("tabindex"),
+      tag: el.tagName,
+      text: el.textContent.trim().slice(0, 40),
+      visible: window.tabOrderManager?.isVisible(el),
+    }))
+  );
 };
