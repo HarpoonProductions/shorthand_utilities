@@ -917,7 +917,6 @@ setTimeout(() => {
 
   console.log("MutationObserver script initialized successfully");
 })();
-
 class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
@@ -927,18 +926,28 @@ class TabOrderManager {
 
   init() {
     this.addFocusStyles();
-    this.waitForNav(() => {
+    this.waitForHeader(() => {
       this.updateTabOrder();
       this.attachObservers();
     });
   }
 
-  waitForNav(cb, attempts = 0) {
-    const nav = document.querySelector("#navigation, nav");
-    if (nav || attempts > 30) {
+  /**
+   * Wait until the nav has rendered with actual links before running.
+   * Prevents the partial first-run that puts the input at tabindex=1.
+   */
+  waitForHeader(cb, attempts = 0) {
+    const navLink = document.querySelector(
+      "#navigation .Theme-NavigationLink"
+    );
+    if (navLink && navLink.getBoundingClientRect().width > 0) {
+      cb();
+    } else if (attempts > 60) {
+      // 60 × 200ms = 12s — give up and run anyway
+      console.warn("[TabOrderManager] Header never appeared, running anyway.");
       cb();
     } else {
-      setTimeout(() => this.waitForNav(cb, attempts + 1), 150);
+      setTimeout(() => this.waitForHeader(cb, attempts + 1), 200);
     }
   }
 
@@ -1003,7 +1012,6 @@ class TabOrderManager {
   }
 
   updateTabOrder() {
-    // Reset everything
     document
       .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
       .forEach((el) => el.setAttribute("tabindex", "-1"));
@@ -1017,11 +1025,7 @@ class TabOrderManager {
         const tag = el.tagName.toLowerCase();
         const id = el.id ? `#${el.id}` : "";
         const text = el.textContent?.trim().slice(0, 40) || "";
-        assignments.push({
-          order: idx,
-          label,
-          element: `<${tag}${id}> "${text}"`,
-        });
+        assignments.push({ order: idx, label, element: `<${tag}${id}> "${text}"` });
         idx++;
         return true;
       }
@@ -1039,7 +1043,7 @@ class TabOrderManager {
       "#navigation > .Navigation__itemList > .Navigation__item"
     );
 
-    navItems.forEach((li, i) => {
+    navItems.forEach((li) => {
       const link = li.querySelector(":scope > a.Theme-NavigationLink");
       const button = li.querySelector(":scope > button.Theme-NavigationLink");
 
@@ -1056,10 +1060,7 @@ class TabOrderManager {
             dropdown
               .querySelectorAll("a[href], button")
               .forEach((child) =>
-                assign(
-                  child,
-                  `Dropdown: ${child.textContent.trim().slice(0, 30)}`
-                )
+                assign(child, `Dropdown: ${child.textContent.trim().slice(0, 30)}`)
               );
           }
         }
@@ -1074,24 +1075,13 @@ class TabOrderManager {
       "[data-project-search-sidebar]"
     );
     if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
-      assign(
-        searchSidebar.querySelector(".project-search-input"),
-        "Sidebar: input"
-      );
-      const deleteBtn = searchSidebar.querySelector(
-        ".project-search-delete-btn"
-      );
+      assign(searchSidebar.querySelector(".project-search-input"), "Sidebar: input");
+      const deleteBtn = searchSidebar.querySelector(".project-search-delete-btn");
       if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
         assign(deleteBtn, "Sidebar: clear");
       }
-      assign(
-        searchSidebar.querySelector(".project-search-enter-btn"),
-        "Sidebar: submit"
-      );
-      assign(
-        searchSidebar.querySelector(".project-search-close-button"),
-        "Sidebar: close"
-      );
+      assign(searchSidebar.querySelector(".project-search-enter-btn"), "Sidebar: submit");
+      assign(searchSidebar.querySelector(".project-search-close-button"), "Sidebar: close");
     }
 
     // (7) On-page search input
@@ -1101,7 +1091,7 @@ class TabOrderManager {
     }
 
     // (8) Ceremony toggle buttons
-    document.querySelectorAll(".time-toggle button").forEach((btn, i) => {
+    document.querySelectorAll(".time-toggle button").forEach((btn) => {
       assign(btn, `Ceremony btn: ${btn.textContent.trim().slice(0, 20)}`);
     });
 
@@ -1114,13 +1104,11 @@ class TabOrderManager {
         .querySelectorAll("a[href], button, input, select, textarea")
         .forEach((el) => {
           if (el.getAttribute("tabindex") !== "-1") return;
-          const text =
-            el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
+          const text = el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
           assign(el, `Ceremony: ${text}`);
         });
     }
 
-    // Single summary log
     console.table(assignments);
   }
 
