@@ -872,7 +872,7 @@ setTimeout(() => {
   button.addEventListener("click", () => {
     input.value = "";
     updateButtonVisibility();
-    input.focus();
+    // input.focus(); // here
   });
 
   console.log("MutationObserver script initialized successfully");
