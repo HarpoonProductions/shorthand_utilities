@@ -249,7 +249,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const targetElement =
       document.getElementById("section-tVbkG6IJAz") ||
       document.getElementById("section-OcWb6x3SxS") ||
-      document.getElementById("section-de8T3FMcx4");
+      document.getElementById("section-de8T3FMcx4") ||
+      document.getElementById("section-ZvbXBHs5lv");
 
     if (targetElement) {
       const sentrySection = document.createElement("div");
@@ -872,7 +873,7 @@ setTimeout(() => {
   button.addEventListener("click", () => {
     input.value = "";
     updateButtonVisibility();
-    // input.focus(); // here
+    input.focus();
   });
 
   console.log("MutationObserver script initialized successfully");
