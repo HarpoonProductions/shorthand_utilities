@@ -1107,6 +1107,11 @@ class TabOrderManager {
     if (pageSearchInput) {
       assign(pageSearchInput, "Page search input");
     }
+    // (7a) On-page search input button
+    const pageSearchInputButton = document.querySelector("#submitButton");
+    if (pageSearchInputButton) {
+      assign(pageSearchInputButton, "Page search input");
+    }
 
     // (8) Ceremony toggle buttons
     document.querySelectorAll(".time-toggle button").forEach((btn) => {
@@ -1118,7 +1123,9 @@ class TabOrderManager {
     if (openCeremony && openCeremony.length) {
       openCeremony.forEach((ceremony) => {
         ceremony
-          .querySelectorAll("a[href], button, input, select, textarea")
+          .querySelectorAll(
+            "a[href], button, input, select, textarea, popup-close"
+          )
           .forEach((el) => {
             if (el.getAttribute("tabindex") !== "-1") return;
             const text =
