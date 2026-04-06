@@ -1011,7 +1011,9 @@ class TabOrderManager {
 
   updateTabOrder() {
     document
-      .querySelectorAll("a[href], button, input, select, textarea, [tabindex]")
+      .querySelectorAll(
+        "a[href], button, input, select, textarea, [tabindex], .popup-close"
+      )
       .forEach((el) => el.setAttribute("tabindex", "-1"));
 
     const assignments = [];
