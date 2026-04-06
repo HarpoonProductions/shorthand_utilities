@@ -1124,7 +1124,7 @@ class TabOrderManager {
       openCeremony.forEach((ceremony) => {
         ceremony
           .querySelectorAll(
-            "a[href], button, input, select, textarea, popup-close"
+            "a[href], button, input, select, textarea, .popup-close"
           )
           .forEach((el) => {
             if (el.getAttribute("tabindex") !== "-1") return;
