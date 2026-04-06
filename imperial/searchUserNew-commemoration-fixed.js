@@ -1024,7 +1024,8 @@ class TabOrderManager {
         const id = el.id ? `#${el.id}` : "";
         const text = el.textContent?.trim().slice(0, 40) || "";
         assignments.push({
-          order: idx,
+          // order: idx,
+          order: 0,
           label,
           element: `<${tag}${id}> "${text}"`,
         });
