@@ -937,9 +937,7 @@ class TabOrderManager {
    * Prevents the partial first-run that puts the input at tabindex=1.
    */
   waitForHeader(cb, attempts = 0) {
-    const navLink = document.querySelector(
-      "#navigation .Theme-NavigationLink"
-    );
+    const navLink = document.querySelector("#navigation .Theme-NavigationLink");
     if (navLink && navLink.getBoundingClientRect().width > 0) {
       cb();
     } else if (attempts > 60) {
@@ -1025,7 +1023,11 @@ class TabOrderManager {
         const tag = el.tagName.toLowerCase();
         const id = el.id ? `#${el.id}` : "";
         const text = el.textContent?.trim().slice(0, 40) || "";
-        assignments.push({ order: idx, label, element: `<${tag}${id}> "${text}"` });
+        assignments.push({
+          order: idx,
+          label,
+          element: `<${tag}${id}> "${text}"`,
+        });
         idx++;
         return true;
       }
@@ -1060,7 +1062,10 @@ class TabOrderManager {
             dropdown
               .querySelectorAll("a[href], button")
               .forEach((child) =>
-                assign(child, `Dropdown: ${child.textContent.trim().slice(0, 30)}`)
+                assign(
+                  child,
+                  `Dropdown: ${child.textContent.trim().slice(0, 30)}`
+                )
               );
           }
         }
@@ -1075,13 +1080,24 @@ class TabOrderManager {
       "[data-project-search-sidebar]"
     );
     if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
-      assign(searchSidebar.querySelector(".project-search-input"), "Sidebar: input");
-      const deleteBtn = searchSidebar.querySelector(".project-search-delete-btn");
+      assign(
+        searchSidebar.querySelector(".project-search-input"),
+        "Sidebar: input"
+      );
+      const deleteBtn = searchSidebar.querySelector(
+        ".project-search-delete-btn"
+      );
       if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
         assign(deleteBtn, "Sidebar: clear");
       }
-      assign(searchSidebar.querySelector(".project-search-enter-btn"), "Sidebar: submit");
-      assign(searchSidebar.querySelector(".project-search-close-button"), "Sidebar: close");
+      assign(
+        searchSidebar.querySelector(".project-search-enter-btn"),
+        "Sidebar: submit"
+      );
+      assign(
+        searchSidebar.querySelector(".project-search-close-button"),
+        "Sidebar: close"
+      );
     }
 
     // (7) On-page search input
@@ -1096,17 +1112,18 @@ class TabOrderManager {
     });
 
     // (8a) Open ceremony contents
-    const openCeremony = document.querySelector(
-      ".showing, [data-ceremony].open, .ceremony-section.active"
-    );
-    if (openCeremony) {
-      openCeremony
-        .querySelectorAll("a[href], button, input, select, textarea")
-        .forEach((el) => {
-          if (el.getAttribute("tabindex") !== "-1") return;
-          const text = el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
-          assign(el, `Ceremony: ${text}`);
-        });
+    const openCeremony = document.querySelectorAll("[id^=section].showing");
+    if (openCeremony && openCeremony.length) {
+      openCeremony.forEach((ceremony) => {
+        ceremony
+          .querySelectorAll("a[href], button, input, select, textarea")
+          .forEach((el) => {
+            if (el.getAttribute("tabindex") !== "-1") return;
+            const text =
+              el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
+            assign(el, `Ceremony: ${text}`);
+          });
+      });
     }
 
     console.table(assignments);
