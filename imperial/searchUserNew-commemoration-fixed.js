@@ -1019,7 +1019,8 @@ class TabOrderManager {
 
     const assign = (el, label) => {
       if (el && this.isVisible(el)) {
-        el.setAttribute("tabindex", String(idx));
+        // el.setAttribute("tabindex", String(idx));
+        el.setAttribute("tabindex", String(0));
         const tag = el.tagName.toLowerCase();
         const id = el.id ? `#${el.id}` : "";
         const text = el.textContent?.trim().slice(0, 40) || "";
