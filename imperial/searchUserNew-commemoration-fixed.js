@@ -1139,6 +1139,17 @@ class TabOrderManager {
       });
     }
 
+    const endingTabs = document.querySelectorAll(
+      "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a"
+    );
+
+    endingTabs.forEach((el) => {
+      if (el.getAttribute("tabindex") !== "-1") return;
+      const text =
+        el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
+      assign(el, `${text}`);
+    });
+
     console.table(assignments);
   }
 
