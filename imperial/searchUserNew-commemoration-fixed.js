@@ -1130,12 +1130,13 @@ class TabOrderManager {
           )
           .forEach((el) => {
             if (el.classList.contains("popup-close"))
-              console.log(
-                "logging",
-                el,
-                el.getAttribute("tabindex"),
-                el.getAttribute("tabindex") !== "-1"
-              );
+              el.setAttribute("tabindex", String(0));
+            console.log(
+              "logging",
+              el,
+              el.getAttribute("tabindex"),
+              el.getAttribute("tabindex") !== "-1"
+            );
             if (el.getAttribute("tabindex") !== "-1") return;
             const text =
               el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
