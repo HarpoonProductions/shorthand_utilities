@@ -1179,12 +1179,19 @@ class TabOrderManager {
 
 // ─── Initialise ─────────────────────────────────────────────────────────────
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    window.tabOrderManager = new TabOrderManager();
-  });
-} else {
-  window.tabOrderManager = new TabOrderManager();
+function hasPageMarker(expected) {
+  const el = document.querySelector('meta[name="app-page"]');
+  return !!el && el.content === expected;
 }
 
-window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
+if (hasPageMarker("ceremony-order")) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      window.tabOrderManager = new TabOrderManager();
+    });
+  } else {
+    window.tabOrderManager = new TabOrderManager();
+  }
+
+  window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
+}
