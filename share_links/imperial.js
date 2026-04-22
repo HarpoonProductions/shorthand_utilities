@@ -39,7 +39,7 @@ function addShareButtons() {
       if (navigator.share) {
         let hasResponded = false;
         let sharePromise = navigator.share({
-          title: "Imperial Commemoration Day",
+          title: "Imperial Graduation Days",
           text: `See information for ${studentName}`,
           url: shareURL,
         });
@@ -118,7 +118,7 @@ function addShareAwardeeButtons() {
       if (navigator.share) {
         let hasResponded = false;
         let sharePromise = navigator.share({
-          title: "Imperial Commemoration Day",
+          title: "Imperial Graduation Days",
           text: `See information for ${awardeeName}`,
           url: shareURL,
         });
