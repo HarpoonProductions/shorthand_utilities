@@ -1,28 +1,41 @@
-// Shared helper for Web Share + graceful fallback
+// ─────────────────────────────────────────────────────────────────────────────
+// imperial-graduation2026.js
+// Harpoon Productions · Imperial College Graduation Days 2026
+//
+// Consolidated v2 — includes Plausible CE analytics instrumentation:
+//   · Share Initiated  (student names + awardees)
+//   · Shared Link Opened  (inbound URL detection)
+//   · Accordion Toggled  (ceremony section open/close)
+//   · Search Used  (via handleSubmission() in search.js)
+//   · Heartbeat  (30-second interval for session duration accuracy)
+//
+// All Plausible calls are guarded with typeof plausible !== 'undefined'
+// so the page fails gracefully if the analytics script hasn't loaded
+// (e.g. no connectivity in the Royal Albert Hall).
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+// ── Shared helper: Web Share API with graceful fallback ───────────────────────
+
 async function shareLink({ title, text, url }) {
   if (!navigator.share) {
     return;
   }
 
   try {
-    await navigator.share({
-      title,
-      text,
-      url,
-    });
+    await navigator.share({ title, text, url });
   } catch (err) {
-    // User dismissed/cancelled the native share sheet.
-    // Do nothing so we don't show the copy prompt afterwards.
+    // User dismissed or cancelled the native share sheet — do nothing.
     if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) {
       return;
     }
-
-    // Ignore other share errors too, to avoid showing the prompt.
     console.error("Share failed:", err);
   }
 }
 
-// Add share buttons for student names
+
+// ── Student name share buttons ────────────────────────────────────────────────
+
 function addShareButtons() {
   const paragraphs = document.querySelectorAll(
     ".sh-names .Theme-Layer-BodyText--inner p, .sh-prizewinnernames .Theme-Layer-BodyText--inner p"
@@ -52,9 +65,12 @@ function addShareButtons() {
 
     shareButton.addEventListener("click", async () => {
       const currentURL = window.location.href.split("?")[0];
-      const shareURL = `${currentURL}?student_name=${encodeURIComponent(
-        studentName
-      )}&name_index=${encodeURIComponent(index)}`;
+      const shareURL = `${currentURL}?student_name=${encodeURIComponent(studentName)}&name_index=${encodeURIComponent(index)}`;
+
+      // Track share intent before opening the sheet
+      if (typeof plausible !== "undefined") {
+        plausible("Share Initiated", { props: { type: "student", name: studentName } });
+      }
 
       await shareLink({
         title: "Imperial Graduation Days",
@@ -67,7 +83,9 @@ function addShareButtons() {
   });
 }
 
-// Add share buttons for awardees
+
+// ── Awardee share buttons ─────────────────────────────────────────────────────
+
 function addShareAwardeeButtons() {
   const awardeeElements = document.querySelectorAll(
     ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall, " +
@@ -79,7 +97,6 @@ function addShareAwardeeButtons() {
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
-
     return lines.length > 1 ? lines[lines.length - 1] : lines[0];
   });
 
@@ -114,6 +131,11 @@ function addShareAwardeeButtons() {
       const currentURL = window.location.href.split("?")[0];
       const shareURL = `${currentURL}?awardee=${encodedAwardee}&name_index=${encodedIndex}`;
 
+      // Track share intent before opening the sheet
+      if (typeof plausible !== "undefined") {
+        plausible("Share Initiated", { props: { type: "awardee", name: awardeeName } });
+      }
+
       await shareLink({
         title: "Imperial Graduation Days",
         text: `See information for ${awardeeName}`,
@@ -127,7 +149,9 @@ function addShareAwardeeButtons() {
   scrollToAwardeeFromURL();
 }
 
-// Scroll to shared awardee from URL params
+
+// ── Scroll to awardee from inbound shared URL ─────────────────────────────────
+
 function scrollToAwardeeFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
   const awardee = urlParams.get("awardee");
@@ -135,32 +159,88 @@ function scrollToAwardeeFromURL() {
 
   if (!awardee || nameIndex === null) return;
 
-  const elementId = `${encodeURIComponent(awardee)}${encodeURIComponent(
-    nameIndex
-  )}`;
+  const elementId = `${encodeURIComponent(awardee)}${encodeURIComponent(nameIndex)}`;
   const element = document.getElementById(elementId);
 
   if (!element) return;
 
   let padding = 120;
-
   if (window.innerWidth < 620) {
     padding = 720 + (window.innerWidth - 620);
   } else if (window.innerWidth < 900) {
     padding = 350;
   }
 
-  const elementPosition =
-    element.getBoundingClientRect().top + window.pageYOffset;
+  const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
   const offsetPosition = elementPosition - padding;
 
-  window.scrollTo({
-    top: offsetPosition,
-    behavior: "smooth",
+  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+}
+
+
+// ── Inbound shared link detection ─────────────────────────────────────────────
+// Fires when someone arrives via a shared student or awardee URL.
+// This measures share conversion — how many share intents resulted in
+// someone actually opening the link.
+
+function trackSharedLinkArrival() {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  if (urlParams.has("student_name") && typeof plausible !== "undefined") {
+    plausible("Shared Link Opened", { props: { type: "student" } });
+  }
+
+  if (urlParams.has("awardee") && typeof plausible !== "undefined") {
+    plausible("Shared Link Opened", { props: { type: "awardee" } });
+  }
+}
+
+
+// ── Accordion / ceremony section tracking ─────────────────────────────────────
+// Reads aria-expanded state before the click handler changes it,
+// so false = currently closed = about to open.
+// The aria-label is stripped of its prefix to give a clean ceremony label.
+
+function initAccordionTracking() {
+  document.querySelectorAll(".toggle-button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (typeof plausible !== "undefined") {
+        var label = this.getAttribute("aria-label").replace("Toggle Open Close ", "");
+        var isOpening = this.getAttribute("aria-expanded") === "false";
+        plausible("Accordion Toggled", {
+          props: {
+            ceremony: label,
+            action: isOpening ? "opened" : "closed",
+          },
+        });
+      }
+    });
   });
 }
 
-// Add styles
+
+// ── Heartbeat — session duration accuracy ─────────────────────────────────────
+// Plausible CE calculates session duration from the gap between first and last
+// event. On a single-page story with no navigation, only one event fires,
+// so duration reads as zero. A 30-second heartbeat gives Plausible the
+// intervals it needs, and the `minutes` property shows dwell-time distribution
+// in the Plausible breakdown view.
+
+function initHeartbeat() {
+  var heartbeatCount = 0;
+  setInterval(function () {
+    heartbeatCount++;
+    if (typeof plausible !== "undefined") {
+      plausible("Heartbeat", {
+        props: { minutes: String(Math.floor(heartbeatCount / 2)) },
+      });
+    }
+  }, 30000);
+}
+
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
 const styleShare = document.createElement("style");
 styleShare.textContent = `
   .share-button {
@@ -184,8 +264,13 @@ styleShare.textContent = `
 `;
 document.head.appendChild(styleShare);
 
-// Init
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
 document.addEventListener("DOMContentLoaded", () => {
   addShareButtons();
   addShareAwardeeButtons();
+  trackSharedLinkArrival();
+  initAccordionTracking();
+  initHeartbeat();
 });
