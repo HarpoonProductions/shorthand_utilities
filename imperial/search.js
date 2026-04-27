@@ -25,6 +25,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Function to handle the button clicks and scrolling
   function handleSubmission() {
     console.log("Handling submission TEST1...");
+
+    // Track search usage — guarded so analytics never blocks or errors
+    if (typeof plausible !== "undefined") {
+      plausible("Search Used", { props: { query: storedInput.substring(0, 100) } });
+    }
+
     panelOpenButton.click(); // First click to open the panel
     setTimeout(() => {
       panelEnterButton.removeAttribute("disabled");
