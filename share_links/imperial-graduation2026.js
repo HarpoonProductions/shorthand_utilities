@@ -3,17 +3,16 @@
 // Harpoon Productions · Imperial College Graduation Days 2026
 //
 // Consolidated v2 — includes Plausible CE analytics instrumentation:
-//   · Share Initiated  (student names + awardees)
+//   · Share Initiated  (student + awardee, type only — no names stored)
 //   · Shared Link Opened  (inbound URL detection)
 //   · Accordion Toggled  (ceremony section open/close)
-//   · Search Used  (via handleSubmission() in search.js)
+//   · Search Used  (via handleSubmission() in search.js — no query stored)
 //   · Heartbeat  (30-second interval for session duration accuracy)
 //
 // All Plausible calls are guarded with typeof plausible !== 'undefined'
 // so the page fails gracefully if the analytics script hasn't loaded
 // (e.g. no connectivity in the Royal Albert Hall).
 // ─────────────────────────────────────────────────────────────────────────────
-
 
 // ── Shared helper: Web Share API with graceful fallback ───────────────────────
 
@@ -33,12 +32,11 @@ async function shareLink({ title, text, url }) {
   }
 }
 
-
 // ── Student name share buttons ────────────────────────────────────────────────
 
 function addShareButtons() {
   const paragraphs = document.querySelectorAll(
-    ".sh-names .Theme-Layer-BodyText--inner p, .sh-prizewinnernames .Theme-Layer-BodyText--inner p"
+    ".sh-names .Theme-Layer-BodyText--inner p, .sh-prizewinnernames .Theme-Layer-BodyText--inner p",
   );
 
   const names = {};
@@ -69,7 +67,7 @@ function addShareButtons() {
 
       // Track share intent before opening the sheet
       if (typeof plausible !== "undefined") {
-        plausible("Share Initiated", { props: { type: "student", name: studentName } });
+        plausible("Share Initiated", { props: { type: "student" } });
       }
 
       await shareLink({
@@ -83,13 +81,12 @@ function addShareButtons() {
   });
 }
 
-
 // ── Awardee share buttons ─────────────────────────────────────────────────────
 
 function addShareAwardeeButtons() {
   const awardeeElements = document.querySelectorAll(
     ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall, " +
-      ".sh-awardee p.Theme-TextSize-default.h-align-center"
+      ".sh-awardee p.Theme-TextSize-default.h-align-center",
   );
 
   const awardeeNames = Array.from(awardeeElements).map((el) => {
@@ -133,7 +130,7 @@ function addShareAwardeeButtons() {
 
       // Track share intent before opening the sheet
       if (typeof plausible !== "undefined") {
-        plausible("Share Initiated", { props: { type: "awardee", name: awardeeName } });
+        plausible("Share Initiated", { props: { type: "awardee" } });
       }
 
       await shareLink({
@@ -148,7 +145,6 @@ function addShareAwardeeButtons() {
 
   scrollToAwardeeFromURL();
 }
-
 
 // ── Scroll to awardee from inbound shared URL ─────────────────────────────────
 
@@ -171,12 +167,12 @@ function scrollToAwardeeFromURL() {
     padding = 350;
   }
 
-  const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+  const elementPosition =
+    element.getBoundingClientRect().top + window.pageYOffset;
   const offsetPosition = elementPosition - padding;
 
   window.scrollTo({ top: offsetPosition, behavior: "smooth" });
 }
-
 
 // ── Inbound shared link detection ─────────────────────────────────────────────
 // Fires when someone arrives via a shared student or awardee URL.
@@ -195,7 +191,6 @@ function trackSharedLinkArrival() {
   }
 }
 
-
 // ── Accordion / ceremony section tracking ─────────────────────────────────────
 // Reads aria-expanded state before the click handler changes it,
 // so false = currently closed = about to open.
@@ -205,7 +200,10 @@ function initAccordionTracking() {
   document.querySelectorAll(".toggle-button").forEach(function (btn) {
     btn.addEventListener("click", function () {
       if (typeof plausible !== "undefined") {
-        var label = this.getAttribute("aria-label").replace("Toggle Open Close ", "");
+        var label = this.getAttribute("aria-label").replace(
+          "Toggle Open Close ",
+          "",
+        );
         var isOpening = this.getAttribute("aria-expanded") === "false";
         plausible("Accordion Toggled", {
           props: {
@@ -217,7 +215,6 @@ function initAccordionTracking() {
     });
   });
 }
-
 
 // ── Heartbeat — session duration accuracy ─────────────────────────────────────
 // Plausible CE calculates session duration from the gap between first and last
@@ -237,7 +234,6 @@ function initHeartbeat() {
     }
   }, 30000);
 }
-
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
@@ -263,7 +259,6 @@ styleShare.textContent = `
   }
 `;
 document.head.appendChild(styleShare);
-
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 

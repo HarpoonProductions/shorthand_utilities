@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const input1 = document.getElementById("inputField1");
   const input2 = document.querySelector(
-    ".Theme-ProjectInput.project-search-input"
+    ".Theme-ProjectInput.project-search-input",
   );
   const buttonInline = document.querySelector("#submitButton");
   const panelOpenButton = document.querySelector(".project-search-button");
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Track search usage — guarded so analytics never blocks or errors
     if (typeof plausible !== "undefined") {
-      plausible("Search Used", { props: { query: storedInput.substring(0, 100) } });
+      plausible("Search Used");
     }
 
     panelOpenButton.click(); // First click to open the panel
