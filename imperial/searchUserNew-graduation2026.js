@@ -143,7 +143,7 @@ function processListItem(li) {
   const link = li.querySelector(".project-image-link");
   if (highlightSpan && link) {
     const result = document.querySelectorAll(
-      ".project-search-results, .search-results-found-list, .project-search-results-container"
+      ".project-search-results, .search-results-found-list, .project-search-results-container",
     );
     result.forEach((result) => (result.style.display = "none"));
     if (
@@ -154,7 +154,7 @@ function processListItem(li) {
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html" ||
       link.href ===
-        "https://graduation-programmes.imperial.ac.uk/316491d8-9b0f-4025-a292-7530a553ec3a/index.html" ||
+        "https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html" ||
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html" ||
       link.href === "index.html"
@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
     observer.observe(targetNode, config);
   } else {
     console.error(
-      "The target element `.project-search-sideBar` was not found."
+      "The target element `.project-search-sideBar` was not found.",
     );
   }
 
@@ -293,13 +293,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Check if the fade-out section is in view
         const fadeOutSection = entries.find(
           (entry) =>
-            entry.isIntersecting && entry.target.id === "section-actX6a4Fex"
+            entry.isIntersecting && entry.target.id === "section-actX6a4Fex",
         );
 
         if (fadeOutSection) {
           // Hide dropdown - fade-out section is in view
           console.log(
-            `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`
+            `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`,
           );
           consolidatedDropdown.style.opacity = "0";
           consolidatedDropdown.style.pointerEvents = "none";
@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const isAllowed = allowedSectionPrefixes.some(
               (prefix) =>
                 entry.target.id.startsWith(prefix) &&
-                !entry.target.id.includes("Imperial")
+                !entry.target.id.includes("Imperial"),
             );
             if (isAllowed) {
               triggeringSection = entry.target.id;
@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const allowedSectionsInView = Array.from(sections).some((section) => {
             if (!section.id) return false;
             const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
-              section.id.startsWith(prefix)
+              section.id.startsWith(prefix),
             );
             if (!hasAllowedId) return false;
 
@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         threshold: 0.1, // Trigger when 10% of the section is visible
         rootMargin: "-100px 0px -50px 0px",
-      }
+      },
     );
 
     // Observe all sections (including the new sentry section)
@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function updateConsolidatedDropdown() {
     const openAccordions = Array.from(accordions).filter(
-      (accordion) => accordion.nextElementSibling.style.display === "inline"
+      (accordion) => accordion.nextElementSibling.style.display === "inline",
     );
 
     if (openAccordions.length > 0) {
@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (onclickAttr) {
               // Extract the ID from scrollToElementWithOffset('1430dept1course1', 250)
               const match = onclickAttr.match(
-                /scrollToElementWithOffset\('(\d+)/
+                /scrollToElementWithOffset\('(\d+)/,
               );
               if (match && match[1]) {
                 ceremonyPrefix = match[1]; // e.g., "1430"
@@ -485,10 +485,10 @@ document.addEventListener("DOMContentLoaded", function () {
           visiblePrefixes.forEach((sectionPrefix) => {
             const sectionClass = `ceremony-${sectionPrefix.replace(
               "section-",
-              ""
+              "",
             )}`;
             const relevantLinks = consolidatedDropdown.querySelectorAll(
-              `.${sectionClass}`
+              `.${sectionClass}`,
             );
             relevantLinks.forEach((link) => {
               link.style.display = "block";
@@ -497,8 +497,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           console.log(
             `🟢 Dropdown showing links for sections: ${Array.from(
-              visiblePrefixes
-            ).join(", ")}`
+              visiblePrefixes,
+            ).join(", ")}`,
           );
         } else {
           // Hide dropdown when not over any allowed section
@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", function () {
       {
         threshold: 0.1, // Trigger when 10% of the section is visible
         rootMargin: "-100px 0px -50px 0px",
-      }
+      },
     );
 
     // Observe all sections (including the new sentry section)
@@ -580,7 +580,7 @@ document.addEventListener("DOMContentLoaded", function () {
         container,
         NodeFilter.SHOW_TEXT,
         null,
-        false
+        false,
       );
 
       let node;
@@ -650,7 +650,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             daySection.forEach((section) => {
               const sec = section.querySelector(
-                'section[class^="Theme-Section-Position"]'
+                'section[class^="Theme-Section-Position"]',
               );
               if (sec) {
                 console.log("SECTION 2 CHECK", section);
@@ -821,7 +821,7 @@ setTimeout(() => {
 
   // Get the elements
   const input = document.querySelector(
-    ".Theme-ProjectInput.project-search-input"
+    ".Theme-ProjectInput.project-search-input",
   );
   const button = document.querySelector(".project-search-delete-btn");
   const statusText = document.getElementById("status-text");
@@ -882,7 +882,7 @@ setTimeout(() => {
   // Store the original descriptor
   const descriptor = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
-    "value"
+    "value",
   );
   const originalSet = descriptor.set;
 
@@ -965,7 +965,7 @@ class TabOrderManager {
     document.addEventListener("click", (e) => {
       if (
         e.target.closest(
-          ".time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button"
+          ".time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button",
         )
       ) {
         this.scheduleRefresh(350);
@@ -976,7 +976,7 @@ class TabOrderManager {
       if (
         (e.key === "Enter" || e.key === " ") &&
         e.target.closest(
-          ".Navigation__button, .time-toggle button, .project-search-button"
+          ".Navigation__button, .time-toggle button, .project-search-button",
         )
       ) {
         this.scheduleRefresh(350);
@@ -1009,7 +1009,7 @@ class TabOrderManager {
   updateTabOrder() {
     document
       .querySelectorAll(
-        "a[href], button, input, select, textarea, [tabindex], .popup-close"
+        "a[href], button, input, select, textarea, [tabindex], .popup-close",
       )
       .forEach((el) => el.setAttribute("tabindex", "-1"));
 
@@ -1038,12 +1038,12 @@ class TabOrderManager {
     // (1) Logo
     assign(
       document.querySelector(".Project-Header--left .Theme-Logo a"),
-      "Logo"
+      "Logo",
     );
 
     // (2)–(5) Navigation
     const navItems = document.querySelectorAll(
-      "#navigation > .Navigation__itemList > .Navigation__item"
+      "#navigation > .Navigation__itemList > .Navigation__item",
     );
 
     navItems.forEach((li) => {
@@ -1065,8 +1065,8 @@ class TabOrderManager {
               .forEach((child) =>
                 assign(
                   child,
-                  `Dropdown: ${child.textContent.trim().slice(0, 30)}`
-                )
+                  `Dropdown: ${child.textContent.trim().slice(0, 30)}`,
+                ),
               );
           }
         }
@@ -1078,26 +1078,26 @@ class TabOrderManager {
 
     // (6a) Search panel (if open)
     const searchSidebar = document.querySelector(
-      "[data-project-search-sidebar]"
+      "[data-project-search-sidebar]",
     );
     if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
       assign(
         searchSidebar.querySelector(".project-search-input"),
-        "Sidebar: input"
+        "Sidebar: input",
       );
       const deleteBtn = searchSidebar.querySelector(
-        ".project-search-delete-btn"
+        ".project-search-delete-btn",
       );
       if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
         assign(deleteBtn, "Sidebar: clear");
       }
       assign(
         searchSidebar.querySelector(".project-search-enter-btn"),
-        "Sidebar: submit"
+        "Sidebar: submit",
       );
       assign(
         searchSidebar.querySelector(".project-search-close-button"),
-        "Sidebar: close"
+        "Sidebar: close",
       );
     }
 
@@ -1123,7 +1123,7 @@ class TabOrderManager {
       openCeremony.forEach((ceremony) => {
         ceremony
           .querySelectorAll(
-            "a[href], button, input, select, textarea, [tabindex], .popup-close"
+            "a[href], button, input, select, textarea, [tabindex], .popup-close",
           )
           .forEach((el) => {
             if (el.classList.contains("popup-close"))
@@ -1132,7 +1132,7 @@ class TabOrderManager {
               "logging",
               el,
               el.getAttribute("tabindex"),
-              el.getAttribute("tabindex") !== "-1"
+              el.getAttribute("tabindex") !== "-1",
             );
             if (el.getAttribute("tabindex") !== "-1") return;
             const text =
@@ -1143,7 +1143,7 @@ class TabOrderManager {
     }
 
     const endingTabs = document.querySelectorAll(
-      "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a"
+      "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a",
     );
 
     endingTabs.forEach((el) => {
