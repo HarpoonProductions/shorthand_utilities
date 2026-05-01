@@ -60,8 +60,8 @@ function addShareButtons() {
 
       if (navigator.share) {
         navigator.share({
-          title: "Imperial Graduation Days",
-          text: `See information for ${studentName}`,
+          title: "Student Information",
+          text: `Check out information for ${studentName}`,
           url: shareURL,
         });
       } else {
@@ -131,8 +131,8 @@ function addShareAwardeeButtons() {
 
       if (navigator.share) {
         navigator.share({
-          title: "Imperial Graduation Days",
-          text: `See information for ${awardeeName}`,
+          title: "Awardee Information",
+          text: `Check out information for ${awardeeName}`,
           url: shareURL,
         });
       } else {
@@ -189,9 +189,6 @@ function scrollToAwardeeFromURL() {
 }
 
 // ── Inbound shared link detection ─────────────────────────────────────────────
-// Fires when someone arrives via a shared student or awardee URL.
-// This measures share conversion — how many share intents resulted in
-// someone actually opening the link.
 
 function trackSharedLinkArrival() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -206,9 +203,6 @@ function trackSharedLinkArrival() {
 }
 
 // ── Accordion / ceremony section tracking ─────────────────────────────────────
-// Reads aria-expanded state before the click handler changes it,
-// so false = currently closed = about to open.
-// The aria-label is stripped of its prefix to give a clean ceremony label.
 
 function initAccordionTracking() {
   document.querySelectorAll(".toggle-button").forEach(function (btn) {
@@ -231,11 +225,6 @@ function initAccordionTracking() {
 }
 
 // ── Heartbeat — session duration accuracy ─────────────────────────────────────
-// Plausible CE calculates session duration from the gap between first and last
-// event. On a single-page story with no navigation, only one event fires,
-// so duration reads as zero. A 30-second heartbeat gives Plausible the
-// intervals it needs, and the `minutes` property shows dwell-time distribution
-// in the Plausible breakdown view.
 
 function initHeartbeat() {
   var heartbeatCount = 0;
