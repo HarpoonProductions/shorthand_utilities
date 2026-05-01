@@ -2,7 +2,7 @@
 // imperial-graduation2026.js
 // Harpoon Productions · Imperial College Graduation Days 2026
 //
-// Consolidated v2 — includes Plausible CE analytics instrumentation:
+// Merged — last week's share mechanism + Plausible CE analytics instrumentation:
 //   · Share Initiated  (student + awardee, type only — no names stored)
 //   · Shared Link Opened  (inbound URL detection)
 //   · Accordion Toggled  (ceremony section open/close)
@@ -13,24 +13,6 @@
 // so the page fails gracefully if the analytics script hasn't loaded
 // (e.g. no connectivity in the Royal Albert Hall).
 // ─────────────────────────────────────────────────────────────────────────────
-
-// ── Shared helper: Web Share API with graceful fallback ───────────────────────
-
-async function shareLink({ title, text, url }) {
-  if (!navigator.share) {
-    return;
-  }
-
-  try {
-    await navigator.share({ title, text, url });
-  } catch (err) {
-    // User dismissed or cancelled the native share sheet — do nothing.
-    if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) {
-      return;
-    }
-    console.error("Share failed:", err);
-  }
-}
 
 // ── Student name share buttons ────────────────────────────────────────────────
 
@@ -44,10 +26,14 @@ function addShareButtons() {
   paragraphs.forEach((p) => {
     const studentName = p.textContent.trim();
 
-    names[studentName] = (names[studentName] || 0) + 1;
-    const index = names[studentName] - 1;
+    if (names[studentName]) {
+      names[studentName]++;
+    } else {
+      names[studentName] = 1;
+    }
 
     const shareButton = document.createElement("button");
+    const index = names[studentName];
     shareButton.className = "share-button";
     shareButton.type = "button";
     shareButton.setAttribute("aria-label", `Share ${studentName}`);
@@ -61,20 +47,26 @@ function addShareButtons() {
       </svg>
     `;
 
-    shareButton.addEventListener("click", async () => {
+    shareButton.addEventListener("click", () => {
       const currentURL = window.location.href.split("?")[0];
-      const shareURL = `${currentURL}?student_name=${encodeURIComponent(studentName)}&name_index=${encodeURIComponent(index)}`;
+      const shareURL = `${currentURL}?student_name=${encodeURIComponent(
+        studentName,
+      )}&name_index=${encodeURIComponent(index - 1)}`;
 
-      // Track share intent before opening the sheet
+      // Track share intent — guarded so analytics never blocks or errors
       if (typeof plausible !== "undefined") {
         plausible("Share Initiated", { props: { type: "student" } });
       }
 
-      await shareLink({
-        title: "Imperial Graduation Days",
-        text: `See information for ${studentName}`,
-        url: shareURL,
-      });
+      if (navigator.share) {
+        navigator.share({
+          title: "Imperial Graduation Days",
+          text: `See information for ${studentName}`,
+          url: shareURL,
+        });
+      } else {
+        fallbackShare(shareURL);
+      }
     });
 
     p.appendChild(shareButton);
@@ -84,12 +76,12 @@ function addShareButtons() {
 // ── Awardee share buttons ─────────────────────────────────────────────────────
 
 function addShareAwardeeButtons() {
-  const awardeeElements = document.querySelectorAll(
+  const awardees = document.querySelectorAll(
     ".sh-awardee h2.Theme-Layer-BodyText-Heading-Large.Theme-Title.Theme-TextSize-xsmall, " +
       ".sh-awardee p.Theme-TextSize-default.h-align-center",
   );
 
-  const awardeeNames = Array.from(awardeeElements).map((el) => {
+  const paragraphs = Array.from(awardees).map((el) => {
     const lines = el.innerText
       .split("\n")
       .map((s) => s.trim())
@@ -99,18 +91,17 @@ function addShareAwardeeButtons() {
 
   const names = {};
 
-  awardeeElements.forEach((el, i) => {
-    const awardeeName = awardeeNames[i];
+  awardees.forEach((p, i) => {
+    const awardeeName = paragraphs[i];
 
-    names[awardeeName] = (names[awardeeName] || 0) + 1;
-    const index = names[awardeeName] - 1;
-
-    const encodedAwardee = encodeURIComponent(awardeeName);
-    const encodedIndex = encodeURIComponent(index);
-
-    el.setAttribute("id", `${encodedAwardee}${encodedIndex}`);
+    if (names[awardeeName]) {
+      names[awardeeName]++;
+    } else {
+      names[awardeeName] = 1;
+    }
 
     const shareButton = document.createElement("button");
+    const index = names[awardeeName];
     shareButton.className = "share-button";
     shareButton.type = "button";
     shareButton.setAttribute("aria-label", `Share ${awardeeName}`);
@@ -124,26 +115,41 @@ function addShareAwardeeButtons() {
       </svg>
     `;
 
-    shareButton.addEventListener("click", async () => {
+    const encodedAwardee = encodeURIComponent(awardeeName);
+    const encodedIndex = encodeURIComponent(index - 1);
+
+    p.setAttribute("id", encodedAwardee + encodedIndex);
+
+    shareButton.addEventListener("click", () => {
       const currentURL = window.location.href.split("?")[0];
       const shareURL = `${currentURL}?awardee=${encodedAwardee}&name_index=${encodedIndex}`;
 
-      // Track share intent before opening the sheet
+      // Track share intent — guarded so analytics never blocks or errors
       if (typeof plausible !== "undefined") {
         plausible("Share Initiated", { props: { type: "awardee" } });
       }
 
-      await shareLink({
-        title: "Imperial Graduation Days",
-        text: `See information for ${awardeeName}`,
-        url: shareURL,
-      });
+      if (navigator.share) {
+        navigator.share({
+          title: "Imperial Graduation Days",
+          text: `See information for ${awardeeName}`,
+          url: shareURL,
+        });
+      } else {
+        fallbackShare(shareURL);
+      }
     });
 
-    el.appendChild(shareButton);
+    p.appendChild(shareButton);
   });
 
   scrollToAwardeeFromURL();
+}
+
+// ── Fallback share (for browsers without Web Share API) ───────────────────────
+
+function fallbackShare(shareURL) {
+  prompt("Copy this link to share:", shareURL);
 }
 
 // ── Scroll to awardee from inbound shared URL ─────────────────────────────────
@@ -153,25 +159,33 @@ function scrollToAwardeeFromURL() {
   const awardee = urlParams.get("awardee");
   const nameIndex = urlParams.get("name_index");
 
-  if (!awardee || nameIndex === null) return;
-
-  const elementId = `${encodeURIComponent(awardee)}${encodeURIComponent(nameIndex)}`;
-  const element = document.getElementById(elementId);
-
-  if (!element) return;
-
-  let padding = 120;
-  if (window.innerWidth < 620) {
-    padding = 720 + (window.innerWidth - 620);
-  } else if (window.innerWidth < 900) {
-    padding = 350;
+  if (!awardee || !nameIndex) {
+    return;
   }
 
-  const elementPosition =
-    element.getBoundingClientRect().top + window.pageYOffset;
-  const offsetPosition = elementPosition - padding;
+  const encodedAwardee = encodeURIComponent(awardee);
+  const encodedIndex = encodeURIComponent(nameIndex);
+  const elementId = encodedAwardee + encodedIndex;
 
-  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+  const element = document.getElementById(elementId);
+
+  if (element) {
+    let padding = 120;
+    if (window.innerWidth < 620) {
+      padding = 720 + (window.innerWidth - 620);
+    } else if (window.innerWidth < 900) {
+      padding = 350;
+    }
+
+    const elementPosition =
+      element.getBoundingClientRect().top + window.pageYOffset;
+    const offsetPosition = elementPosition - padding;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
 }
 
 // ── Inbound shared link detection ─────────────────────────────────────────────
@@ -237,7 +251,7 @@ function initHeartbeat() {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
-const styleShare = document.createElement("style");
+let styleShare = document.createElement("style");
 styleShare.textContent = `
   .share-button {
     background: none;
