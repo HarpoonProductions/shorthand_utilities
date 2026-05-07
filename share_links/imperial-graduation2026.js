@@ -1,6 +1,6 @@
-//reverted code//
-
-// Shared helper for Web Share + fallback
+// new merged version taking pre April code and adding plausible
+//
+// // Shared helper for Web Share + fallback
 async function shareLink({ title, text, url }) {
   const message = `${text}\n\n${url}`;
 
