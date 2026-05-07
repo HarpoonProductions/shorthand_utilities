@@ -1,3 +1,5 @@
+//reverted code//
+
 // Shared helper for Web Share + fallback
 async function shareLink({ title, text, url }) {
   const message = `${text}\n\n${url}`;
