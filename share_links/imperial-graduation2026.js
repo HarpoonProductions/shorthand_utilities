@@ -2,13 +2,12 @@
 //
 // // Shared helper for Web Share + fallback
 async function shareLink({ title, text, url }) {
-  const message = `${text}\n\n${url}`;
-
   try {
     if (navigator.share) {
       await navigator.share({
         title,
-        text: message,
+        text,
+        url,
       });
     } else {
       fallbackShare(url);
