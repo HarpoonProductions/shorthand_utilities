@@ -678,38 +678,68 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const scroll = () => {
       const attemptScroll = () => {
+        const match = matches[current];
+
+        if (!match) return;
+
         const yPosition =
-          matches[current].getBoundingClientRect().top +
-          window.pageYOffset +
-          yOffset;
+          match.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
         if (window.pageYOffset > 0 || yPosition > 0) {
-          // Check if the page has likely scrolled or can scroll
-          window.scrollTo({ top: yPosition, behavior: "smooth" });
+          window.scrollTo({
+            top: Math.max(0, yPosition),
+            behavior: "smooth",
+          });
+
+          setTimeout(() => {
+            const rect = match.getBoundingClientRect();
+
+            const tooLow = rect.bottom > window.innerHeight - 80;
+            const tooHigh = rect.top < 120;
+
+            if (tooLow || tooHigh) {
+              const correctedYPosition =
+                match.getBoundingClientRect().top +
+                window.pageYOffset +
+                yOffset;
+
+              window.scrollTo({
+                top: Math.max(0, correctedYPosition),
+                behavior: "auto",
+              });
+            }
+          }, 700);
+
           current = (current + 1) % matches.length;
+
           matches.length > 1 &&
             updateResultButtonText(current || matches.length, matches.length);
         } else {
-          setTimeout(attemptScroll, 120); // Wait a bit more if page offset is still 0
+          setTimeout(attemptScroll, 120);
         }
       };
 
       if (matches[current]) {
-        setTimeout(attemptScroll, 100); // Initial delay before first attempt
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(attemptScroll, 100);
+          });
+        });
       }
     };
 
     if (matches.length > 1) {
-      createResultButton(1, matches.length, scroll); // Start from 1 for user clarity
+      createResultButton(1, matches.length, scroll);
     } else {
       console.log("Only one match found, no need for result button.");
 
       var style = document.createElement("style");
       style.id = "closeResults";
       style.textContent = `
-        body.close-results .found-text-piece {
-          background-color: transparent !important;
-        }
-      `;
+      body.close-results .found-text-piece {
+        background-color: transparent !important;
+      }
+    `;
 
       if (!document.getElementById("closeResults")) {
         document.head.appendChild(style);
@@ -720,7 +750,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // Initial scroll to the first match
     scroll();
   }
 
