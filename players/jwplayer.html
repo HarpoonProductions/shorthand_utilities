@@ -3,9 +3,11 @@
 <head>
   <style>
     html, body { margin:0; padding:0; background:black; overflow:hidden; }
+    #player { width:100%; height:100vh; }
   </style>
 </head>
 <body>
+<div id="player"></div>
 <script>
   const id = new URLSearchParams(window.location.search).get('id');
   if (id) {
