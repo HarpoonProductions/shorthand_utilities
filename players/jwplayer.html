@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+  <style>
+    html, body { margin:0; padding:0; background:black; overflow:hidden; }
+  </style>
+</head>
+<body>
+<script>
+  const id = new URLSearchParams(window.location.search).get('id');
+  if (id) {
+    const s = document.createElement('script');
+    s.src = `https://cdn.jwplayer.com/players/${id}-KGi5YJpL.js`;
+    document.body.appendChild(s);
+  }
+</script>
+</body>
+</html>
