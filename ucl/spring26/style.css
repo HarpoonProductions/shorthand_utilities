@@ -106,11 +106,11 @@ h1 {
 
     .custom-min-nav-container .Theme-RelatedStoriesSection {
         min-height: 400px;
-        background: #2fbbba;
+        background: #aa65ff;
         position: relative;
         bottom: 20px;
-        border-left: 0.5px solid #2fbbba;
-        border-right: 0.5px solid #2fbbba;
+        border-left: 0.5px solid #aa65ff;
+        border-right: 0.5px solid #aa65ff;
     }
 
     .custom-min-nav-container
@@ -184,12 +184,12 @@ h1 {
 }
 
 .splide__pagination__page.is-active {
-    background: #2fbbba !important;
+    background: #aa65ff !important;
 }
 .splide__pagination__page {
     margin: 3px 9px !important;
     padding: 4px !important;
-    background: #2fbbba !important;
+    background: #aa65ff !important;
 }
 
 .splide__pagination li {
@@ -237,10 +237,10 @@ h1 {
 
 .custom-min-nav-container .Theme-RelatedStoriesSection {
     min-height: 400px;
-    background: #2fbbba;
+    background: #aa65ff;
     position: relative;
-    border-left: 0.5px solid #2fbbba;
-    border-right: 0.5px solid #2fbbba;
+    border-left: 0.5px solid #aa65ff;
+    border-right: 0.5px solid #aa65ff;
 
     bottom: 20px;
 }
@@ -317,7 +317,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .custom-min-nav-container {
     transform: translate(-50%, 100%);
-    background: #2fbbba;
+    background: #aa65ff;
     height: 344px;
     width: 339px;
     border-radius: 3px;
@@ -363,9 +363,9 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
     justify-content: center;
     align-items: center;
     width: 142px;
-    color: #2fbbba;
+    color: #aa65ff;
     text-decoration: none;
-    background: #2fbbba;
+    background: #aa65ff;
 }
 
 .button_container:focus {
@@ -438,7 +438,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .button_container.contents {
-    background: #2fbbba;
+    background: #aa65ff;
     color: #000;
     border: 1px solid #000;
     cursor: pointer;
@@ -610,7 +610,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-card {
-    border: 0.5px solid #2fbbba;
+    border: 0.5px solid #aa65ff;
 }
 
 .custom-min-nav-container .Theme-RelatedStories--Title .related-story-text {
