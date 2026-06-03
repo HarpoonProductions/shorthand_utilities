@@ -374,7 +374,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 @media only screen and (max-width: 500px) {
     .button_container:not(.hide) {
-        opacity: 0.9 !important;
+        opacity: 1 !important;
     }
 
     .image_div img {
