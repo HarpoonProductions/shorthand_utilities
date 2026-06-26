@@ -348,7 +348,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
     justify-content: center;
     align-items: center;
     width: 142px;
-    color: #e25431;
+    color: #fdad35;
     text-decoration: none;
     background: #fdad35;
 }
@@ -376,7 +376,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 .button {
     cursor: pointer;
     pointer-events: none;
-    font-family: "Imperial Sans Text", sans-serif !important;
+    font-family: "Open Sans", sans-serif !important;
     z-index: 10;
     min-height: 43px;
     text-align: center;
@@ -412,7 +412,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev {
     margin-right: 20px;
-    border: 1px solid #e25431;
+    border: 1px solid #fdad35;
 }
 
 .edition-logo {
@@ -420,7 +420,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 
 .button_container.contents {
-    background: #e25431;
+    background: #fdad35;
     border: 1px solid white;
     cursor: pointer;
     width: 90px;
@@ -429,7 +429,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.next {
     margin-left: 20px;
-    border: 1px solid #e25431;
+    border: 1px solid #fdad35;
 }
 
 .button_container.prev .image_div {
@@ -597,7 +597,7 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 
 .button_container.prev,
 .button_container.next {
-    background-color: #e25431 !important;
+    background-color: #fdad35 !important;
     border: 1px solid white !important;
     color: white !important;
 }
@@ -612,5 +612,5 @@ body:not(.show-custom-mini-nav) .custom-min-nav-container {
 }
 .button_container.prev:hover,
 .button_container.next:hover {
-    background-color: #e25431 !important;
+    background-color: #fdad35 !important;
 }
