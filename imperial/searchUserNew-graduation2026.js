@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function scrollToMatch(matches, yOffset = -300) {
+  function scrollToMatch(matches, yOffset = -400) {
     let current = 0;
 
     const scroll = () => {
