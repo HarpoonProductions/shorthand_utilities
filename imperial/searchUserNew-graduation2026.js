@@ -154,7 +154,9 @@ function processListItem(li) {
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html" ||
       link.href ===
-        "https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html" ||
+      "https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html" ||
+      link.href ===
+      "https://graduation-programmes.imperial.ac.uk/8e35fcf0-b0e7-4d37-a6d3-2ccb74b7801e/index.html" ||
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html" ||
       link.href === "index.html"
