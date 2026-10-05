@@ -1,59 +1,164 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>searchUserNew-graduation2026.js</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 24px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      background: #fff;
-      color: #111;
-    }
-    pre {
-      margin: 0;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      tab-size: 2;
-    }
-  </style>
-</head>
-<body>
-<pre>```
 /* (function () {
   const origTo = window.scrollTo;
   const origInto = Element.prototype.scrollIntoView;
 
   window.scrollTo = function (...args) {
-    console.warn(&quot;[trace] window.scrollTo&quot;, args);
+    console.warn("[trace] window.scrollTo", args);
     console.trace();
     return origTo.apply(this, args);
   };
 
   Element.prototype.scrollIntoView = function (...args) {
-    console.warn(&quot;[trace] scrollIntoView on&quot;, this, args);
+    console.warn("[trace] scrollIntoView on", this, args);
     console.trace();
     return origInto.apply(this, args);
   };
 })();
 */
 
+// ── Plausible tracking ──────────────────────────────────────────────────────
+// EDITION tags every event so ceremonies can be compared like-for-like.
+// Change this one value for each new event (and keep it the same in the
+// share-tracking script).
+window.IMP_EDITION = window.IMP_EDITION || "commemoration-2026";
+
+window.impTrack =
+  window.impTrack ||
+  function (name, props) {
+    try {
+      if (typeof window.plausible === "function") {
+        window.plausible(name, {
+          props: Object.assign({ edition: window.IMP_EDITION }, props || {}),
+        });
+      }
+    } catch (e) {
+      // Analytics must never break the guide.
+    }
+  };
+
+// ── Search tracking ─────────────────────────────────────────────────────────
+// "Search Used"          a name search was run
+// "Search No Results"    nothing found (where = sidebar | page)
+// "Search Result Opened" name found on the ceremony page (matches = 1 | 2-5 | 6+)
+// The searched name is never sent.
+var impPendingSearch = null;
+var impLastSearchAt = 0;
+var impFiredAt = {};
+var IMP_NO_RESULT_WAIT_MS = 6000;
+
+function impThrottle(key, ms) {
+  var now = Date.now();
+  if (impFiredAt[key] && now - impFiredAt[key] < ms) return false;
+  impFiredAt[key] = now;
+  return true;
+}
+
+function impBucket(n) {
+  return n <= 1 ? "1" : n <= 5 ? "2-5" : "6+";
+}
+
+function impHasSearchTerm() {
+  return [".project-search-input", "#inputField1"].some(function (sel) {
+    var el = document.querySelector(sel);
+    return !!(el && el.value && el.value.trim().length > 0);
+  });
+}
+
+function impSearchSubmitted() {
+  if (!impHasSearchTerm()) return;
+  // Enter key and button click can both fire for one search.
+  if (!impThrottle("Search Used", 1500)) return;
+  impLastSearchAt = Date.now();
+  window.impTrack("Search Used");
+  clearTimeout(impPendingSearch);
+  // If no results list ever appears, count it as a search with no results.
+  impPendingSearch = setTimeout(function () {
+    impPendingSearch = null;
+    if (impThrottle("Search No Results", 1500)) {
+      window.impTrack("Search No Results", { where: "sidebar" });
+    }
+  }, IMP_NO_RESULT_WAIT_MS);
+}
+
+function impSearchResultsShown(node) {
+  var count = node.querySelectorAll(".project-story-list-item").length;
+  if (count > 0) {
+    clearTimeout(impPendingSearch);
+    impPendingSearch = null;
+    // Safety net: if the submit hooks never saw this search, count it here.
+    if (impLastSearchAt === 0 && impThrottle("Search Used", 1500)) {
+      impLastSearchAt = Date.now();
+      window.impTrack("Search Used");
+    }
+    return;
+  }
+  // Empty list: give Shorthand a moment to fill it before calling it a miss.
+  setTimeout(function () {
+    if (node.querySelectorAll(".project-story-list-item").length === 0) {
+      clearTimeout(impPendingSearch);
+      impPendingSearch = null;
+      if (impThrottle("Search No Results", 1500)) {
+        window.impTrack("Search No Results", { where: "sidebar" });
+      }
+    }
+  }, 1000);
+}
+
+// Arrival on a ceremony page via search (shared links carry name_index and
+// are counted by the share-tracking script instead).
+function impTrackSearchArrival(found) {
+  var params = new URLSearchParams(window.location.search);
+  if (params.has("name_index")) return;
+  if (found > 0) {
+    window.impTrack("Search Result Opened", { matches: impBucket(found) });
+  } else {
+    window.impTrack("Search No Results", { where: "page" });
+  }
+}
+
+document.addEventListener(
+  "click",
+  function (e) {
+    if (
+      e.target &&
+      e.target.closest &&
+      e.target.closest(".project-search-enter-btn, #submitButton")
+    ) {
+      impSearchSubmitted();
+    }
+  },
+  true,
+);
+
+document.addEventListener(
+  "keydown",
+  function (e) {
+    if (
+      e.key === "Enter" &&
+      e.target &&
+      e.target.matches &&
+      e.target.matches(".project-search-input, #inputField1")
+    ) {
+      impSearchSubmitted();
+    }
+  },
+  true,
+);
+
 function updateResultButtonText(current, total) {
-  var button = document.getElementById(&quot;result-inner&quot;);
+  var button = document.getElementById("result-inner");
   if (button) {
     // Check if the button exists
     button.textContent = `Result ${current} of ${total}`; // Update the button text
   } else {
-    console.error(&quot;Result button not found.&quot;);
+    console.error("Result button not found.");
   }
 }
 
 function createResultButton(current, total, callback) {
   // Create and append CSS styles
-  var style = document.createElement(&quot;style&quot;);
-  style.id = &quot;resultButtonStyles&quot;;
+  var style = document.createElement("style");
+  style.id = "resultButtonStyles";
   style.textContent = `
     #closeResultButton:hover {
       background-color: #c82333;
@@ -73,71 +178,71 @@ function createResultButton(current, total, callback) {
     }
   `;
 
-  // Only append if styles don&#x27;t already exist
-  if (!document.getElementById(&quot;resultButtonStyles&quot;)) {
+  // Only append if styles don't already exist
+  if (!document.getElementById("resultButtonStyles")) {
     document.head.appendChild(style);
   }
   // Create container div to hold both buttons
-  var container = document.createElement(&quot;div&quot;);
-  container.id = &quot;resultButtonContainer&quot;;
-  container.style.position = &quot;fixed&quot;;
-  container.style.bottom = &quot;20px&quot;;
-  container.style.right = &quot;20px&quot;;
-  container.style.zIndex = &quot;1000&quot;;
-  container.style.display = &quot;flex&quot;;
-  container.style.flexDirection = &quot;column&quot;;
-  container.style.alignItems = &quot;flex-end&quot;;
-  container.style.gap = &quot;5px&quot;;
+  var container = document.createElement("div");
+  container.id = "resultButtonContainer";
+  container.style.position = "fixed";
+  container.style.bottom = "20px";
+  container.style.right = "20px";
+  container.style.zIndex = "1000";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.alignItems = "flex-end";
+  container.style.gap = "5px";
 
   // Create close button
-  var closeButton = document.createElement(&quot;button&quot;);
-  closeButton.id = &quot;closeResultButton&quot;;
+  var closeButton = document.createElement("button");
+  closeButton.id = "closeResultButton";
   closeButton.innerHTML = `
-    &lt;svg width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
-      &lt;path d=&quot;M12 4L4 12M4 4L12 12&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;
-    &lt;/svg&gt;
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   `;
-  closeButton.style.width = &quot;30px&quot;;
-  closeButton.style.height = &quot;30px&quot;;
-  closeButton.style.borderRadius = &quot;50%&quot;;
-  closeButton.style.border = &quot;none&quot;;
-  closeButton.style.backgroundColor = &quot;#dc3545&quot;;
-  closeButton.style.color = &quot;white&quot;;
-  closeButton.style.cursor = &quot;pointer&quot;;
-  closeButton.style.fontSize = &quot;18px&quot;;
-  closeButton.style.fontWeight = &quot;bold&quot;;
-  closeButton.style.display = &quot;flex&quot;;
-  closeButton.style.alignItems = &quot;center&quot;;
-  closeButton.style.justifyContent = &quot;center&quot;;
-  closeButton.style.boxShadow = &quot;0 2px 5px rgba(0, 0, 0, 0.2)&quot;;
+  closeButton.style.width = "30px";
+  closeButton.style.height = "30px";
+  closeButton.style.borderRadius = "50%";
+  closeButton.style.border = "none";
+  closeButton.style.backgroundColor = "#dc3545";
+  closeButton.style.color = "white";
+  closeButton.style.cursor = "pointer";
+  closeButton.style.fontSize = "18px";
+  closeButton.style.fontWeight = "bold";
+  closeButton.style.display = "flex";
+  closeButton.style.alignItems = "center";
+  closeButton.style.justifyContent = "center";
+  closeButton.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
 
   // Add click event to close button
-  closeButton.addEventListener(&quot;click&quot;, function () {
-    document.body.classList.add(&quot;close-results&quot;);
+  closeButton.addEventListener("click", function () {
+    document.body.classList.add("close-results");
   });
 
   // Create main result button
-  var button = document.createElement(&quot;button&quot;);
-  button.id = &quot;resultButton&quot;;
+  var button = document.createElement("button");
+  button.id = "resultButton";
   button.innerHTML = `
-    &lt;span id=&quot;result-inner&quot;&gt;Result ${current} of ${total}&lt;/span&gt;
-    &lt;svg width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; style=&quot;margin-left: 8px;&quot;&gt;
-      &lt;path d=&quot;M4 6L8 10L12 6&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;
-    &lt;/svg&gt;
+    <span id="result-inner">Result ${current} of ${total}</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 8px;">
+      <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   `;
-  button.style.padding = &quot;10px 7px&quot;;
-  button.style.borderRadius = &quot;5px&quot;;
-  button.style.border = &quot;none&quot;;
-  button.style.backgroundColor = &quot;#007BFF&quot;;
-  button.style.color = &quot;white&quot;;
-  button.style.cursor = &quot;pointer&quot;;
-  button.style.boxShadow = &quot;0 2px 5px rgba(0, 0, 0, 0.2)&quot;;
-  button.style.display = &quot;flex&quot;;
-  button.style.alignItems = &quot;center&quot;;
-  button.style.justifyContent = &quot;center&quot;;
+  button.style.padding = "10px 7px";
+  button.style.borderRadius = "5px";
+  button.style.border = "none";
+  button.style.backgroundColor = "#007BFF";
+  button.style.color = "white";
+  button.style.cursor = "pointer";
+  button.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+  button.style.display = "flex";
+  button.style.alignItems = "center";
+  button.style.justifyContent = "center";
 
-  button.addEventListener(&quot;click&quot;, function () {
-    if (typeof callback === &quot;function&quot;) {
+  button.addEventListener("click", function () {
+    if (typeof callback === "function") {
       callback();
     }
   });
@@ -151,45 +256,45 @@ function createResultButton(current, total, callback) {
 }
 function extractMatch(baseString, matchString) {
   // Escape special regex characters in the match string
-  const escaped = matchString.replace(/[.*+?^${}()|[\]\\]/g, &quot;\\$&amp;&quot;);
+  const escaped = matchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   // Create case-insensitive regex with word boundaries
-  const regex = new RegExp(`\\b${escaped}\\b`, &quot;i&quot;);
+  const regex = new RegExp(`\\b${escaped}\\b`, "i");
 
   // Find and return the match (preserving original case from base string)
   const match = baseString.match(regex);
-  return match ? match[0] : &quot;&quot;;
+  return match ? match[0] : "";
 }
 
 // Function to modify the href of .project-image-link within the li elements
 function processListItem(li) {
-  const highlightSpan = li.querySelector(&quot;.search-input-highlight&quot;);
-  const link = li.querySelector(&quot;.project-image-link&quot;);
-  if (highlightSpan &amp;&amp; link) {
+  const highlightSpan = li.querySelector(".search-input-highlight");
+  const link = li.querySelector(".project-image-link");
+  if (highlightSpan && link) {
     const result = document.querySelectorAll(
-      &quot;.project-search-results, .search-results-found-list, .project-search-results-container&quot;,
+      ".project-search-results, .search-results-found-list, .project-search-results-container",
     );
-    result.forEach((result) =&gt; (result.style.display = &quot;none&quot;));
+    result.forEach((result) => (result.style.display = "none"));
     if (
       link.href ===
-        &quot;https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html&quot; ||
+        "https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html" ||
       link.href ===
-        &quot;https://graduation-programmes.imperial.ac.uk/7f547269-7abd-44bc-94bd-c0cae69b796e/index.html&quot; ||
+        "https://graduation-programmes.imperial.ac.uk/7f547269-7abd-44bc-94bd-c0cae69b796e/index.html" ||
       link.href ===
-        &quot;https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html&quot; ||
+        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html" ||
       link.href ===
-      &quot;https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html&quot; ||
+      "https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html" ||
       link.href ===
-      &quot;https://graduation-programmes.imperial.ac.uk/8e35fcf0-b0e7-4d37-a6d3-2ccb74b7801e/index.html&quot; ||
+      "https://graduation-programmes.imperial.ac.uk/8e35fcf0-b0e7-4d37-a6d3-2ccb74b7801e/index.html" ||
       link.href ===
-        &quot;https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html&quot; ||
-      link.href === &quot;index.html&quot;
+        "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html" ||
+      link.href === "index.html"
     ) {
-      const input = document.querySelector(&quot;.project-search-input&quot;);
-      const name = input ? input.value : &quot;&quot;;
+      const input = document.querySelector(".project-search-input");
+      const name = input ? input.value : "";
       const studentName = encodeURIComponent(name);
       const url = new URL(link.href);
-      url.searchParams.set(&quot;student_name&quot;, studentName);
+      url.searchParams.set("student_name", studentName);
       window.location.replace(url.href);
     }
   }
@@ -198,15 +303,16 @@ function processListItem(li) {
 // Callback function to execute when mutations are observed
 const callback = function (mutationsList, observer) {
   for (const mutation of mutationsList) {
-    if (mutation.type === &quot;childList&quot;) {
+    if (mutation.type === "childList") {
       for (const node of mutation.addedNodes) {
-        // Check if the added node is a ul with class &#x27;.project-search-results&#x27;
+        // Check if the added node is a ul with class '.project-search-results'
         if (
-          node.nodeType === 1 &amp;&amp;
-          (node.matches(&quot;.project-search-results&quot;) ||
-            node.matches(&quot;.search-results-found-list&quot;))
+          node.nodeType === 1 &&
+          (node.matches(".project-search-results") ||
+            node.matches(".search-results-found-list"))
         ) {
-          const listItems = node.querySelectorAll(&quot;.project-story-list-item&quot;);
+          const listItems = node.querySelectorAll(".project-story-list-item");
+          impSearchResultsShown(node);
           listItems.forEach(processListItem);
         }
       }
@@ -216,7 +322,7 @@ const callback = function (mutationsList, observer) {
 
 // Optionally, disconnect the observer at some point using observer.disconnect();
 
-document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
+document.addEventListener("DOMContentLoaded", function () {
   // Create a MutationObserver instance
   const observer = new MutationObserver(callback);
 
@@ -224,76 +330,76 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
   const config = { childList: true, subtree: true };
 
   // Select the target node (the div with class .project-search-sideBar)
-  const targetNode = document.querySelector(&quot;.project-search-sideBar&quot;);
+  const targetNode = document.querySelector(".project-search-sideBar");
 
   // Check if targetNode exists to avoid errors
   if (targetNode) {
     observer.observe(targetNode, config);
   } else {
     console.error(
-      &quot;The target element `.project-search-sideBar` was not found.&quot;,
+      "The target element `.project-search-sideBar` was not found.",
     );
   }
 
-  var style = document.createElement(&quot;style&quot;);
-  style.id = &quot;searchTitle&quot;;
+  var style = document.createElement("style");
+  style.id = "searchTitle";
   style.textContent = `
     @media (min-width: 900px) {
       .project-search-button::after {
-          content: &quot;Search name:&quot; !important;
+          content: "Search name:" !important;
       }
     }
   `;
 
-  if (!document.getElementById(&quot;searchTitle&quot;)) {
+  if (!document.getElementById("searchTitle")) {
     document.head.appendChild(style);
   }
 
   // Update Search Placeholder
-  const projectInput = document.querySelector(&quot;.Theme-ProjectInput&quot;);
-  if (projectInput) projectInput.setAttribute(&quot;placeholder&quot;, &quot;Search name&quot;);
+  const projectInput = document.querySelector(".Theme-ProjectInput");
+  if (projectInput) projectInput.setAttribute("placeholder", "Search name");
 
   // accordion logic
-  const accordions = document.querySelectorAll(&quot;.accordion&quot;);
-  accordions.forEach((accordion, index) =&gt; {
-    accordion.classList.add(&quot;step-&quot; + index);
-    accordion.style.scrollMarginTop = &quot;150px&quot;;
+  const accordions = document.querySelectorAll(".accordion");
+  accordions.forEach((accordion, index) => {
+    accordion.classList.add("step-" + index);
+    accordion.style.scrollMarginTop = "150px";
   });
-  const innerDropdowns = document.querySelectorAll(&quot;.inner-dropdown&quot;);
+  const innerDropdowns = document.querySelectorAll(".inner-dropdown");
 
-  const consolidatedDropdown = document.createElement(&quot;div&quot;);
-  consolidatedDropdown.className = &quot;consolidated-dropdown&quot;;
-  consolidatedDropdown.style.display = &quot;none&quot;;
+  const consolidatedDropdown = document.createElement("div");
+  consolidatedDropdown.className = "consolidated-dropdown";
+  consolidatedDropdown.style.display = "none";
   consolidatedDropdown.style.transition =
-    &quot;opacity 0.3s ease, pointer-events 0.3s ease&quot;;
-  consolidatedDropdown.style.opacity = &quot;1&quot;;
-  consolidatedDropdown.style.pointerEvents = &quot;auto&quot;;
+    "opacity 0.3s ease, pointer-events 0.3s ease";
+  consolidatedDropdown.style.opacity = "1";
+  consolidatedDropdown.style.pointerEvents = "auto";
   document.body.appendChild(consolidatedDropdown);
 
   // Create and insert sentry section before the target element
   function createSentrySection() {
     const targetElement =
-      document.getElementById(&quot;section-tVbkG6IJAz&quot;) ||
-      document.getElementById(&quot;section-OcWb6x3SxS&quot;) ||
-      document.getElementById(&quot;section-de8T3FMcx4&quot;) ||
-      document.getElementById(&quot;section-ZvbXBHs5lv&quot;);
+      document.getElementById("section-tVbkG6IJAz") ||
+      document.getElementById("section-OcWb6x3SxS") ||
+      document.getElementById("section-de8T3FMcx4") ||
+      document.getElementById("section-ZvbXBHs5lv");
 
     if (targetElement) {
-      const sentrySection = document.createElement(&quot;div&quot;);
-      sentrySection.id = &quot;section-1430-sentry&quot;; // Uses allowed prefix
-      sentrySection.className = &quot;Theme-Section&quot;; // Matches observer selector
-      sentrySection.style.height = &quot;0px&quot;;
-      sentrySection.style.width = &quot;0px&quot;;
-      sentrySection.style.overflow = &quot;hidden&quot;;
-      sentrySection.style.visibility = &quot;hidden&quot;; // Completely invisible
-      sentrySection.style.position = &quot;relative&quot;; // Doesn&#x27;t affect layout
+      const sentrySection = document.createElement("div");
+      sentrySection.id = "section-1430-sentry"; // Uses allowed prefix
+      sentrySection.className = "Theme-Section"; // Matches observer selector
+      sentrySection.style.height = "0px";
+      sentrySection.style.width = "0px";
+      sentrySection.style.overflow = "hidden";
+      sentrySection.style.visibility = "hidden"; // Completely invisible
+      sentrySection.style.position = "relative"; // Doesn't affect layout
 
       // Insert before the target element
       targetElement.parentNode.insertBefore(sentrySection, targetElement);
 
-      console.log(&quot;Sentry section created and inserted&quot;);
+      console.log("Sentry section created and inserted");
     } else {
-      console.warn(&quot;Target element section-tVbkG6IJAz not found&quot;);
+      console.warn("Target element section-tVbkG6IJAz not found");
     }
   }
 
@@ -302,24 +408,24 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
 
   // Intersection Observer for dropdown visibility
   const allowedSectionPrefixes = [
-    &quot;section-1430&quot;,
-    &quot;section-1100&quot;,
-    &quot;section-1030&quot;,
-    &quot;section-1345&quot;,
-    &quot;section-1630&quot;,
-    &quot;section-1645&quot;,
+    "section-1430",
+    "section-1100",
+    "section-1030",
+    "section-1345",
+    "section-1630",
+    "section-1645",
   ];
 
   function setupDropdownVisibilityObserver() {
     // Get all sections on the page
-    const sections = document.querySelectorAll(&quot;.Theme-Section&quot;);
+    const sections = document.querySelectorAll(".Theme-Section");
 
     const observer = new IntersectionObserver(
-      (entries) =&gt; {
+      (entries) => {
         // Check if the fade-out section is in view
         const fadeOutSection = entries.find(
-          (entry) =&gt;
-            entry.isIntersecting &amp;&amp; entry.target.id === &quot;section-actX6a4Fex&quot;,
+          (entry) =>
+            entry.isIntersecting && entry.target.id === "section-actX6a4Fex",
         );
 
         if (fadeOutSection) {
@@ -327,19 +433,19 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
           console.log(
             `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`,
           );
-          consolidatedDropdown.style.opacity = &quot;0&quot;;
-          consolidatedDropdown.style.pointerEvents = &quot;none&quot;;
-          return; // Exit early, don&#x27;t check for allowed sections
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
+          return; // Exit early, don't check for allowed sections
         }
 
         // Check if any currently intersecting section has an allowed ID prefix
         let triggeringSection = null;
-        const hasAllowedSection = entries.some((entry) =&gt; {
-          if (entry.isIntersecting &amp;&amp; entry.target.id) {
+        const hasAllowedSection = entries.some((entry) => {
+          if (entry.isIntersecting && entry.target.id) {
             const isAllowed = allowedSectionPrefixes.some(
-              (prefix) =&gt;
-                entry.target.id.startsWith(prefix) &amp;&amp;
-                !entry.target.id.includes(&quot;Imperial&quot;),
+              (prefix) =>
+                entry.target.id.startsWith(prefix) &&
+                !entry.target.id.includes("Imperial"),
             );
             if (isAllowed) {
               triggeringSection = entry.target.id;
@@ -353,82 +459,82 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
         if (hasAllowedSection) {
           // Show dropdown - over an allowed section
           console.log(`🟢 Dropdown triggered by section: ${triggeringSection}`);
-          consolidatedDropdown.style.opacity = &quot;1&quot;;
-          consolidatedDropdown.style.pointerEvents = &quot;auto&quot;;
+          consolidatedDropdown.style.opacity = "1";
+          consolidatedDropdown.style.pointerEvents = "auto";
         } else {
           // Check if any allowed sections are currently in viewport
-          const allowedSectionsInView = Array.from(sections).some((section) =&gt; {
+          const allowedSectionsInView = Array.from(sections).some((section) => {
             if (!section.id) return false;
-            const hasAllowedId = allowedSectionPrefixes.some((prefix) =&gt;
+            const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
               section.id.startsWith(prefix),
             );
             if (!hasAllowedId) return false;
 
             const rect = section.getBoundingClientRect();
-            return rect.top &lt; window.innerHeight &amp;&amp; rect.bottom &gt; 0;
+            return rect.top < window.innerHeight && rect.bottom > 0;
           });
 
           if (!allowedSectionsInView) {
             // Hide dropdown - not over any allowed section
-            consolidatedDropdown.style.opacity = &quot;0&quot;;
-            consolidatedDropdown.style.pointerEvents = &quot;none&quot;;
+            consolidatedDropdown.style.opacity = "0";
+            consolidatedDropdown.style.pointerEvents = "none";
           }
         }
       },
       {
         threshold: 0.1, // Trigger when 10% of the section is visible
-        rootMargin: &quot;-100px 0px -50px 0px&quot;,
+        rootMargin: "-100px 0px -50px 0px",
       },
     );
 
     // Observe all sections (including the new sentry section)
-    sections.forEach((section) =&gt; {
+    sections.forEach((section) => {
       observer.observe(section);
     });
   }
 
   function updateConsolidatedDropdown() {
     const openAccordions = Array.from(accordions).filter(
-      (accordion) =&gt; accordion.nextElementSibling.style.display === &quot;inline&quot;,
+      (accordion) => accordion.nextElementSibling.style.display === "inline",
     );
 
-    if (openAccordions.length &gt; 0) {
+    if (openAccordions.length > 0) {
       consolidatedDropdown.innerHTML = `
-        &lt;button class=&quot;dropbtn&quot;&gt;Find a course:&lt;/button&gt;
-        &lt;div class=&quot;dropdown-content&quot;&gt;&lt;/div&gt;
+        <button class="dropbtn">Find a course:</button>
+        <div class="dropdown-content"></div>
       `;
       const dropdownContent =
-        consolidatedDropdown.querySelector(&quot;.dropdown-content&quot;);
+        consolidatedDropdown.querySelector(".dropdown-content");
 
-      openAccordions.forEach((accordion, index) =&gt; {
-        const step = accordion.className.replace(/[^\d]/g, &quot;&quot;);
+      openAccordions.forEach((accordion, index) => {
+        const step = accordion.className.replace(/[^\d]/g, "");
         const associatedDropdown = innerDropdowns[step];
 
         if (associatedDropdown) {
-          const links = associatedDropdown.querySelectorAll(&quot;a&quot;);
-          links.forEach((link) =&gt; {
+          const links = associatedDropdown.querySelectorAll("a");
+          links.forEach((link) => {
             const newLink = link.cloneNode(true);
 
             // Extract the prefix from the onclick function
-            const onclickAttr = newLink.getAttribute(&quot;onclick&quot;);
-            let ceremonyPrefix = &quot;default&quot;;
+            const onclickAttr = newLink.getAttribute("onclick");
+            let ceremonyPrefix = "default";
 
             if (onclickAttr) {
-              // Extract the ID from scrollToElementWithOffset(&#x27;1430dept1course1&#x27;, 250)
+              // Extract the ID from scrollToElementWithOffset('1430dept1course1', 250)
               const match = onclickAttr.match(
-                /scrollToElementWithOffset\(&#x27;(\d+)/,
+                /scrollToElementWithOffset\('(\d+)/,
               );
-              if (match &amp;&amp; match[1]) {
-                ceremonyPrefix = match[1]; // e.g., &quot;1430&quot;
+              if (match && match[1]) {
+                ceremonyPrefix = match[1]; // e.g., "1430"
               }
             }
 
             // Add class to associate link with its ceremony section
             const sectionClass = `ceremony-${ceremonyPrefix}`;
-            newLink.classList.add(&quot;ceremony-link&quot;, sectionClass);
+            newLink.classList.add("ceremony-link", sectionClass);
 
             // Initially hide all links
-            newLink.style.display = &quot;none&quot;;
+            newLink.style.display = "none";
 
             dropdownContent.appendChild(newLink);
           });
@@ -436,28 +542,28 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
       });
 
       // Always show the dropdown when there are open accordions
-      consolidatedDropdown.style.display = &quot;flex&quot;;
-      consolidatedDropdown.style.opacity = &quot;1&quot;;
-      consolidatedDropdown.style.pointerEvents = &quot;auto&quot;;
+      consolidatedDropdown.style.display = "flex";
+      consolidatedDropdown.style.opacity = "1";
+      consolidatedDropdown.style.pointerEvents = "auto";
 
       // Initialize the observer after the dropdown is shown
       setupDropdownVisibilityObserver();
     } else {
-      consolidatedDropdown.style.display = &quot;none&quot;;
+      consolidatedDropdown.style.display = "none";
     }
   }
 
   function setupDropdownVisibilityObserver() {
     // Get all sections on the page
-    const sections = document.querySelectorAll(&quot;.Theme-Section&quot;);
+    const sections = document.querySelectorAll(".Theme-Section");
 
     const observer = new IntersectionObserver(
-      (entries) =&gt; {
+      (entries) => {
         // Check if the fade-out section is in view first
-        const fadeOutSection = Array.from(sections).find((section) =&gt; {
-          if (section.id === &quot;section-aIviY23ApG&quot;) {
+        const fadeOutSection = Array.from(sections).find((section) => {
+          if (section.id === "section-aIviY23ApG") {
             const rect = section.getBoundingClientRect();
-            return rect.top &lt; window.innerHeight &amp;&amp; rect.bottom &gt; 0;
+            return rect.top < window.innerHeight && rect.bottom > 0;
           }
           return false;
         });
@@ -465,8 +571,8 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
         if (fadeOutSection) {
           // Hide entire dropdown when fade-out section is in view
           console.log(`🔴 Dropdown hidden by fade-out section`);
-          consolidatedDropdown.style.opacity = &quot;0&quot;;
-          consolidatedDropdown.style.pointerEvents = &quot;none&quot;;
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
           return;
         }
 
@@ -474,18 +580,18 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
         const visiblePrefixes = new Set();
 
         // For each allowed prefix, check if ANY section with that prefix is visible
-        allowedSectionPrefixes.forEach((prefix) =&gt; {
-          const hasVisibleSection = Array.from(sections).some((section) =&gt; {
+        allowedSectionPrefixes.forEach((prefix) => {
+          const hasVisibleSection = Array.from(sections).some((section) => {
             if (
               !section.id ||
               !section.id.startsWith(prefix) ||
-              section.id.includes(&quot;Imperial&quot;)
+              section.id.includes("Imperial")
             ) {
               return false;
             }
 
             const rect = section.getBoundingClientRect();
-            const isVisible = rect.top &lt; window.innerHeight &amp;&amp; rect.bottom &gt; 0;
+            const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
 
             return isVisible;
           });
@@ -497,70 +603,70 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
 
         // Hide all ceremony links first
         const ceremonyLinks =
-          consolidatedDropdown.querySelectorAll(&quot;.ceremony-link&quot;);
-        ceremonyLinks.forEach((link) =&gt; {
-          link.style.display = &quot;none&quot;;
+          consolidatedDropdown.querySelectorAll(".ceremony-link");
+        ceremonyLinks.forEach((link) => {
+          link.style.display = "none";
         });
 
-        if (visiblePrefixes.size &gt; 0) {
+        if (visiblePrefixes.size > 0) {
           // Show dropdown and relevant links
-          consolidatedDropdown.style.opacity = &quot;1&quot;;
-          consolidatedDropdown.style.pointerEvents = &quot;auto&quot;;
+          consolidatedDropdown.style.opacity = "1";
+          consolidatedDropdown.style.pointerEvents = "auto";
 
           // Show links for visible section prefixes
-          visiblePrefixes.forEach((sectionPrefix) =&gt; {
+          visiblePrefixes.forEach((sectionPrefix) => {
             const sectionClass = `ceremony-${sectionPrefix.replace(
-              &quot;section-&quot;,
-              &quot;&quot;,
+              "section-",
+              "",
             )}`;
             const relevantLinks = consolidatedDropdown.querySelectorAll(
               `.${sectionClass}`,
             );
-            relevantLinks.forEach((link) =&gt; {
-              link.style.display = &quot;block&quot;;
+            relevantLinks.forEach((link) => {
+              link.style.display = "block";
             });
           });
 
           console.log(
             `🟢 Dropdown showing links for sections: ${Array.from(
               visiblePrefixes,
-            ).join(&quot;, &quot;)}`,
+            ).join(", ")}`,
           );
         } else {
           // Hide dropdown when not over any allowed section
-          consolidatedDropdown.style.opacity = &quot;0&quot;;
-          consolidatedDropdown.style.pointerEvents = &quot;none&quot;;
+          consolidatedDropdown.style.opacity = "0";
+          consolidatedDropdown.style.pointerEvents = "none";
         }
       },
       {
         threshold: 0.1, // Trigger when 10% of the section is visible
-        rootMargin: &quot;-100px 0px -50px 0px&quot;,
+        rootMargin: "-100px 0px -50px 0px",
       },
     );
 
     // Observe all sections (including the new sentry section)
-    sections.forEach((section) =&gt; {
+    sections.forEach((section) => {
       observer.observe(section);
     });
   }
 
   function toggleAccordion(clickedAccordion) {
     const content = clickedAccordion.nextElementSibling;
-    if (content.style.display === &quot;none&quot; || content.style.display === &quot;&quot;) {
-      content.style.display = &quot;inline&quot;;
+    if (content.style.display === "none" || content.style.display === "") {
+      content.style.display = "inline";
     } else {
-      content.style.display = &quot;none&quot;;
+      content.style.display = "none";
       clickedAccordion.scrollIntoView({
-        behavior: &quot;smooth&quot;,
-        block: &quot;nearest&quot;,
-        inline: &quot;start&quot;,
+        behavior: "smooth",
+        block: "nearest",
+        inline: "start",
       });
     }
     updateConsolidatedDropdown();
   }
 
-  accordions.forEach((accordion) =&gt; {
-    accordion.addEventListener(&quot;click&quot;, function () {
+  accordions.forEach((accordion) => {
+    accordion.addEventListener("click", function () {
       toggleAccordion(this);
     });
   });
@@ -568,39 +674,39 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
   // search user
   const searchedAccordions = [];
 
-  const toTitleCase = (phrase) =&gt; {
+  const toTitleCase = (phrase) => {
     return phrase
       .toLowerCase()
-      .split(&quot; &quot;)
-      .map((word) =&gt; word.charAt(0).toUpperCase() + word.slice(1))
-      .join(&quot; &quot;);
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   function scrollToAndHighlightText(t) {
     const text = toTitleCase(t);
     const BLACKLIST = [
-      &quot;#section-1030-Faculty-of-Engineering-Ceremony-1-WrcFIYzqK1&quot;,
-      &quot;#section-1330-Faculty-of-Engineering-Ceremony-2-9j7l1TdaZz&quot;,
-      &quot;#section-1630-Faculty-of-Medicine-Centre-for-Languages-Culture-and-Communication-and-Centre-for-Higher-Education-Research-and-Scholarship-z1h9a7lTHe&quot;,
-      &quot;#section-1030-Faculty-of-Natural-Sciences-uT2608HY0e&quot;,
-      &quot;#section-1345-Imperial-Business-School-Ceremony-1-cLHwJu8Bsp&quot;,
-      &quot;#section-1645-Imperial-Business-School-Ceremony-2-txtPpMMyld&quot;,
+      "#section-1030-Faculty-of-Engineering-Ceremony-1-WrcFIYzqK1",
+      "#section-1330-Faculty-of-Engineering-Ceremony-2-9j7l1TdaZz",
+      "#section-1630-Faculty-of-Medicine-Centre-for-Languages-Culture-and-Communication-and-Centre-for-Higher-Education-Research-and-Scholarship-z1h9a7lTHe",
+      "#section-1030-Faculty-of-Natural-Sciences-uT2608HY0e",
+      "#section-1345-Imperial-Business-School-Ceremony-1-cLHwJu8Bsp",
+      "#section-1645-Imperial-Business-School-Ceremony-2-txtPpMMyld",
     ];
 
-    const blacklistSelector = BLACKLIST.join(&quot;,&quot;);
+    const blacklistSelector = BLACKLIST.join(",");
 
     const containers = [
-      ...document.querySelectorAll(&quot;.sh-names, .sh-prizewinnernames&quot;),
-    ].filter((el) =&gt; !el.closest(blacklistSelector));
+      ...document.querySelectorAll(".sh-names, .sh-prizewinnernames"),
+    ].filter((el) => !el.closest(blacklistSelector));
 
     if (!containers.length) {
-      console.error(&quot;Container .sh-names not found.&quot;);
-      return;
+      console.error("Container .sh-names not found.");
+      return 0;
     }
 
     let matches = [];
 
-    containers.forEach((container) =&gt; {
+    containers.forEach((container) => {
       let updates = []; // To store updates for later application
       const walker = document.createTreeWalker(
         container,
@@ -619,12 +725,12 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
 
           const endIndex = parts.length - 1;
 
-          parts.forEach((part, index) =&gt; {
+          parts.forEach((part, index) => {
             frag.appendChild(document.createTextNode(part));
             if (index !== endIndex) {
-              const span = document.createElement(&quot;span&quot;);
-              span.style.backgroundColor = &quot;#ffffff1d&quot;;
-              span.classList.add(&quot;found-text-piece&quot;);
+              const span = document.createElement("span");
+              span.style.backgroundColor = "#ffffff1d";
+              span.classList.add("found-text-piece");
               span.textContent = match.length ? match : text;
               frag.appendChild(span);
               matches.push(span);
@@ -637,73 +743,75 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
       }
 
       // Apply all collected updates
-      updates.forEach((update) =&gt; {
+      updates.forEach((update) => {
         let currentElement = update.oldNode.parentElement;
-        while (currentElement &amp;&amp; !currentElement.classList.contains(&quot;panel&quot;)) {
+        while (currentElement && !currentElement.classList.contains("panel")) {
           if (
-            currentElement.classList.contains(&quot;order-tab-content&quot;) &amp;&amp;
-            !currentElement.classList.contains(&quot;active&quot;)
+            currentElement.classList.contains("order-tab-content") &&
+            !currentElement.classList.contains("active")
           ) {
-            currentElement.classList.add(&quot;active&quot;);
+            currentElement.classList.add("active");
           }
           currentElement = currentElement.parentElement;
         }
         update.oldNode.parentNode.replaceChild(update.frag, update.oldNode);
 
-        // Find the nearest ancestor with class &#x27;panel&#x27; and set its display to inline
+        // Find the nearest ancestor with class 'panel' and set its display to inline
         if (currentElement) {
-          currentElement.style.display = &quot;inline&quot;;
+          currentElement.style.display = "inline";
           const parent = currentElement.parentElement;
-          const accordion = parent.querySelector(&quot;.accordion&quot;);
+          const accordion = parent.querySelector(".accordion");
           if (accordion) {
             searchedAccordions.push(accordion);
           }
         }
 
-        container.classList.add(&quot;show&quot;);
-        const id = container.getAttribute(&quot;id&quot;);
-        console.log(&quot;ID CHECK&quot;, id);
+        container.classList.add("show");
+        const id = container.getAttribute("id");
+        console.log("ID CHECK", id);
         const day = id.match(/^[^-]+-\d{4}/);
-        console.log(&quot;DAY CHECK&quot;, day);
-        if (day &amp;&amp; day[0]) {
-          const daySection = document.querySelectorAll(&quot;[id^=&quot; + day + &quot;]&quot;);
-          console.log(&quot;DAY SECTION CHECK&quot;, daySection);
-          if (daySection &amp;&amp; daySection.length) {
-            daySection.forEach((section) =&gt; {
-              console.log(&quot;SECTION CHECK&quot;, section);
-              section.classList.add(&quot;showing&quot;);
+        console.log("DAY CHECK", day);
+        if (day && day[0]) {
+          const daySection = document.querySelectorAll("[id^=" + day + "]");
+          console.log("DAY SECTION CHECK", daySection);
+          if (daySection && daySection.length) {
+            daySection.forEach((section) => {
+              console.log("SECTION CHECK", section);
+              section.classList.add("showing");
             });
 
-            daySection.forEach((section) =&gt; {
+            daySection.forEach((section) => {
               const sec = section.querySelector(
-                &#x27;section[class^=&quot;Theme-Section-Position&quot;]&#x27;,
+                'section[class^="Theme-Section-Position"]',
               );
               if (sec) {
-                console.log(&quot;SECTION 2 CHECK&quot;, section);
-                sec.classList.add(&quot;showing&quot;);
+                console.log("SECTION 2 CHECK", section);
+                sec.classList.add("showing");
               }
             });
 
-            const dayBar = daySection[0].querySelector(&quot;.floating-day-bar&quot;);
+            const dayBar = daySection[0].querySelector(".floating-day-bar");
           }
         }
       });
     });
 
-    if (accordions.length &gt; 0) {
+    if (accordions.length > 0) {
       updateConsolidatedDropdown();
     }
 
-    if (matches.length &gt; 0) {
+    if (matches.length > 0) {
       scrollToMatch(matches);
     }
+
+    return matches.length;
   }
 
   function scrollToMatch(matches, yOffset = -400) {
     let current = 0;
 
-    const scroll = () =&gt; {
-      const attemptScroll = () =&gt; {
+    const scroll = () => {
+      const attemptScroll = () => {
         const match = matches[current];
 
         if (!match) return;
@@ -711,20 +819,17 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
         const yPosition =
           match.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
-        if (window.pageYOffset &gt; 0 || yPosition &gt; 0) {
+        if (window.pageYOffset > 0 || yPosition > 0) {
           window.scrollTo({
             top: Math.max(0, yPosition),
-            behavior: &quot;smooth&quot;,
+            behavior: "smooth",
           });
 
-          setTimeout(() =&gt; {
+          setTimeout(() => {
             const rect = match.getBoundingClientRect();
 
-            const targetTop = Math.abs(yOffset);
-            const tolerance = 30;
-
-            const tooHigh = rect.top &lt; targetTop - tolerance;
-            const tooLow = rect.top &gt; targetTop + tolerance;
+            const tooLow = rect.bottom > window.innerHeight - 80;
+            const tooHigh = rect.top < 120;
 
             if (tooLow || tooHigh) {
               const correctedYPosition =
@@ -734,14 +839,14 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
 
               window.scrollTo({
                 top: Math.max(0, correctedYPosition),
-                behavior: &quot;auto&quot;,
+                behavior: "auto",
               });
             }
           }, 700);
 
           current = (current + 1) % matches.length;
 
-          matches.length &gt; 1 &amp;&amp;
+          matches.length > 1 &&
             updateResultButtonText(current || matches.length, matches.length);
         } else {
           setTimeout(attemptScroll, 120);
@@ -749,46 +854,47 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, function () {
       };
 
       if (matches[current]) {
-        requestAnimationFrame(() =&gt; {
-          requestAnimationFrame(() =&gt; {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
             setTimeout(attemptScroll, 100);
           });
         });
       }
     };
 
-    if (matches.length &gt; 1) {
+    if (matches.length > 1) {
       createResultButton(1, matches.length, scroll);
     } else {
-      console.log(&quot;Only one match found, no need for result button.&quot;);
+      console.log("Only one match found, no need for result button.");
 
-      var style = document.createElement(&quot;style&quot;);
-      style.id = &quot;closeResults&quot;;
+      var style = document.createElement("style");
+      style.id = "closeResults";
       style.textContent = `
       body.close-results .found-text-piece {
         background-color: transparent !important;
       }
     `;
 
-      if (!document.getElementById(&quot;closeResults&quot;)) {
+      if (!document.getElementById("closeResults")) {
         document.head.appendChild(style);
       }
 
-      document.addEventListener(&quot;click&quot;, function () {
-        document.body.classList.add(&quot;close-results&quot;);
+      document.addEventListener("click", function () {
+        document.body.classList.add("close-results");
       });
     }
 
     scroll();
   }
 
-  // Get the &#x27;student_name&#x27; query parameter
+  // Get the 'student_name' query parameter
   const urlParams = new URLSearchParams(window.location.search);
-  const studentName = urlParams.get(&quot;student_name&quot;);
+  const studentName = urlParams.get("student_name");
 
   if (studentName) {
     // Decode URI component in case the name is encoded
-    scrollToAndHighlightText(decodeURIComponent(studentName));
+    const found = scrollToAndHighlightText(decodeURIComponent(studentName));
+    impTrackSearchArrival(found);
   }
 });
 
@@ -796,17 +902,17 @@ function scrollToElementWithOffset(id) {
   const element = document.getElementById(id);
 
   if (!element) {
-    console.error(&quot;Element not found:&quot;, id);
+    console.error("Element not found:", id);
     return;
   }
 
   // Find the closest panel ancestor
-  const panel = element.closest(&quot;.panel&quot;);
+  const panel = element.closest(".panel");
   if (panel) {
     // Check if the panel is hidden and show it if needed
-    if (panel.style.display !== &quot;inline&quot;) {
-      console.log(&quot;Panel was hidden, showing it:&quot;, panel.id);
-      panel.style.display = &quot;inline&quot;;
+    if (panel.style.display !== "inline") {
+      console.log("Panel was hidden, showing it:", panel.id);
+      panel.style.display = "inline";
     }
   }
 
@@ -815,37 +921,37 @@ function scrollToElementWithOffset(id) {
   // Determine the offset based on screen width
   let offset;
   const screenWidth = window.innerWidth;
-  if (screenWidth &lt;= 899) {
+  if (screenWidth <= 899) {
     offset = 200;
-  } else if (screenWidth &gt;= 900 &amp;&amp; screenWidth &lt;= 1099) {
+  } else if (screenWidth >= 900 && screenWidth <= 1099) {
     offset = 200;
   } else {
     offset = 250;
   }
-  console.log(&quot;Screen width:&quot;, screenWidth, &quot;Offset:&quot;, offset);
+  console.log("Screen width:", screenWidth, "Offset:", offset);
   const offsetPosition = elementPosition - offset;
-  console.log(&quot;Offset position:&quot;, offsetPosition);
+  console.log("Offset position:", offsetPosition);
   window.scrollTo({
     top: offsetPosition,
-    behavior: &quot;smooth&quot;,
+    behavior: "smooth",
   });
 }
 
-setTimeout(() =&gt; {
+setTimeout(() => {
   window.scrollToElementWithOffset = scrollToElementWithOffset;
 }, 500);
 
 (function () {
-  const SELECTOR = &#x27;[data-project-search-sidebar=&quot;true&quot;]&#x27;;
-  const ACTIVE_CLASS = &quot;project-search--isActive&quot;;
+  const SELECTOR = '[data-project-search-sidebar="true"]';
+  const ACTIVE_CLASS = "project-search--isActive";
   const POLL_INTERVAL_MS = 200;
   const TIMEOUT_MS = 30000;
 
   function applyInert(el) {
     if (el.classList.contains(ACTIVE_CLASS)) {
-      el.removeAttribute(&quot;inert&quot;);
+      el.removeAttribute("inert");
     } else {
-      el.setAttribute(&quot;inert&quot;, &quot;&quot;);
+      el.setAttribute("inert", "");
     }
   }
 
@@ -854,51 +960,51 @@ setTimeout(() =&gt; {
     applyInert(el);
 
     // Watch for class changes
-    const observer = new MutationObserver(() =&gt; applyInert(el));
-    observer.observe(el, { attributeFilter: [&quot;class&quot;] });
+    const observer = new MutationObserver(() => applyInert(el));
+    observer.observe(el, { attributeFilter: ["class"] });
   }
 
   // Poll for element existence
   const start = performance.now();
-  const interval = setInterval(() =&gt; {
+  const interval = setInterval(() => {
     const el = document.querySelector(SELECTOR);
     if (el) {
       clearInterval(interval);
       init(el);
       return;
     }
-    if (performance.now() - start &gt;= TIMEOUT_MS) {
+    if (performance.now() - start >= TIMEOUT_MS) {
       clearInterval(interval);
-      console.warn(&quot;[search-inert] Timed out waiting for&quot;, SELECTOR);
+      console.warn("[search-inert] Timed out waiting for", SELECTOR);
     }
   }, POLL_INTERVAL_MS);
 })();
 
 (function () {
-  &quot;use strict&quot;;
+  "use strict";
 
   // Get the elements
   const input = document.querySelector(
-    &quot;.Theme-ProjectInput.project-search-input&quot;,
+    ".Theme-ProjectInput.project-search-input",
   );
-  const button = document.querySelector(&quot;.project-search-delete-btn&quot;);
-  const statusText = document.getElementById(&quot;status-text&quot;);
+  const button = document.querySelector(".project-search-delete-btn");
+  const statusText = document.getElementById("status-text");
 
   if (!input || !button) {
-    console.error(&quot;Required elements not found&quot;);
-    if (statusText) statusText.textContent = &quot;Error: Elements not found&quot;;
+    console.error("Required elements not found");
+    if (statusText) statusText.textContent = "Error: Elements not found";
     return;
   }
 
   // Function to update button visibility
   function updateButtonVisibility() {
-    if (input.value.trim() === &quot;&quot;) {
-      button.classList.add(&quot;force-hide&quot;);
-      if (statusText) statusText.textContent = &quot;Input empty - button hidden&quot;;
+    if (input.value.trim() === "") {
+      button.classList.add("force-hide");
+      if (statusText) statusText.textContent = "Input empty - button hidden";
     } else {
-      button.classList.remove(&quot;force-hide&quot;);
+      button.classList.remove("force-hide");
       if (statusText)
-        statusText.textContent = &quot;Input has content - button visible&quot;;
+        statusText.textContent = "Input has content - button visible";
     }
   }
 
@@ -906,14 +1012,14 @@ setTimeout(() =&gt; {
   updateButtonVisibility();
 
   // Create MutationObserver to watch for attribute changes
-  const observer = new MutationObserver((mutations) =&gt; {
-    mutations.forEach((mutation) =&gt; {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
       if (
-        mutation.type === &quot;attributes&quot; &amp;&amp;
-        mutation.attributeName === &quot;value&quot;
+        mutation.type === "attributes" &&
+        mutation.attributeName === "value"
       ) {
         updateButtonVisibility();
-        console.log(&quot;Value attribute changed via mutation&quot;);
+        console.log("Value attribute changed via mutation");
       }
     });
   });
@@ -921,42 +1027,42 @@ setTimeout(() =&gt; {
   // Configure and start observing
   observer.observe(input, {
     attributes: true,
-    attributeFilter: [&quot;value&quot;],
+    attributeFilter: ["value"],
   });
 
   // Listen for input events (handles user typing)
-  input.addEventListener(&quot;input&quot;, () =&gt; {
+  input.addEventListener("input", () => {
     updateButtonVisibility();
-    console.log(&quot;Input event fired&quot;);
+    console.log("Input event fired");
   });
 
   // Listen for change events (handles some programmatic changes)
-  input.addEventListener(&quot;change&quot;, () =&gt; {
+  input.addEventListener("change", () => {
     updateButtonVisibility();
-    console.log(&quot;Change event fired&quot;);
+    console.log("Change event fired");
   });
 
   // Watch for programmatic value changes using a different approach
   // Store the original descriptor
   const descriptor = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
-    &quot;value&quot;,
+    "value",
   );
   const originalSet = descriptor.set;
 
-  // Only override if we haven&#x27;t already
-  if (originalSet &amp;&amp; !input.hasAttribute(&quot;data-observer-attached&quot;)) {
-    input.setAttribute(&quot;data-observer-attached&quot;, &quot;true&quot;);
+  // Only override if we haven't already
+  if (originalSet && !input.hasAttribute("data-observer-attached")) {
+    input.setAttribute("data-observer-attached", "true");
 
     // Create a new setter that calls our update function
-    Object.defineProperty(input, &quot;value&quot;, {
+    Object.defineProperty(input, "value", {
       get: descriptor.get,
       set: function (newValue) {
         // Call the original setter with the input element as context
         originalSet.call(this, newValue);
         // Then update visibility
         updateButtonVisibility();
-        console.log(&quot;Value set programmatically:&quot;, newValue);
+        console.log("Value set programmatically:", newValue);
       },
       enumerable: descriptor.enumerable,
       configurable: descriptor.configurable,
@@ -964,13 +1070,13 @@ setTimeout(() =&gt; {
   }
 
   // Clear button functionality
-  button.addEventListener(&quot;click&quot;, () =&gt; {
-    input.value = &quot;&quot;;
+  button.addEventListener("click", () => {
+    input.value = "";
     updateButtonVisibility();
     input.focus();
   });
 
-  console.log(&quot;MutationObserver script initialized successfully&quot;);
+  console.log("MutationObserver script initialized successfully");
 })();
 class TabOrderManager {
   constructor() {
@@ -981,7 +1087,7 @@ class TabOrderManager {
 
   init() {
     this.addFocusStyles();
-    this.waitForHeader(() =&gt; {
+    this.waitForHeader(() => {
       this.updateTabOrder();
       this.attachObservers();
     });
@@ -992,49 +1098,49 @@ class TabOrderManager {
    * Prevents the partial first-run that puts the input at tabindex=1.
    */
   waitForHeader(cb, attempts = 0) {
-    const navLink = document.querySelector(&quot;#navigation .Theme-NavigationLink&quot;);
-    if (navLink &amp;&amp; navLink.getBoundingClientRect().width &gt; 0) {
+    const navLink = document.querySelector("#navigation .Theme-NavigationLink");
+    if (navLink && navLink.getBoundingClientRect().width > 0) {
       cb();
-    } else if (attempts &gt; 60) {
+    } else if (attempts > 60) {
       // 60 × 200ms = 12s — give up and run anyway
-      console.warn(&quot;[TabOrderManager] Header never appeared, running anyway.&quot;);
+      console.warn("[TabOrderManager] Header never appeared, running anyway.");
       cb();
     } else {
-      setTimeout(() =&gt; this.waitForHeader(cb, attempts + 1), 200);
+      setTimeout(() => this.waitForHeader(cb, attempts + 1), 200);
     }
   }
 
   attachObservers() {
-    this.bodyObserver = new MutationObserver(() =&gt; this.scheduleRefresh(400));
+    this.bodyObserver = new MutationObserver(() => this.scheduleRefresh(400));
     this.bodyObserver.observe(document.body, {
       childList: true,
       subtree: false,
     });
 
-    const nav = document.querySelector(&quot;#navigation&quot;);
+    const nav = document.querySelector("#navigation");
     if (nav) {
-      new MutationObserver(() =&gt; this.scheduleRefresh(200)).observe(nav, {
+      new MutationObserver(() => this.scheduleRefresh(200)).observe(nav, {
         attributes: true,
         subtree: true,
-        attributeFilter: [&quot;aria-expanded&quot;, &quot;style&quot;, &quot;class&quot;],
+        attributeFilter: ["aria-expanded", "style", "class"],
       });
     }
 
-    document.addEventListener(&quot;click&quot;, (e) =&gt; {
+    document.addEventListener("click", (e) => {
       if (
         e.target.closest(
-          &quot;.time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button&quot;,
+          ".time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button",
         )
       ) {
         this.scheduleRefresh(350);
       }
     });
 
-    document.addEventListener(&quot;keydown&quot;, (e) =&gt; {
+    document.addEventListener("keydown", (e) => {
       if (
-        (e.key === &quot;Enter&quot; || e.key === &quot; &quot;) &amp;&amp;
+        (e.key === "Enter" || e.key === " ") &&
         e.target.closest(
-          &quot;.Navigation__button, .time-toggle button, .project-search-button&quot;,
+          ".Navigation__button, .time-toggle button, .project-search-button",
         )
       ) {
         this.scheduleRefresh(350);
@@ -1044,48 +1150,48 @@ class TabOrderManager {
 
   scheduleRefresh(delay = 150) {
     clearTimeout(this.refreshTimer);
-    this.refreshTimer = setTimeout(() =&gt; this.updateTabOrder(), delay);
+    this.refreshTimer = setTimeout(() => this.updateTabOrder(), delay);
   }
 
   isVisible(el) {
     if (!el) return false;
     let node = el;
-    while (node &amp;&amp; node !== document.documentElement) {
+    while (node && node !== document.documentElement) {
       const s = window.getComputedStyle(node);
       if (
-        s.display === &quot;none&quot; ||
-        s.visibility === &quot;hidden&quot; ||
-        s.opacity === &quot;0&quot;
+        s.display === "none" ||
+        s.visibility === "hidden" ||
+        s.opacity === "0"
       )
         return false;
       node = node.parentElement;
     }
     const r = el.getBoundingClientRect();
-    return r.width &gt; 0 &amp;&amp; r.height &gt; 0;
+    return r.width > 0 && r.height > 0;
   }
 
   updateTabOrder() {
     document
       .querySelectorAll(
-        &quot;a[href], button, input, select, textarea, [tabindex], .popup-close&quot;,
+        "a[href], button, input, select, textarea, [tabindex], .popup-close",
       )
-      .forEach((el) =&gt; el.setAttribute(&quot;tabindex&quot;, &quot;-1&quot;));
+      .forEach((el) => el.setAttribute("tabindex", "-1"));
 
     const assignments = [];
     let idx = 1;
 
-    const assign = (el, label) =&gt; {
-      if (el &amp;&amp; this.isVisible(el)) {
-        // el.setAttribute(&quot;tabindex&quot;, String(idx));
-        el.setAttribute(&quot;tabindex&quot;, String(0));
+    const assign = (el, label) => {
+      if (el && this.isVisible(el)) {
+        // el.setAttribute("tabindex", String(idx));
+        el.setAttribute("tabindex", String(0));
         const tag = el.tagName.toLowerCase();
-        const id = el.id ? `#${el.id}` : &quot;&quot;;
-        const text = el.textContent?.trim().slice(0, 40) || &quot;&quot;;
+        const id = el.id ? `#${el.id}` : "";
+        const text = el.textContent?.trim().slice(0, 40) || "";
         assignments.push({
           // order: idx,
           order: 0,
           label,
-          element: `&lt;${tag}${id}&gt; &quot;${text}&quot;`,
+          element: `<${tag}${id}> "${text}"`,
         });
         idx++;
         return true;
@@ -1095,32 +1201,32 @@ class TabOrderManager {
 
     // (1) Logo
     assign(
-      document.querySelector(&quot;.Project-Header--left .Theme-Logo a&quot;),
-      &quot;Logo&quot;,
+      document.querySelector(".Project-Header--left .Theme-Logo a"),
+      "Logo",
     );
 
     // (2)–(5) Navigation
     const navItems = document.querySelectorAll(
-      &quot;#navigation &gt; .Navigation__itemList &gt; .Navigation__item&quot;,
+      "#navigation > .Navigation__itemList > .Navigation__item",
     );
 
-    navItems.forEach((li) =&gt; {
-      const link = li.querySelector(&quot;:scope &gt; a.Theme-NavigationLink&quot;);
-      const button = li.querySelector(&quot;:scope &gt; button.Theme-NavigationLink&quot;);
+    navItems.forEach((li) => {
+      const link = li.querySelector(":scope > a.Theme-NavigationLink");
+      const button = li.querySelector(":scope > button.Theme-NavigationLink");
 
-      if (link &amp;&amp; this.isVisible(link)) {
+      if (link && this.isVisible(link)) {
         assign(link, `Nav: ${link.textContent.trim().slice(0, 30)}`);
-      } else if (button &amp;&amp; this.isVisible(button)) {
+      } else if (button && this.isVisible(button)) {
         assign(button, `Nav: ${button.textContent.trim().slice(0, 30)}`);
 
-        if (button.getAttribute(&quot;aria-expanded&quot;) === &quot;true&quot;) {
+        if (button.getAttribute("aria-expanded") === "true") {
           const dropdown =
-            li.querySelector(&quot;.custom-dropdown&quot;) ||
-            li.querySelector(&quot;.Navigation__subMenu&quot;);
-          if (dropdown &amp;&amp; this.isVisible(dropdown)) {
+            li.querySelector(".custom-dropdown") ||
+            li.querySelector(".Navigation__subMenu");
+          if (dropdown && this.isVisible(dropdown)) {
             dropdown
-              .querySelectorAll(&quot;a[href], button&quot;)
-              .forEach((child) =&gt;
+              .querySelectorAll("a[href], button")
+              .forEach((child) =>
                 assign(
                   child,
                   `Dropdown: ${child.textContent.trim().slice(0, 30)}`,
@@ -1132,67 +1238,67 @@ class TabOrderManager {
     });
 
     // (6) Search icon
-    assign(document.querySelector(&quot;.project-search-button&quot;), &quot;Search icon&quot;);
+    assign(document.querySelector(".project-search-button"), "Search icon");
 
     // (6a) Search panel (if open)
     const searchSidebar = document.querySelector(
-      &quot;[data-project-search-sidebar]&quot;,
+      "[data-project-search-sidebar]",
     );
-    if (searchSidebar &amp;&amp; !searchSidebar.hasAttribute(&quot;inert&quot;)) {
+    if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
       assign(
-        searchSidebar.querySelector(&quot;.project-search-input&quot;),
-        &quot;Sidebar: input&quot;,
+        searchSidebar.querySelector(".project-search-input"),
+        "Sidebar: input",
       );
       const deleteBtn = searchSidebar.querySelector(
-        &quot;.project-search-delete-btn&quot;,
+        ".project-search-delete-btn",
       );
-      if (deleteBtn &amp;&amp; !deleteBtn.classList.contains(&quot;force-hide&quot;)) {
-        assign(deleteBtn, &quot;Sidebar: clear&quot;);
+      if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
+        assign(deleteBtn, "Sidebar: clear");
       }
       assign(
-        searchSidebar.querySelector(&quot;.project-search-enter-btn&quot;),
-        &quot;Sidebar: submit&quot;,
+        searchSidebar.querySelector(".project-search-enter-btn"),
+        "Sidebar: submit",
       );
       assign(
-        searchSidebar.querySelector(&quot;.project-search-close-button&quot;),
-        &quot;Sidebar: close&quot;,
+        searchSidebar.querySelector(".project-search-close-button"),
+        "Sidebar: close",
       );
     }
 
     // (7) On-page search input
-    const pageSearchInput = document.querySelector(&quot;#inputField1&quot;);
+    const pageSearchInput = document.querySelector("#inputField1");
     if (pageSearchInput) {
-      assign(pageSearchInput, &quot;Page search input&quot;);
+      assign(pageSearchInput, "Page search input");
     }
     // (7a) On-page search input button
-    const pageSearchInputButton = document.querySelector(&quot;#submitButton&quot;);
+    const pageSearchInputButton = document.querySelector("#submitButton");
     if (pageSearchInputButton) {
-      assign(pageSearchInputButton, &quot;Page search input&quot;);
+      assign(pageSearchInputButton, "Page search input");
     }
 
     // (8) Ceremony toggle buttons
-    document.querySelectorAll(&quot;.time-toggle button&quot;).forEach((btn) =&gt; {
+    document.querySelectorAll(".time-toggle button").forEach((btn) => {
       assign(btn, `Ceremony btn: ${btn.textContent.trim().slice(0, 20)}`);
     });
 
     // (8a) Open ceremony contents
-    const openCeremony = document.querySelectorAll(&quot;[id^=section].showing&quot;);
-    if (openCeremony &amp;&amp; openCeremony.length) {
-      openCeremony.forEach((ceremony) =&gt; {
+    const openCeremony = document.querySelectorAll("[id^=section].showing");
+    if (openCeremony && openCeremony.length) {
+      openCeremony.forEach((ceremony) => {
         ceremony
           .querySelectorAll(
-            &quot;a[href], button, input, select, textarea, [tabindex], .popup-close&quot;,
+            "a[href], button, input, select, textarea, [tabindex], .popup-close",
           )
-          .forEach((el) =&gt; {
-            if (el.classList.contains(&quot;popup-close&quot;))
-              el.setAttribute(&quot;tabindex&quot;, String(0));
+          .forEach((el) => {
+            if (el.classList.contains("popup-close"))
+              el.setAttribute("tabindex", String(0));
             console.log(
-              &quot;logging&quot;,
+              "logging",
               el,
-              el.getAttribute(&quot;tabindex&quot;),
-              el.getAttribute(&quot;tabindex&quot;) !== &quot;-1&quot;,
+              el.getAttribute("tabindex"),
+              el.getAttribute("tabindex") !== "-1",
             );
-            if (el.getAttribute(&quot;tabindex&quot;) !== &quot;-1&quot;) return;
+            if (el.getAttribute("tabindex") !== "-1") return;
             const text =
               el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
             assign(el, `Ceremony: ${text}`);
@@ -1201,11 +1307,11 @@ class TabOrderManager {
     }
 
     const endingTabs = document.querySelectorAll(
-      &quot;#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a&quot;,
+      "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a",
     );
 
-    endingTabs.forEach((el) =&gt; {
-      if (el.getAttribute(&quot;tabindex&quot;) !== &quot;-1&quot;) return;
+    endingTabs.forEach((el) => {
+      if (el.getAttribute("tabindex") !== "-1") return;
       const text =
         el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
       assign(el, `${text}`);
@@ -1215,9 +1321,9 @@ class TabOrderManager {
   }
 
   addFocusStyles() {
-    if (document.getElementById(&quot;tab-manager-styles&quot;)) return;
-    const style = document.createElement(&quot;style&quot;);
-    style.id = &quot;tab-manager-styles&quot;;
+    if (document.getElementById("tab-manager-styles")) return;
+    const style = document.createElement("style");
+    style.id = "tab-manager-styles";
     style.textContent = `
       *:focus                       { outline: none !important; }
       *:focus-visible               { box-shadow: 0 0 0 4px #b90072 inset !important;
@@ -1235,21 +1341,18 @@ class TabOrderManager {
 // ─── Initialise ─────────────────────────────────────────────────────────────
 
 function hasPageMarker(expected) {
-  const el = document.querySelector(&#x27;meta[name=&quot;app-page&quot;]&#x27;);
-  return !!el &amp;&amp; el.content === expected;
+  const el = document.querySelector('meta[name="app-page"]');
+  return !!el && el.content === expected;
 }
 
-if (hasPageMarker(&quot;ceremony-order&quot;)) {
-  if (document.readyState === &quot;loading&quot;) {
-    document.addEventListener(&quot;DOMContentLoaded&quot;, () =&gt; {
+if (hasPageMarker("ceremony-order")) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
       window.tabOrderManager = new TabOrderManager();
     });
   } else {
     window.tabOrderManager = new TabOrderManager();
   }
 
-  window.refreshTabOrder = () =&gt; window.tabOrderManager?.updateTabOrder();
+  window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
 }
-```</pre>
-</body>
-</html>
