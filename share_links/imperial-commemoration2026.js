@@ -1,3 +1,23 @@
+// ── Plausible tracking helper ───────────────────────────────────────────────
+// EDITION tags every event so ceremonies can be compared like-for-like.
+// Change this one value for each new event (and keep it the same in the
+// search script).
+window.IMP_EDITION = window.IMP_EDITION || "commemoration-2026";
+
+window.impTrack =
+  window.impTrack ||
+  function (name, props) {
+    try {
+      if (typeof window.plausible === "function") {
+        window.plausible(name, {
+          props: Object.assign({ edition: window.IMP_EDITION }, props || {}),
+        });
+      }
+    } catch (e) {
+      // Analytics must never break the guide.
+    }
+  };
+
 // Merged version for Oct 26 taking pre April code and  plausible
 //
 // // Shared helper for Web Share + fallback
@@ -55,9 +75,7 @@ function addShareButtons() {
         studentName,
       )}&name_index=${encodeURIComponent(index)}`;
 
-      if (typeof plausible !== "undefined") {
-        plausible("Share Initiated", { props: { type: "student" } });
-      }
+      impTrack("Share Initiated", { type: "student" });
 
       await shareLink({
         title: "Imperial Commemoration Day",
@@ -117,12 +135,10 @@ function addShareAwardeeButtons() {
       const currentURL = window.location.href.split("?")[0];
       const shareURL = `${currentURL}?awardee=${encodedAwardee}&name_index=${encodedIndex}`;
 
-      if (typeof plausible !== "undefined") {
-        plausible("Share Initiated", { props: { type: "awardee" } });
-      }
+      impTrack("Share Initiated", { type: "awardee" });
 
       await shareLink({
-        title: "Imperial Graduation Days",
+        title: "Imperial Commemoration Day",
         text: `See information for ${awardeeName}`,
         url: shareURL,
       });
@@ -171,12 +187,14 @@ function scrollToAwardeeFromURL() {
 function trackSharedLinkArrival() {
   const urlParams = new URLSearchParams(window.location.search);
 
-  if (urlParams.has("student_name") && typeof plausible !== "undefined") {
-    plausible("Shared Link Opened", { props: { type: "student" } });
+  // Share links always carry name_index. Name searches also land on
+  // ?student_name=... (without name_index), so they are not counted here.
+  if (urlParams.has("student_name") && urlParams.has("name_index")) {
+    impTrack("Shared Link Opened", { type: "student" });
   }
 
-  if (urlParams.has("awardee") && typeof plausible !== "undefined") {
-    plausible("Shared Link Opened", { props: { type: "awardee" } });
+  if (urlParams.has("awardee")) {
+    impTrack("Shared Link Opened", { type: "awardee" });
   }
 }
 
@@ -184,34 +202,30 @@ function trackSharedLinkArrival() {
 function initAccordionTracking() {
   document.querySelectorAll(".toggle-button").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      if (typeof plausible !== "undefined") {
-        var label = this.getAttribute("aria-label").replace(
-          "Toggle Open Close ",
-          "",
-        );
-        var isOpening = this.getAttribute("aria-expanded") === "false";
-        plausible("Accordion Toggled", {
-          props: {
-            ceremony: label,
-            action: isOpening ? "opened" : "closed",
-          },
-        });
-      }
+      var label = (this.getAttribute("aria-label") || "").replace(
+        "Toggle Open Close ",
+        "",
+      );
+      var isOpening = this.getAttribute("aria-expanded") === "false";
+      impTrack("Accordion Toggled", {
+        ceremony: label,
+        action: isOpening ? "opened" : "closed",
+      });
     });
   });
 }
 
 // Heartbeat — session duration accuracy
+// Once a minute, only while the page is visible, and capped at 20 minutes,
+// so thousands of phones in one venue send far fewer requests than before.
 function initHeartbeat() {
   var heartbeatCount = 0;
   setInterval(function () {
+    if (document.visibilityState !== "visible") return;
+    if (heartbeatCount >= 20) return;
     heartbeatCount++;
-    if (typeof plausible !== "undefined") {
-      plausible("Heartbeat", {
-        props: { minutes: String(Math.floor(heartbeatCount / 2)) },
-      });
-    }
-  }, 30000);
+    impTrack("Heartbeat", { minutes: String(heartbeatCount) });
+  }, 60000);
 }
 
 // Add styles
