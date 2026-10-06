@@ -148,15 +148,13 @@ document.addEventListener(
 function updateResultButtonText(current, total) {
   var button = document.getElementById("result-inner");
   if (button) {
-    // Check if the button exists
-    button.textContent = `Result ${current} of ${total}`; // Update the button text
+    button.textContent = `Result ${current} of ${total}`;
   } else {
     console.error("Result button not found.");
   }
 }
 
 function createResultButton(current, total, callback) {
-  // Create and append CSS styles
   var style = document.createElement("style");
   style.id = "resultButtonStyles";
   style.textContent = `
@@ -178,11 +176,10 @@ function createResultButton(current, total, callback) {
     }
   `;
 
-  // Only append if styles don't already exist
   if (!document.getElementById("resultButtonStyles")) {
     document.head.appendChild(style);
   }
-  // Create container div to hold both buttons
+
   var container = document.createElement("div");
   container.id = "resultButtonContainer";
   container.style.position = "fixed";
@@ -194,7 +191,6 @@ function createResultButton(current, total, callback) {
   container.style.alignItems = "flex-end";
   container.style.gap = "5px";
 
-  // Create close button
   var closeButton = document.createElement("button");
   closeButton.id = "closeResultButton";
   closeButton.innerHTML = `
@@ -202,6 +198,7 @@ function createResultButton(current, total, callback) {
       <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `;
+
   closeButton.style.width = "30px";
   closeButton.style.height = "30px";
   closeButton.style.borderRadius = "50%";
@@ -216,12 +213,10 @@ function createResultButton(current, total, callback) {
   closeButton.style.justifyContent = "center";
   closeButton.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
 
-  // Add click event to close button
   closeButton.addEventListener("click", function () {
     document.body.classList.add("close-results");
   });
 
-  // Create main result button
   var button = document.createElement("button");
   button.id = "resultButton";
   button.innerHTML = `
@@ -230,6 +225,7 @@ function createResultButton(current, total, callback) {
       <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `;
+
   button.style.padding = "10px 7px";
   button.style.borderRadius = "5px";
   button.style.border = "none";
@@ -247,34 +243,29 @@ function createResultButton(current, total, callback) {
     }
   });
 
-  // Append buttons to container
   container.appendChild(closeButton);
   container.appendChild(button);
-
-  // Append container to body
   document.body.appendChild(container);
 }
+
 function extractMatch(baseString, matchString) {
-  // Escape special regex characters in the match string
   const escaped = matchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  // Create case-insensitive regex with word boundaries
   const regex = new RegExp(`\\b${escaped}\\b`, "i");
-
-  // Find and return the match (preserving original case from base string)
   const match = baseString.match(regex);
   return match ? match[0] : "";
 }
 
-// Function to modify the href of .project-image-link within the li elements
 function processListItem(li) {
   const highlightSpan = li.querySelector(".search-input-highlight");
   const link = li.querySelector(".project-image-link");
+
   if (highlightSpan && link) {
     const result = document.querySelectorAll(
       ".project-search-results, .search-results-found-list, .project-search-results-container",
     );
+
     result.forEach((result) => (result.style.display = "none"));
+
     if (
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/graduation-days-2025/index.html" ||
@@ -283,9 +274,9 @@ function processListItem(li) {
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/commemoration-day-2025/index.html" ||
       link.href ===
-      "https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html" ||
+        "https://graduation-programmes.imperial.ac.uk/graduation-days-2026/index.html" ||
       link.href ===
-      "https://graduation-programmes.imperial.ac.uk/8e35fcf0-b0e7-4d37-a6d3-2ccb74b7801e/index.html" ||
+        "https://graduation-programmes.imperial.ac.uk/8e35fcf0-b0e7-4d37-a6d3-2ccb74b7801e/index.html" ||
       link.href ===
         "https://graduation-programmes.imperial.ac.uk/commemoration-day-2026/index.html" ||
       link.href === "index.html"
@@ -294,25 +285,26 @@ function processListItem(li) {
       const name = input ? input.value : "";
       const studentName = encodeURIComponent(name);
       const url = new URL(link.href);
+
       url.searchParams.set("student_name", studentName);
       window.location.replace(url.href);
     }
   }
 }
 
-// Callback function to execute when mutations are observed
 const callback = function (mutationsList, observer) {
   for (const mutation of mutationsList) {
     if (mutation.type === "childList") {
       for (const node of mutation.addedNodes) {
-        // Check if the added node is a ul with class '.project-search-results'
         if (
           node.nodeType === 1 &&
           (node.matches(".project-search-results") ||
             node.matches(".search-results-found-list"))
         ) {
           const listItems = node.querySelectorAll(".project-story-list-item");
+
           impSearchResultsShown(node);
+
           listItems.forEach(processListItem);
         }
       }
@@ -320,19 +312,13 @@ const callback = function (mutationsList, observer) {
   }
 };
 
-// Optionally, disconnect the observer at some point using observer.disconnect();
-
 document.addEventListener("DOMContentLoaded", function () {
-  // Create a MutationObserver instance
   const observer = new MutationObserver(callback);
 
-  // Configuration of the observer
   const config = { childList: true, subtree: true };
 
-  // Select the target node (the div with class .project-search-sideBar)
   const targetNode = document.querySelector(".project-search-sideBar");
 
-  // Check if targetNode exists to avoid errors
   if (targetNode) {
     observer.observe(targetNode, config);
   } else {
@@ -355,16 +341,19 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(style);
   }
 
-  // Update Search Placeholder
   const projectInput = document.querySelector(".Theme-ProjectInput");
-  if (projectInput) projectInput.setAttribute("placeholder", "Search name");
 
-  // accordion logic
+  if (projectInput) {
+    projectInput.setAttribute("placeholder", "Search name");
+  }
+
   const accordions = document.querySelectorAll(".accordion");
+
   accordions.forEach((accordion, index) => {
     accordion.classList.add("step-" + index);
     accordion.style.scrollMarginTop = "150px";
   });
+
   const innerDropdowns = document.querySelectorAll(".inner-dropdown");
 
   const consolidatedDropdown = document.createElement("div");
@@ -376,7 +365,6 @@ document.addEventListener("DOMContentLoaded", function () {
   consolidatedDropdown.style.pointerEvents = "auto";
   document.body.appendChild(consolidatedDropdown);
 
-  // Create and insert sentry section before the target element
   function createSentrySection() {
     const targetElement =
       document.getElementById("section-tVbkG6IJAz") ||
@@ -386,15 +374,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (targetElement) {
       const sentrySection = document.createElement("div");
-      sentrySection.id = "section-1430-sentry"; // Uses allowed prefix
-      sentrySection.className = "Theme-Section"; // Matches observer selector
+      sentrySection.id = "section-1430-sentry";
+      sentrySection.className = "Theme-Section";
       sentrySection.style.height = "0px";
       sentrySection.style.width = "0px";
       sentrySection.style.overflow = "hidden";
-      sentrySection.style.visibility = "hidden"; // Completely invisible
-      sentrySection.style.position = "relative"; // Doesn't affect layout
+      sentrySection.style.visibility = "hidden";
+      sentrySection.style.position = "relative";
 
-      // Insert before the target element
       targetElement.parentNode.insertBefore(sentrySection, targetElement);
 
       console.log("Sentry section created and inserted");
@@ -403,10 +390,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Call this function to create the sentry section
   createSentrySection();
 
-  // Intersection Observer for dropdown visibility
   const allowedSectionPrefixes = [
     "section-1430",
     "section-1100",
@@ -417,29 +402,27 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
   function setupDropdownVisibilityObserver() {
-    // Get all sections on the page
     const sections = document.querySelectorAll(".Theme-Section");
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Check if the fade-out section is in view
         const fadeOutSection = entries.find(
           (entry) =>
             entry.isIntersecting && entry.target.id === "section-actX6a4Fex",
         );
 
         if (fadeOutSection) {
-          // Hide dropdown - fade-out section is in view
           console.log(
             `🔴 Dropdown hidden by section: ${fadeOutSection.target.id}`,
           );
+
           consolidatedDropdown.style.opacity = "0";
           consolidatedDropdown.style.pointerEvents = "none";
-          return; // Exit early, don't check for allowed sections
+          return;
         }
 
-        // Check if any currently intersecting section has an allowed ID prefix
         let triggeringSection = null;
+
         const hasAllowedSection = entries.some((entry) => {
           if (entry.isIntersecting && entry.target.id) {
             const isAllowed = allowedSectionPrefixes.some(
@@ -447,47 +430,49 @@ document.addEventListener("DOMContentLoaded", function () {
                 entry.target.id.startsWith(prefix) &&
                 !entry.target.id.includes("Imperial"),
             );
+
             if (isAllowed) {
               triggeringSection = entry.target.id;
             }
+
             return isAllowed;
           }
+
           return false;
         });
 
-        // Update dropdown visibility based on current sections
         if (hasAllowedSection) {
-          // Show dropdown - over an allowed section
           console.log(`🟢 Dropdown triggered by section: ${triggeringSection}`);
+
           consolidatedDropdown.style.opacity = "1";
           consolidatedDropdown.style.pointerEvents = "auto";
         } else {
-          // Check if any allowed sections are currently in viewport
           const allowedSectionsInView = Array.from(sections).some((section) => {
             if (!section.id) return false;
+
             const hasAllowedId = allowedSectionPrefixes.some((prefix) =>
               section.id.startsWith(prefix),
             );
+
             if (!hasAllowedId) return false;
 
             const rect = section.getBoundingClientRect();
+
             return rect.top < window.innerHeight && rect.bottom > 0;
           });
 
           if (!allowedSectionsInView) {
-            // Hide dropdown - not over any allowed section
             consolidatedDropdown.style.opacity = "0";
             consolidatedDropdown.style.pointerEvents = "none";
           }
         }
       },
       {
-        threshold: 0.1, // Trigger when 10% of the section is visible
+        threshold: 0.1,
         rootMargin: "-100px 0px -50px 0px",
       },
     );
 
-    // Observe all sections (including the new sentry section)
     sections.forEach((section) => {
       observer.observe(section);
     });
@@ -503,6 +488,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <button class="dropbtn">Find a course:</button>
         <div class="dropdown-content"></div>
       `;
+
       const dropdownContent =
         consolidatedDropdown.querySelector(".dropdown-content");
 
@@ -512,28 +498,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (associatedDropdown) {
           const links = associatedDropdown.querySelectorAll("a");
+
           links.forEach((link) => {
             const newLink = link.cloneNode(true);
 
-            // Extract the prefix from the onclick function
             const onclickAttr = newLink.getAttribute("onclick");
             let ceremonyPrefix = "default";
 
             if (onclickAttr) {
-              // Extract the ID from scrollToElementWithOffset('1430dept1course1', 250)
               const match = onclickAttr.match(
                 /scrollToElementWithOffset\('(\d+)/,
               );
+
               if (match && match[1]) {
-                ceremonyPrefix = match[1]; // e.g., "1430"
+                ceremonyPrefix = match[1];
               }
             }
 
-            // Add class to associate link with its ceremony section
             const sectionClass = `ceremony-${ceremonyPrefix}`;
             newLink.classList.add("ceremony-link", sectionClass);
 
-            // Initially hide all links
             newLink.style.display = "none";
 
             dropdownContent.appendChild(newLink);
@@ -541,12 +525,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // Always show the dropdown when there are open accordions
       consolidatedDropdown.style.display = "flex";
       consolidatedDropdown.style.opacity = "1";
       consolidatedDropdown.style.pointerEvents = "auto";
 
-      // Initialize the observer after the dropdown is shown
       setupDropdownVisibilityObserver();
     } else {
       consolidatedDropdown.style.display = "none";
@@ -554,32 +536,30 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function setupDropdownVisibilityObserver() {
-    // Get all sections on the page
     const sections = document.querySelectorAll(".Theme-Section");
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Check if the fade-out section is in view first
         const fadeOutSection = Array.from(sections).find((section) => {
           if (section.id === "section-aIviY23ApG") {
             const rect = section.getBoundingClientRect();
+
             return rect.top < window.innerHeight && rect.bottom > 0;
           }
+
           return false;
         });
 
         if (fadeOutSection) {
-          // Hide entire dropdown when fade-out section is in view
           console.log(`🔴 Dropdown hidden by fade-out section`);
+
           consolidatedDropdown.style.opacity = "0";
           consolidatedDropdown.style.pointerEvents = "none";
           return;
         }
 
-        // Check ALL sections currently in viewport for each prefix
         const visiblePrefixes = new Set();
 
-        // For each allowed prefix, check if ANY section with that prefix is visible
         allowedSectionPrefixes.forEach((prefix) => {
           const hasVisibleSection = Array.from(sections).some((section) => {
             if (
@@ -601,27 +581,27 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
 
-        // Hide all ceremony links first
         const ceremonyLinks =
           consolidatedDropdown.querySelectorAll(".ceremony-link");
+
         ceremonyLinks.forEach((link) => {
           link.style.display = "none";
         });
 
         if (visiblePrefixes.size > 0) {
-          // Show dropdown and relevant links
           consolidatedDropdown.style.opacity = "1";
           consolidatedDropdown.style.pointerEvents = "auto";
 
-          // Show links for visible section prefixes
           visiblePrefixes.forEach((sectionPrefix) => {
             const sectionClass = `ceremony-${sectionPrefix.replace(
               "section-",
               "",
             )}`;
+
             const relevantLinks = consolidatedDropdown.querySelectorAll(
               `.${sectionClass}`,
             );
+
             relevantLinks.forEach((link) => {
               link.style.display = "block";
             });
@@ -633,18 +613,16 @@ document.addEventListener("DOMContentLoaded", function () {
             ).join(", ")}`,
           );
         } else {
-          // Hide dropdown when not over any allowed section
           consolidatedDropdown.style.opacity = "0";
           consolidatedDropdown.style.pointerEvents = "none";
         }
       },
       {
-        threshold: 0.1, // Trigger when 10% of the section is visible
+        threshold: 0.1,
         rootMargin: "-100px 0px -50px 0px",
       },
     );
 
-    // Observe all sections (including the new sentry section)
     sections.forEach((section) => {
       observer.observe(section);
     });
@@ -652,16 +630,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function toggleAccordion(clickedAccordion) {
     const content = clickedAccordion.nextElementSibling;
+
     if (content.style.display === "none" || content.style.display === "") {
       content.style.display = "inline";
     } else {
       content.style.display = "none";
+
       clickedAccordion.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
         inline: "start",
       });
     }
+
     updateConsolidatedDropdown();
   }
 
@@ -684,6 +665,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function scrollToAndHighlightText(t) {
     const text = toTitleCase(t);
+
     const BLACKLIST = [
       "#section-1030-Faculty-of-Engineering-Ceremony-1-WrcFIYzqK1",
       "#section-1330-Faculty-of-Engineering-Ceremony-2-9j7l1TdaZz",
@@ -707,7 +689,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let matches = [];
 
     containers.forEach((container) => {
-      let updates = []; // To store updates for later application
+      let updates = [];
+
       const walker = document.createTreeWalker(
         container,
         NodeFilter.SHOW_TEXT,
@@ -716,8 +699,10 @@ document.addEventListener("DOMContentLoaded", function () {
       );
 
       let node;
+
       while ((node = walker.nextNode())) {
         let textContent = node.nodeValue;
+
         if (textContent.toLowerCase().includes(text.toLowerCase())) {
           const frag = document.createDocumentFragment();
           const match = extractMatch(textContent, text);
@@ -727,24 +712,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
           parts.forEach((part, index) => {
             frag.appendChild(document.createTextNode(part));
+
             if (index !== endIndex) {
               const span = document.createElement("span");
+
               span.style.backgroundColor = "#ffffff1d";
               span.classList.add("found-text-piece");
               span.textContent = match.length ? match : text;
+
               frag.appendChild(span);
               matches.push(span);
             }
           });
 
-          // Store the node and its replacement fragment for later updating
           updates.push({ oldNode: node, frag });
         }
       }
 
-      // Apply all collected updates
       updates.forEach((update) => {
         let currentElement = update.oldNode.parentElement;
+
         while (currentElement && !currentElement.classList.contains("panel")) {
           if (
             currentElement.classList.contains("order-tab-content") &&
@@ -752,31 +739,42 @@ document.addEventListener("DOMContentLoaded", function () {
           ) {
             currentElement.classList.add("active");
           }
+
           currentElement = currentElement.parentElement;
         }
+
         update.oldNode.parentNode.replaceChild(update.frag, update.oldNode);
 
-        // Find the nearest ancestor with class 'panel' and set its display to inline
         if (currentElement) {
           currentElement.style.display = "inline";
+
           const parent = currentElement.parentElement;
           const accordion = parent.querySelector(".accordion");
+
           if (accordion) {
             searchedAccordions.push(accordion);
           }
         }
 
         container.classList.add("show");
+
         const id = container.getAttribute("id");
+
         console.log("ID CHECK", id);
+
         const day = id.match(/^[^-]+-\d{4}/);
+
         console.log("DAY CHECK", day);
+
         if (day && day[0]) {
           const daySection = document.querySelectorAll("[id^=" + day + "]");
+
           console.log("DAY SECTION CHECK", daySection);
+
           if (daySection && daySection.length) {
             daySection.forEach((section) => {
               console.log("SECTION CHECK", section);
+
               section.classList.add("showing");
             });
 
@@ -784,8 +782,10 @@ document.addEventListener("DOMContentLoaded", function () {
               const sec = section.querySelector(
                 'section[class^="Theme-Section-Position"]',
               );
+
               if (sec) {
                 console.log("SECTION 2 CHECK", section);
+
                 sec.classList.add("showing");
               }
             });
@@ -800,11 +800,65 @@ document.addEventListener("DOMContentLoaded", function () {
       updateConsolidatedDropdown();
     }
 
+    /*
+     * Search results can cause several panels/accordions to open.
+     * Wait for those layout changes to settle before calculating
+     * where the first result actually sits on the page.
+     */
     if (matches.length > 0) {
-      scrollToMatch(matches);
+      waitForSearchLayoutToSettle(() => {
+        scrollToMatch(matches);
+      });
     }
 
     return matches.length;
+  }
+
+  /*
+   * Wait until opening all matching search-result content
+   * has stopped changing the height of the page.
+   *
+   * This prevents the scroll position being calculated while
+   * other matching accordions are still expanding.
+   */
+  function waitForSearchLayoutToSettle(callback) {
+    let lastHeight = document.documentElement.scrollHeight;
+    let stableFor = 0;
+    let elapsed = 0;
+
+    const interval = 100;
+    const requiredStableTime = 800;
+    const maximumWait = 4000;
+
+    const timer = setInterval(() => {
+      const currentHeight = document.documentElement.scrollHeight;
+
+      elapsed += interval;
+
+      if (currentHeight === lastHeight) {
+        stableFor += interval;
+      } else {
+        lastHeight = currentHeight;
+        stableFor = 0;
+      }
+
+      if (
+        stableFor >= requiredStableTime ||
+        elapsed >= maximumWait
+      ) {
+        clearInterval(timer);
+
+        /*
+         * Give the browser two additional animation frames
+         * to finish its final reflow before scrolling.
+         */
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            callback();
+          });
+        });
+      }
+    }, interval);
   }
 
   function scrollToMatch(matches, yOffset = -400) {
@@ -816,8 +870,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!match) return;
 
+        /*
+         * Calculate this only after the layout has settled.
+         */
         const yPosition =
-          match.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          match.getBoundingClientRect().top +
+          window.pageYOffset +
+          yOffset;
 
         if (window.pageYOffset > 0 || yPosition > 0) {
           window.scrollTo({
@@ -825,13 +884,28 @@ document.addEventListener("DOMContentLoaded", function () {
             behavior: "smooth",
           });
 
+          /*
+           * Check the position again after the smooth scroll.
+           *
+           * With yOffset = -400, the matched name should end
+           * up approximately 400px below the top of the viewport.
+           *
+           * If anything has shifted during the scroll, correct
+           * the position using the element's current coordinates.
+           */
           setTimeout(() => {
             const rect = match.getBoundingClientRect();
 
-            const tooLow = rect.bottom > window.innerHeight - 80;
-            const tooHigh = rect.top < 120;
+            const targetTop = Math.abs(yOffset);
+            const tolerance = 30;
 
-            if (tooLow || tooHigh) {
+            const tooHigh =
+              rect.top < targetTop - tolerance;
+
+            const tooLow =
+              rect.top > targetTop + tolerance;
+
+            if (tooHigh || tooLow) {
               const correctedYPosition =
                 match.getBoundingClientRect().top +
                 window.pageYOffset +
@@ -844,10 +918,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }, 700);
 
-          current = (current + 1) % matches.length;
+          current =
+            (current + 1) % matches.length;
 
           matches.length > 1 &&
-            updateResultButtonText(current || matches.length, matches.length);
+            updateResultButtonText(
+              current || matches.length,
+              matches.length,
+            );
         } else {
           setTimeout(attemptScroll, 120);
         }
@@ -863,74 +941,135 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     if (matches.length > 1) {
-      createResultButton(1, matches.length, scroll);
+      createResultButton(
+        1,
+        matches.length,
+        scroll,
+      );
     } else {
-      console.log("Only one match found, no need for result button.");
+      console.log(
+        "Only one match found, no need for result button.",
+      );
 
-      var style = document.createElement("style");
+      var style =
+        document.createElement("style");
+
       style.id = "closeResults";
+
       style.textContent = `
       body.close-results .found-text-piece {
         background-color: transparent !important;
       }
     `;
 
-      if (!document.getElementById("closeResults")) {
+      if (
+        !document.getElementById(
+          "closeResults",
+        )
+      ) {
         document.head.appendChild(style);
       }
 
-      document.addEventListener("click", function () {
-        document.body.classList.add("close-results");
-      });
+      document.addEventListener(
+        "click",
+        function () {
+          document.body.classList.add(
+            "close-results",
+          );
+        },
+      );
     }
 
     scroll();
   }
 
   // Get the 'student_name' query parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const studentName = urlParams.get("student_name");
+  const urlParams =
+    new URLSearchParams(
+      window.location.search,
+    );
+
+  const studentName =
+    urlParams.get("student_name");
 
   if (studentName) {
     // Decode URI component in case the name is encoded
-    const found = scrollToAndHighlightText(decodeURIComponent(studentName));
+    const found =
+      scrollToAndHighlightText(
+        decodeURIComponent(studentName),
+      );
+
     impTrackSearchArrival(found);
   }
 });
 
 function scrollToElementWithOffset(id) {
-  const element = document.getElementById(id);
+  const element =
+    document.getElementById(id);
 
   if (!element) {
-    console.error("Element not found:", id);
+    console.error(
+      "Element not found:",
+      id,
+    );
+
     return;
   }
 
   // Find the closest panel ancestor
-  const panel = element.closest(".panel");
+  const panel =
+    element.closest(".panel");
+
   if (panel) {
     // Check if the panel is hidden and show it if needed
-    if (panel.style.display !== "inline") {
-      console.log("Panel was hidden, showing it:", panel.id);
+    if (
+      panel.style.display !== "inline"
+    ) {
+      console.log(
+        "Panel was hidden, showing it:",
+        panel.id,
+      );
+
       panel.style.display = "inline";
     }
   }
 
   const elementPosition =
-    element.getBoundingClientRect().top + window.pageYOffset;
+    element.getBoundingClientRect().top +
+    window.pageYOffset;
+
   // Determine the offset based on screen width
   let offset;
-  const screenWidth = window.innerWidth;
+
+  const screenWidth =
+    window.innerWidth;
+
   if (screenWidth <= 899) {
     offset = 200;
-  } else if (screenWidth >= 900 && screenWidth <= 1099) {
+  } else if (
+    screenWidth >= 900 &&
+    screenWidth <= 1099
+  ) {
     offset = 200;
   } else {
     offset = 250;
   }
-  console.log("Screen width:", screenWidth, "Offset:", offset);
-  const offsetPosition = elementPosition - offset;
-  console.log("Offset position:", offsetPosition);
+
+  console.log(
+    "Screen width:",
+    screenWidth,
+    "Offset:",
+    offset,
+  );
+
+  const offsetPosition =
+    elementPosition - offset;
+
+  console.log(
+    "Offset position:",
+    offsetPosition,
+  );
+
   window.scrollTo({
     top: offsetPosition,
     behavior: "smooth",
@@ -938,17 +1077,26 @@ function scrollToElementWithOffset(id) {
 }
 
 setTimeout(() => {
-  window.scrollToElementWithOffset = scrollToElementWithOffset;
+  window.scrollToElementWithOffset =
+    scrollToElementWithOffset;
 }, 500);
 
 (function () {
-  const SELECTOR = '[data-project-search-sidebar="true"]';
-  const ACTIVE_CLASS = "project-search--isActive";
+  const SELECTOR =
+    '[data-project-search-sidebar="true"]';
+
+  const ACTIVE_CLASS =
+    "project-search--isActive";
+
   const POLL_INTERVAL_MS = 200;
   const TIMEOUT_MS = 30000;
 
   function applyInert(el) {
-    if (el.classList.contains(ACTIVE_CLASS)) {
+    if (
+      el.classList.contains(
+        ACTIVE_CLASS,
+      )
+    ) {
       el.removeAttribute("inert");
     } else {
       el.setAttribute("inert", "");
@@ -960,51 +1108,100 @@ setTimeout(() => {
     applyInert(el);
 
     // Watch for class changes
-    const observer = new MutationObserver(() => applyInert(el));
-    observer.observe(el, { attributeFilter: ["class"] });
+    const observer =
+      new MutationObserver(() =>
+        applyInert(el),
+      );
+
+    observer.observe(el, {
+      attributeFilter: ["class"],
+    });
   }
 
   // Poll for element existence
   const start = performance.now();
-  const interval = setInterval(() => {
-    const el = document.querySelector(SELECTOR);
-    if (el) {
-      clearInterval(interval);
-      init(el);
-      return;
-    }
-    if (performance.now() - start >= TIMEOUT_MS) {
-      clearInterval(interval);
-      console.warn("[search-inert] Timed out waiting for", SELECTOR);
-    }
-  }, POLL_INTERVAL_MS);
+
+  const interval =
+    setInterval(() => {
+      const el =
+        document.querySelector(
+          SELECTOR,
+        );
+
+      if (el) {
+        clearInterval(interval);
+
+        init(el);
+
+        return;
+      }
+
+      if (
+        performance.now() - start >=
+        TIMEOUT_MS
+      ) {
+        clearInterval(interval);
+
+        console.warn(
+          "[search-inert] Timed out waiting for",
+          SELECTOR,
+        );
+      }
+    }, POLL_INTERVAL_MS);
 })();
 
 (function () {
   "use strict";
 
   // Get the elements
-  const input = document.querySelector(
-    ".Theme-ProjectInput.project-search-input",
-  );
-  const button = document.querySelector(".project-search-delete-btn");
-  const statusText = document.getElementById("status-text");
+  const input =
+    document.querySelector(
+      ".Theme-ProjectInput.project-search-input",
+    );
+
+  const button =
+    document.querySelector(
+      ".project-search-delete-btn",
+    );
+
+  const statusText =
+    document.getElementById(
+      "status-text",
+    );
 
   if (!input || !button) {
-    console.error("Required elements not found");
-    if (statusText) statusText.textContent = "Error: Elements not found";
+    console.error(
+      "Required elements not found",
+    );
+
+    if (statusText) {
+      statusText.textContent =
+        "Error: Elements not found";
+    }
+
     return;
   }
 
   // Function to update button visibility
   function updateButtonVisibility() {
     if (input.value.trim() === "") {
-      button.classList.add("force-hide");
-      if (statusText) statusText.textContent = "Input empty - button hidden";
+      button.classList.add(
+        "force-hide",
+      );
+
+      if (statusText) {
+        statusText.textContent =
+          "Input empty - button hidden";
+      }
     } else {
-      button.classList.remove("force-hide");
-      if (statusText)
-        statusText.textContent = "Input has content - button visible";
+      button.classList.remove(
+        "force-hide",
+      );
+
+      if (statusText) {
+        statusText.textContent =
+          "Input has content - button visible";
+      }
     }
   }
 
@@ -1012,17 +1209,27 @@ setTimeout(() => {
   updateButtonVisibility();
 
   // Create MutationObserver to watch for attribute changes
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (
-        mutation.type === "attributes" &&
-        mutation.attributeName === "value"
-      ) {
-        updateButtonVisibility();
-        console.log("Value attribute changed via mutation");
-      }
-    });
-  });
+  const observer =
+    new MutationObserver(
+      (mutations) => {
+        mutations.forEach(
+          (mutation) => {
+            if (
+              mutation.type ===
+                "attributes" &&
+              mutation.attributeName ===
+                "value"
+            ) {
+              updateButtonVisibility();
+
+              console.log(
+                "Value attribute changed via mutation",
+              );
+            }
+          },
+        );
+      },
+    );
 
   // Configure and start observing
   observer.observe(input, {
@@ -1031,53 +1238,101 @@ setTimeout(() => {
   });
 
   // Listen for input events (handles user typing)
-  input.addEventListener("input", () => {
-    updateButtonVisibility();
-    console.log("Input event fired");
-  });
+  input.addEventListener(
+    "input",
+    () => {
+      updateButtonVisibility();
+
+      console.log(
+        "Input event fired",
+      );
+    },
+  );
 
   // Listen for change events (handles some programmatic changes)
-  input.addEventListener("change", () => {
-    updateButtonVisibility();
-    console.log("Change event fired");
-  });
+  input.addEventListener(
+    "change",
+    () => {
+      updateButtonVisibility();
+
+      console.log(
+        "Change event fired",
+      );
+    },
+  );
 
   // Watch for programmatic value changes using a different approach
   // Store the original descriptor
-  const descriptor = Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
-    "value",
-  );
-  const originalSet = descriptor.set;
+  const descriptor =
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    );
+
+  const originalSet =
+    descriptor.set;
 
   // Only override if we haven't already
-  if (originalSet && !input.hasAttribute("data-observer-attached")) {
-    input.setAttribute("data-observer-attached", "true");
+  if (
+    originalSet &&
+    !input.hasAttribute(
+      "data-observer-attached",
+    )
+  ) {
+    input.setAttribute(
+      "data-observer-attached",
+      "true",
+    );
 
     // Create a new setter that calls our update function
-    Object.defineProperty(input, "value", {
-      get: descriptor.get,
-      set: function (newValue) {
-        // Call the original setter with the input element as context
-        originalSet.call(this, newValue);
-        // Then update visibility
-        updateButtonVisibility();
-        console.log("Value set programmatically:", newValue);
+    Object.defineProperty(
+      input,
+      "value",
+      {
+        get: descriptor.get,
+
+        set: function (newValue) {
+          // Call the original setter with the input element as context
+          originalSet.call(
+            this,
+            newValue,
+          );
+
+          // Then update visibility
+          updateButtonVisibility();
+
+          console.log(
+            "Value set programmatically:",
+            newValue,
+          );
+        },
+
+        enumerable:
+          descriptor.enumerable,
+
+        configurable:
+          descriptor.configurable,
       },
-      enumerable: descriptor.enumerable,
-      configurable: descriptor.configurable,
-    });
+    );
   }
 
   // Clear button functionality
-  button.addEventListener("click", () => {
-    input.value = "";
-    updateButtonVisibility();
-    input.focus();
-  });
+  button.addEventListener(
+    "click",
+    () => {
+      input.value = "";
 
-  console.log("MutationObserver script initialized successfully");
+      updateButtonVisibility();
+
+      input.focus();
+    },
+  );
+
+  console.log(
+    "MutationObserver script initialized successfully",
+  );
 })();
+
 class TabOrderManager {
   constructor() {
     this.refreshTimer = null;
@@ -1087,6 +1342,7 @@ class TabOrderManager {
 
   init() {
     this.addFocusStyles();
+
     this.waitForHeader(() => {
       this.updateTabOrder();
       this.attachObservers();
@@ -1098,76 +1354,143 @@ class TabOrderManager {
    * Prevents the partial first-run that puts the input at tabindex=1.
    */
   waitForHeader(cb, attempts = 0) {
-    const navLink = document.querySelector("#navigation .Theme-NavigationLink");
-    if (navLink && navLink.getBoundingClientRect().width > 0) {
+    const navLink =
+      document.querySelector(
+        "#navigation .Theme-NavigationLink",
+      );
+
+    if (
+      navLink &&
+      navLink.getBoundingClientRect().width > 0
+    ) {
       cb();
     } else if (attempts > 60) {
       // 60 × 200ms = 12s — give up and run anyway
-      console.warn("[TabOrderManager] Header never appeared, running anyway.");
+      console.warn(
+        "[TabOrderManager] Header never appeared, running anyway.",
+      );
+
       cb();
     } else {
-      setTimeout(() => this.waitForHeader(cb, attempts + 1), 200);
+      setTimeout(
+        () =>
+          this.waitForHeader(
+            cb,
+            attempts + 1,
+          ),
+        200,
+      );
     }
   }
 
   attachObservers() {
-    this.bodyObserver = new MutationObserver(() => this.scheduleRefresh(400));
-    this.bodyObserver.observe(document.body, {
-      childList: true,
-      subtree: false,
-    });
+    this.bodyObserver =
+      new MutationObserver(() =>
+        this.scheduleRefresh(400),
+      );
 
-    const nav = document.querySelector("#navigation");
+    this.bodyObserver.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: false,
+      },
+    );
+
+    const nav =
+      document.querySelector(
+        "#navigation",
+      );
+
     if (nav) {
-      new MutationObserver(() => this.scheduleRefresh(200)).observe(nav, {
+      new MutationObserver(() =>
+        this.scheduleRefresh(200),
+      ).observe(nav, {
         attributes: true,
         subtree: true,
-        attributeFilter: ["aria-expanded", "style", "class"],
+        attributeFilter: [
+          "aria-expanded",
+          "style",
+          "class",
+        ],
       });
     }
 
-    document.addEventListener("click", (e) => {
-      if (
-        e.target.closest(
-          ".time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button",
-        )
-      ) {
-        this.scheduleRefresh(350);
-      }
-    });
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (
+          e.target.closest(
+            ".time-toggle, .accordion, .Navigation__button, .custom-dropdown, .project-search-button, .project-search-close-button",
+          )
+        ) {
+          this.scheduleRefresh(350);
+        }
+      },
+    );
 
-    document.addEventListener("keydown", (e) => {
-      if (
-        (e.key === "Enter" || e.key === " ") &&
-        e.target.closest(
-          ".Navigation__button, .time-toggle button, .project-search-button",
-        )
-      ) {
-        this.scheduleRefresh(350);
-      }
-    });
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (
+          (e.key === "Enter" ||
+            e.key === " ") &&
+          e.target.closest(
+            ".Navigation__button, .time-toggle button, .project-search-button",
+          )
+        ) {
+          this.scheduleRefresh(350);
+        }
+      },
+    );
   }
 
   scheduleRefresh(delay = 150) {
-    clearTimeout(this.refreshTimer);
-    this.refreshTimer = setTimeout(() => this.updateTabOrder(), delay);
+    clearTimeout(
+      this.refreshTimer,
+    );
+
+    this.refreshTimer =
+      setTimeout(
+        () =>
+          this.updateTabOrder(),
+        delay,
+      );
   }
 
   isVisible(el) {
     if (!el) return false;
+
     let node = el;
-    while (node && node !== document.documentElement) {
-      const s = window.getComputedStyle(node);
+
+    while (
+      node &&
+      node !==
+        document.documentElement
+    ) {
+      const s =
+        window.getComputedStyle(
+          node,
+        );
+
       if (
         s.display === "none" ||
         s.visibility === "hidden" ||
         s.opacity === "0"
-      )
+      ) {
         return false;
+      }
+
       node = node.parentElement;
     }
-    const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0;
+
+    const r =
+      el.getBoundingClientRect();
+
+    return (
+      r.width > 0 &&
+      r.height > 0
+    );
   }
 
   updateTabOrder() {
@@ -1175,62 +1498,137 @@ class TabOrderManager {
       .querySelectorAll(
         "a[href], button, input, select, textarea, [tabindex], .popup-close",
       )
-      .forEach((el) => el.setAttribute("tabindex", "-1"));
+      .forEach((el) =>
+        el.setAttribute(
+          "tabindex",
+          "-1",
+        ),
+      );
 
     const assignments = [];
     let idx = 1;
 
-    const assign = (el, label) => {
-      if (el && this.isVisible(el)) {
+    const assign = (
+      el,
+      label,
+    ) => {
+      if (
+        el &&
+        this.isVisible(el)
+      ) {
         // el.setAttribute("tabindex", String(idx));
-        el.setAttribute("tabindex", String(0));
-        const tag = el.tagName.toLowerCase();
-        const id = el.id ? `#${el.id}` : "";
-        const text = el.textContent?.trim().slice(0, 40) || "";
+        el.setAttribute(
+          "tabindex",
+          String(0),
+        );
+
+        const tag =
+          el.tagName.toLowerCase();
+
+        const id = el.id
+          ? `#${el.id}`
+          : "";
+
+        const text =
+          el.textContent
+            ?.trim()
+            .slice(0, 40) || "";
+
         assignments.push({
           // order: idx,
           order: 0,
           label,
           element: `<${tag}${id}> "${text}"`,
         });
+
         idx++;
+
         return true;
       }
+
       return false;
     };
 
     // (1) Logo
     assign(
-      document.querySelector(".Project-Header--left .Theme-Logo a"),
+      document.querySelector(
+        ".Project-Header--left .Theme-Logo a",
+      ),
       "Logo",
     );
 
     // (2)–(5) Navigation
-    const navItems = document.querySelectorAll(
-      "#navigation > .Navigation__itemList > .Navigation__item",
-    );
+    const navItems =
+      document.querySelectorAll(
+        "#navigation > .Navigation__itemList > .Navigation__item",
+      );
 
     navItems.forEach((li) => {
-      const link = li.querySelector(":scope > a.Theme-NavigationLink");
-      const button = li.querySelector(":scope > button.Theme-NavigationLink");
+      const link =
+        li.querySelector(
+          ":scope > a.Theme-NavigationLink",
+        );
 
-      if (link && this.isVisible(link)) {
-        assign(link, `Nav: ${link.textContent.trim().slice(0, 30)}`);
-      } else if (button && this.isVisible(button)) {
-        assign(button, `Nav: ${button.textContent.trim().slice(0, 30)}`);
+      const button =
+        li.querySelector(
+          ":scope > button.Theme-NavigationLink",
+        );
 
-        if (button.getAttribute("aria-expanded") === "true") {
+      if (
+        link &&
+        this.isVisible(link)
+      ) {
+        assign(
+          link,
+          `Nav: ${link.textContent
+            .trim()
+            .slice(0, 30)}`,
+        );
+      } else if (
+        button &&
+        this.isVisible(button)
+      ) {
+        assign(
+          button,
+          `Nav: ${button.textContent
+            .trim()
+            .slice(0, 30)}`,
+        );
+
+        if (
+          button.getAttribute(
+            "aria-expanded",
+          ) === "true"
+        ) {
           const dropdown =
-            li.querySelector(".custom-dropdown") ||
-            li.querySelector(".Navigation__subMenu");
-          if (dropdown && this.isVisible(dropdown)) {
+            li.querySelector(
+              ".custom-dropdown",
+            ) ||
+            li.querySelector(
+              ".Navigation__subMenu",
+            );
+
+          if (
+            dropdown &&
+            this.isVisible(
+              dropdown,
+            )
+          ) {
             dropdown
-              .querySelectorAll("a[href], button")
-              .forEach((child) =>
-                assign(
-                  child,
-                  `Dropdown: ${child.textContent.trim().slice(0, 30)}`,
-                ),
+              .querySelectorAll(
+                "a[href], button",
+              )
+              .forEach(
+                (child) =>
+                  assign(
+                    child,
+                    `Dropdown: ${child.textContent
+                      .trim()
+                      .slice(
+                        0,
+                        30,
+                      )}`,
+                  ),
               );
           }
         }
@@ -1238,121 +1636,287 @@ class TabOrderManager {
     });
 
     // (6) Search icon
-    assign(document.querySelector(".project-search-button"), "Search icon");
+    assign(
+      document.querySelector(
+        ".project-search-button",
+      ),
+      "Search icon",
+    );
 
     // (6a) Search panel (if open)
-    const searchSidebar = document.querySelector(
-      "[data-project-search-sidebar]",
-    );
-    if (searchSidebar && !searchSidebar.hasAttribute("inert")) {
+    const searchSidebar =
+      document.querySelector(
+        "[data-project-search-sidebar]",
+      );
+
+    if (
+      searchSidebar &&
+      !searchSidebar.hasAttribute(
+        "inert",
+      )
+    ) {
       assign(
-        searchSidebar.querySelector(".project-search-input"),
+        searchSidebar.querySelector(
+          ".project-search-input",
+        ),
         "Sidebar: input",
       );
-      const deleteBtn = searchSidebar.querySelector(
-        ".project-search-delete-btn",
-      );
-      if (deleteBtn && !deleteBtn.classList.contains("force-hide")) {
-        assign(deleteBtn, "Sidebar: clear");
+
+      const deleteBtn =
+        searchSidebar.querySelector(
+          ".project-search-delete-btn",
+        );
+
+      if (
+        deleteBtn &&
+        !deleteBtn.classList.contains(
+          "force-hide",
+        )
+      ) {
+        assign(
+          deleteBtn,
+          "Sidebar: clear",
+        );
       }
+
       assign(
-        searchSidebar.querySelector(".project-search-enter-btn"),
+        searchSidebar.querySelector(
+          ".project-search-enter-btn",
+        ),
         "Sidebar: submit",
       );
+
       assign(
-        searchSidebar.querySelector(".project-search-close-button"),
+        searchSidebar.querySelector(
+          ".project-search-close-button",
+        ),
         "Sidebar: close",
       );
     }
 
     // (7) On-page search input
-    const pageSearchInput = document.querySelector("#inputField1");
+    const pageSearchInput =
+      document.querySelector(
+        "#inputField1",
+      );
+
     if (pageSearchInput) {
-      assign(pageSearchInput, "Page search input");
+      assign(
+        pageSearchInput,
+        "Page search input",
+      );
     }
+
     // (7a) On-page search input button
-    const pageSearchInputButton = document.querySelector("#submitButton");
-    if (pageSearchInputButton) {
-      assign(pageSearchInputButton, "Page search input");
+    const pageSearchInputButton =
+      document.querySelector(
+        "#submitButton",
+      );
+
+    if (
+      pageSearchInputButton
+    ) {
+      assign(
+        pageSearchInputButton,
+        "Page search input",
+      );
     }
 
     // (8) Ceremony toggle buttons
-    document.querySelectorAll(".time-toggle button").forEach((btn) => {
-      assign(btn, `Ceremony btn: ${btn.textContent.trim().slice(0, 20)}`);
-    });
+    document
+      .querySelectorAll(
+        ".time-toggle button",
+      )
+      .forEach((btn) => {
+        assign(
+          btn,
+          `Ceremony btn: ${btn.textContent
+            .trim()
+            .slice(0, 20)}`,
+        );
+      });
 
     // (8a) Open ceremony contents
-    const openCeremony = document.querySelectorAll("[id^=section].showing");
-    if (openCeremony && openCeremony.length) {
-      openCeremony.forEach((ceremony) => {
-        ceremony
-          .querySelectorAll(
-            "a[href], button, input, select, textarea, [tabindex], .popup-close",
-          )
-          .forEach((el) => {
-            if (el.classList.contains("popup-close"))
-              el.setAttribute("tabindex", String(0));
-            console.log(
-              "logging",
-              el,
-              el.getAttribute("tabindex"),
-              el.getAttribute("tabindex") !== "-1",
-            );
-            if (el.getAttribute("tabindex") !== "-1") return;
-            const text =
-              el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
-            assign(el, `Ceremony: ${text}`);
-          });
-      });
+    const openCeremony =
+      document.querySelectorAll(
+        "[id^=section].showing",
+      );
+
+    if (
+      openCeremony &&
+      openCeremony.length
+    ) {
+      openCeremony.forEach(
+        (ceremony) => {
+          ceremony
+            .querySelectorAll(
+              "a[href], button, input, select, textarea, [tabindex], .popup-close",
+            )
+            .forEach((el) => {
+              if (
+                el.classList.contains(
+                  "popup-close",
+                )
+              ) {
+                el.setAttribute(
+                  "tabindex",
+                  String(0),
+                );
+              }
+
+              console.log(
+                "logging",
+                el,
+                el.getAttribute(
+                  "tabindex",
+                ),
+                el.getAttribute(
+                  "tabindex",
+                ) !== "-1",
+              );
+
+              if (
+                el.getAttribute(
+                  "tabindex",
+                ) !== "-1"
+              ) {
+                return;
+              }
+
+              const text =
+                el.textContent
+                  ?.trim()
+                  .slice(
+                    0,
+                    30,
+                  ) ||
+                el.tagName.toLowerCase();
+
+              assign(
+                el,
+                `Ceremony: ${text}`,
+              );
+            });
+        },
+      );
     }
 
-    const endingTabs = document.querySelectorAll(
-      "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a",
+    const endingTabs =
+      document.querySelectorAll(
+        "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a",
+      );
+
+    endingTabs.forEach(
+      (el) => {
+        if (
+          el.getAttribute(
+            "tabindex",
+          ) !== "-1"
+        ) {
+          return;
+        }
+
+        const text =
+          el.textContent
+            ?.trim()
+            .slice(0, 30) ||
+          el.tagName.toLowerCase();
+
+        assign(
+          el,
+          `${text}`,
+        );
+      },
     );
 
-    endingTabs.forEach((el) => {
-      if (el.getAttribute("tabindex") !== "-1") return;
-      const text =
-        el.textContent?.trim().slice(0, 30) || el.tagName.toLowerCase();
-      assign(el, `${text}`);
-    });
-
-    console.table(assignments);
+    console.table(
+      assignments,
+    );
   }
 
   addFocusStyles() {
-    if (document.getElementById("tab-manager-styles")) return;
-    const style = document.createElement("style");
-    style.id = "tab-manager-styles";
+    if (
+      document.getElementById(
+        "tab-manager-styles",
+      )
+    ) {
+      return;
+    }
+
+    const style =
+      document.createElement(
+        "style",
+      );
+
+    style.id =
+      "tab-manager-styles";
+
     style.textContent = `
-      *:focus                       { outline: none !important; }
-      *:focus-visible               { box-shadow: 0 0 0 4px #b90072 inset !important;
-                                      outline: none !important; border-radius: 4px; }
-      a:focus-visible, button:focus-visible,
-      input:focus-visible, select:focus-visible,
-      textarea:focus-visible, [tabindex]:focus-visible
-                                    { box-shadow: 0 0 0 4px #b90072 inset !important;
-                                      outline: none !important; }
+      *:focus {
+        outline: none !important;
+      }
+
+      *:focus-visible {
+        box-shadow: 0 0 0 4px #b90072 inset !important;
+        outline: none !important;
+        border-radius: 4px;
+      }
+
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      [tabindex]:focus-visible {
+        box-shadow: 0 0 0 4px #b90072 inset !important;
+        outline: none !important;
+      }
     `;
-    document.head.appendChild(style);
+
+    document.head.appendChild(
+      style,
+    );
   }
 }
 
 // ─── Initialise ─────────────────────────────────────────────────────────────
 
-function hasPageMarker(expected) {
-  const el = document.querySelector('meta[name="app-page"]');
-  return !!el && el.content === expected;
+function hasPageMarker(
+  expected,
+) {
+  const el =
+    document.querySelector(
+      'meta[name="app-page"]',
+    );
+
+  return (
+    !!el &&
+    el.content === expected
+  );
 }
 
-if (hasPageMarker("ceremony-order")) {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      window.tabOrderManager = new TabOrderManager();
-    });
+if (
+  hasPageMarker(
+    "ceremony-order",
+  )
+) {
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        window.tabOrderManager =
+          new TabOrderManager();
+      },
+    );
   } else {
-    window.tabOrderManager = new TabOrderManager();
+    window.tabOrderManager =
+      new TabOrderManager();
   }
 
-  window.refreshTabOrder = () => window.tabOrderManager?.updateTabOrder();
+  window.refreshTabOrder =
+    () =>
+      window.tabOrderManager?.updateTabOrder();
 }
