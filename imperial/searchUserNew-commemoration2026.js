@@ -673,6 +673,9 @@ document.addEventListener("DOMContentLoaded", function () {
       "#section-1030-Faculty-of-Natural-Sciences-uT2608HY0e",
       "#section-1345-Imperial-Business-School-Ceremony-1-cLHwJu8Bsp",
       "#section-1645-Imperial-Business-School-Ceremony-2-txtPpMMyld",
+"#section-1000-Faculty-of-Engineering-QHw5zoWKpT",
+"#section-1345-Faculty-of-Medicine-HHMWJqG6Lv",
+"#section-1700-Faculty-of-Natural-Sciences-and-Imperial-Business-School-yMJdxFIrHB",
     ];
 
     const blacklistSelector = BLACKLIST.join(",");
@@ -861,8 +864,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, interval);
   }
 
-  function scrollToMatch(matches, yOffset = -400) {
-    let current = 0;
+function scrollToMatch(matches, yOffset = -650) {    let current = 0;
 
     const scroll = () => {
       const attemptScroll = () => {
@@ -894,29 +896,22 @@ document.addEventListener("DOMContentLoaded", function () {
            * the position using the element's current coordinates.
            */
           setTimeout(() => {
-            const rect = match.getBoundingClientRect();
+  const rect = match.getBoundingClientRect();
 
-            const targetTop = Math.abs(yOffset);
-            const tolerance = 30;
+  const minimumTop = 450;
 
-            const tooHigh =
-              rect.top < targetTop - tolerance;
+  // If the result has moved too high,
+  // bring it back down into clear view.
+  if (rect.top < minimumTop) {
+    const correction =
+      minimumTop - rect.top;
 
-            const tooLow =
-              rect.top > targetTop + tolerance;
-
-            if (tooHigh || tooLow) {
-              const correctedYPosition =
-                match.getBoundingClientRect().top +
-                window.pageYOffset +
-                yOffset;
-
-              window.scrollTo({
-                top: Math.max(0, correctedYPosition),
-                behavior: "auto",
-              });
-            }
-          }, 700);
+    window.scrollBy({
+      top: -correction,
+      behavior: "auto",
+    });
+  }
+}, 700);
 
           current =
             (current + 1) % matches.length;
@@ -1803,7 +1798,7 @@ class TabOrderManager {
 
     const endingTabs =
       document.querySelectorAll(
-        "#section-ZvbXBHs5lv a, #section-5DMRaIUUJC a, #section-CfGYjfkAcl a",
+        "#section-Dv3Qll5WJf a, #section-SA9tmPclR9 a, #section-TsKpPrdNAq a",
       );
 
     endingTabs.forEach(
