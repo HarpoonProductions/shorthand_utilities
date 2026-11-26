@@ -1,90 +1,132 @@
+(function () {
+  "use strict";
 
-document.addEventListener("DOMContentLoaded", () => {
   /* ==========================================
      RELATED STORIES — SWIPER CAROUSEL
-     Supports old and new Shorthand markup
+     PERFORMANCE OPTIMISED
      ========================================== */
+
+  // Prevent duplicate script initialisation
+  if (window.__relatedStoriesSwiperStarted) return;
+  window.__relatedStoriesSwiperStarted = true;
 
   const selectors = [
     ".sh-issues .Layout.Theme-Layer-Gallery-List",
     ".Theme-RelatedStoriesSection .related-stories-list ul"
   ];
 
-  const instances = new Map();
+  const instances = new WeakMap();
+
+  /* ==========================================
+     GET SLIDES
+     ========================================== */
+
+  function getSlides(list) {
+    return Array.from(list.children).filter(
+      (item) => item.tagName === "LI"
+    );
+  }
 
   /* ==========================================
      INITIALISE CAROUSEL
      ========================================== */
 
-  const initializeCarousel = (list) => {
+  function initializeCarousel(list) {
+    if (typeof Swiper === "undefined") return;
+    if (instances.has(list)) return;
+    if (list.dataset.carouselInitialized === "true") return;
+
+    const slides = getSlides(list);
+
+    if (!slides.length) return;
+
+    // Only initialise valid Related Stories lists
     if (
-      list.dataset.carouselInitialized === "true" ||
-      typeof Swiper === "undefined"
+      list.closest(".Theme-RelatedStoriesSection") &&
+      !list.querySelector(":scope > li > .related-story-card")
     ) {
       return;
     }
 
-    const slides = Array.from(list.children).filter(
-      (item) => item.tagName === "LI"
-    );
-
-    if (!slides.length) return;
-
     list.dataset.carouselInitialized = "true";
 
-    // Add Swiper classes
     list.classList.add("swiper-wrapper");
 
     slides.forEach((item) => {
       item.classList.add("swiper-slide");
     });
 
-    // Create Swiper container
-    let swiper = list.parentElement;
+    /* ==========================================
+       CREATE SWIPER CONTAINER
+       ========================================== */
 
-    if (!swiper.classList.contains("swiper")) {
-      swiper = document.createElement("div");
-      swiper.classList.add("swiper");
+    let container = list.parentElement;
 
-      list.parentNode.insertBefore(swiper, list);
-      swiper.appendChild(list);
+    if (!container.classList.contains("swiper")) {
+      container = document.createElement("div");
+      container.classList.add("swiper");
+
+      list.parentNode.insertBefore(container, list);
+      container.appendChild(list);
     }
 
-    // Initialise Swiper on this specific container
-    const carousel = new Swiper(swiper, {
-      loop: slides.length > 4,
-      freeMode: true,
+    /* ==========================================
+       INITIALISE SWIPER
+       ========================================== */
 
-      slidesPerView: 1,
-      spaceBetween: 10,
+    try {
+      const carousel = new Swiper(container, {
+        loop: slides.length > 4,
+        freeMode: true,
 
-      observer: true,
-      observeParents: true,
+        slidesPerView: 1,
+        spaceBetween: 10,
 
-      breakpoints: {
-        320: {
-          slidesPerView: 2,
-          spaceBetween: 20
-        },
-        480: {
-          slidesPerView: 3,
-          spaceBetween: 30
-        },
-        640: {
-          slidesPerView: 4,
-          spaceBetween: 40
+        // Disable mutation-based updates
+        observer: false,
+        observeParents: false,
+        observeSlideChildren: false,
+
+        // Let Swiper handle resizing
+        resizeObserver: true,
+        updateOnWindowResize: true,
+
+        breakpoints: {
+          320: {
+            slidesPerView: 2,
+            spaceBetween: 20
+          },
+          480: {
+            slidesPerView: 3,
+            spaceBetween: 30
+          },
+          640: {
+            slidesPerView: 4,
+            spaceBetween: 40
+          }
         }
-      }
-    });
+      });
 
-    instances.set(list, carousel);
-  };
+      instances.set(list, {
+        carousel: carousel,
+        slides: new Set(slides)
+      });
+
+    } catch (error) {
+      delete list.dataset.carouselInitialized;
+
+      console.warn(
+        "Related Stories carousel initialisation failed:",
+        error
+      );
+    }
+  }
 
   /* ==========================================
-     FIND RELATED STORIES LISTS
+     FIND AND UPDATE CAROUSELS
      ========================================== */
 
-  const findCarousels = () => {
+  function findCarousels() {
     if (typeof Swiper === "undefined") return;
 
     const lists = document.querySelectorAll(
@@ -92,62 +134,75 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     lists.forEach((list) => {
-      // For new Related Stories markup, only
-      // initialise lists containing story cards.
-      if (
-        list.closest(".Theme-RelatedStoriesSection") &&
-        !list.querySelector(":scope > li > .related-story-card")
-      ) {
+      const existing = instances.get(list);
+
+      if (!existing) {
+        initializeCarousel(list);
         return;
       }
 
-      if (list.dataset.carouselInitialized === "true") {
-        // Update Swiper when more cards are added
-        const carousel = instances.get(list);
+      // Only update if genuinely new cards exist
+      const slides = getSlides(list);
 
-        if (carousel) {
-          const slides = Array.from(list.children).filter(
-            (item) => item.tagName === "LI"
-          );
+      const newSlides = slides.filter(
+        (slide) => !existing.slides.has(slide)
+      );
 
-          slides.forEach((item) => {
-            item.classList.add("swiper-slide");
-          });
+      if (!newSlides.length) return;
 
-          carousel.update();
-        }
+      newSlides.forEach((slide) => {
+        slide.classList.add("swiper-slide");
+        existing.slides.add(slide);
+      });
 
-        return;
-      }
-
-      initializeCarousel(list);
+      existing.carousel.update();
     });
-  };
+  }
 
   /* ==========================================
-     WAIT FOR SHORTHAND TO RENDER CONTENT
+     WAIT FOR SHORTHAND CONTENT
      ========================================== */
 
-  // Check immediately
-  findCarousels();
-
-  // Watch for asynchronously rendered stories
-  const observer = new MutationObserver(() => {
+  function start() {
     findCarousels();
-  });
 
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+    // Limited checks for asynchronously loaded content
+    const delays = [
+      250,
+      500,
+      1000,
+      2000,
+      4000,
+      8000,
+      12000
+    ];
 
-  // Check again once all page resources load
-  window.addEventListener("load", findCarousels);
-
-  // Update carousel on resize
-  window.addEventListener("resize", () => {
-    instances.forEach((carousel) => {
-      carousel.update();
+    delays.forEach((delay) => {
+      window.setTimeout(findCarousels, delay);
     });
-  });
-});
+
+    // Final check when page resources have loaded
+    if (document.readyState !== "complete") {
+      window.addEventListener(
+        "load",
+        findCarousels,
+        { once: true }
+      );
+    }
+  }
+
+  /* ==========================================
+     SAFE STARTUP
+     ========================================== */
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      start,
+      { once: true }
+    );
+  } else {
+    start();
+  }
+
+})();
